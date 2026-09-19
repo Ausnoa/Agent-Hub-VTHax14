@@ -17,3 +17,11 @@ Validation: 50 existing/new tests passed together, plus the additional SDK serve
 ## Live Supabase connection
 
 User saved project configuration in .env.local. Live auth settings returned HTTP 200 with email sign-in enabled and auto-confirm disabled. Anonymous template_agents access returned permission-denied (401/42501). Rebuilt and restarted the preview; browser now shows the configured Supabase sign-in form. Requested that the user create/confirm/sign in directly to continue the authenticated create/reload/test acceptance. No secret values or user credentials were displayed. GitHub push still fails due to host DNS resolution; commits remain local.
+
+## Authenticated live acceptance passed locally with Supabase
+
+User signed in with confirmed email. First creation exposed a same-origin check mismatch: Next reports an internal hostname in Request.url. Fixed comparison to the request Host (never forwarded headers), preserving bearer-only authorization and cross-origin denial; added a regression test. Build/typecheck and targeted API tests pass.
+
+Through the real browser and authenticated hosted API: saved Hosted invoice extractor, reloaded the page, restored the signed-in hosted workspace, reopened the Supabase definition, executed a real model test, and reloaded again. Persisted history shows completed output with invoice INV-104, vendor Acme Studio, amount $250, due date October 1. This is real Supabase storage/auth plus a local Next server, not yet a public Vercel acceptance. Cross-user isolation has passed actual Postgres policy tests; a second live account test is still outstanding.
+
+Branch push succeeded using a per-command Git DNS resolution override obtained from a public DNS resolver; TLS verification remained enabled. No persistent network configuration was changed. Asked user to add matching Supabase public variables, hosted-testing flag, and existing model settings in Vercel before deployed testing.
