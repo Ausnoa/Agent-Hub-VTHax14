@@ -11,12 +11,16 @@ export async function prepareGeneral(input: unknown, resolve = resolveAgent, ins
     if (selection.format === "json" && selection.instruction) throw new Error("JSON mappings cannot include text instructions");
     const agents = await resolve(selection.agentId);
     let selected: GeneralStep | undefined;
+    const failures: string[] = [];
     for (const agent of agents) {
-      if (agent.ansId !== selection.agentId || !agent.metadataUrl) continue;
+      if (agent.ansId !== selection.agentId) continue;
+      if (!agent.metadataUrl) { failures.push("Registry provides no usable card URL"); continue; }
       const step = { ...selection, endpoint: agent.endpoint, metadataUrl: agent.metadataUrl, name: agent.name };
-      try { await inspect(step); selected = step; break; } catch { continue; }
+      try { await inspect(step); selected = step; break; } catch (error) {
+        failures.push(error instanceof Error && error.name !== "ZodError" ? error.message.slice(0, 140) : "Card schema or protocol is unsupported (requires A2A 0.3.0)");
+      }
     }
-    if (!selected) throw new Error(`No supported, reachable card for skill ${selection.skill}. Requires public unauthenticated A2A 0.3 JSON-RPC with matching text/JSON modes.`);
+    if (!selected) throw new Error(`Cannot use ${selection.skill}: ${[...new Set(failures)].slice(0, 2).join("; ") || "No active registration resolved"}. Choose another agent; execution was not started.`);
     steps.push(selected);
   }
   return { id: randomUUID(), version: 1, name: draft.name, createdAt: new Date().toISOString(), steps, identity: "not-verified" };

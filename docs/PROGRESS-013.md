@@ -3,3 +3,5 @@
 Diagnosis: Agent Harbor (`e53daa73-280b-4d35-af08-6bf291531afa`) resolves without a usable metadata URL and advertises STREAMABLE-HTTP. Domain Impact Analyzer (`f406507d-2185-4d34-b667-95eac772f2af`) also advertises STREAMABLE-HTTP and fails the A2A 0.3 card check; its actual purpose is domain-takedown impact, not stock analysis.
 
 The suggestion planner received only IDs and skill names, without domain descriptions, and did not filter transport/card availability. Fix those selection inputs and expose concrete preparation failures without weakening protocol/network checks. No public agent tasks were invoked.
+
+Confirmed Domain Impact Analyzer's card advertises protocolVersion `1.0`, which the current 0.3 connector does not support. Implemented planner filtering for JSON-RPC/card availability, richer agent domain and skill context, and actionable preparation errors. Card checks still follow draft suggestions; this prefilter is not proof of compatibility. Typecheck and all five targeted tests pass.
