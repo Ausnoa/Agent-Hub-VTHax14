@@ -1,3 +1,4 @@
+import { Radar, Cpu } from "lucide-react";
 import type { CatalogEntry } from "../../lib/gateways/catalog";
 import StatusPill from "../ui/status-pill";
 
@@ -7,7 +8,7 @@ export default function CatalogPanel({ entries }: { entries: CatalogEntry[] }) {
     {(["local-fixture", "ans"] as const).map((source) => <section key={source} style={{ marginBottom: 20 }}>
       <h3 style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 10 }}>{source === "ans" ? "ANS snapshot — adapter work needed" : "Pilot workflow agents — local services"}</h3>
       <div className="registry-list">{entries.filter((entry) => entry.source === source).map((entry) => <article className="registry-item" key={entry.id}>
-        <span className="registry-item-icon">{source === "ans" ? "◎" : "⌘"}</span>
+        <span className="registry-item-icon">{source === "ans" ? <Radar size={15} /> : <Cpu size={15} />}</span>
         <div style={{ minWidth: 0, flex: 1 }}>
           <h3>{entry.name}</h3>
           <p>{entry.description ?? "No description provided by the agent owner."}</p>

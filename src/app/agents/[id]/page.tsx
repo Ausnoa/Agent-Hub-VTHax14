@@ -2,6 +2,7 @@
 
 import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Play } from "lucide-react";
 import type { Composite, Run } from "../../../lib/contracts/index";
 import { reportForm } from "../../../lib/contracts/ui";
 import { api } from "../../../lib/api-client";
@@ -69,7 +70,7 @@ export default function RuntimeInterfacePage({ params }: { params: Promise<{ id:
         <AgentInputs schema={schema} values={{ company, notes }} onChange={(name, value) => name === "company" ? setCompany(value) : setNotes(value)} />
         <p className="hint" style={{ margin: "14px 0" }}>These notes flow through the selected agents. Use non-sensitive information.</p>
         <Button variant="primary" block disabled={busy || !company.trim() || !notes.trim()} onClick={invoke}>
-          {busy ? "Queueing run…" : schema.submitLabel}
+          {busy ? "Queueing run…" : <><Play size={14} /> {schema.submitLabel}</>}
         </Button>
       </Card>
 

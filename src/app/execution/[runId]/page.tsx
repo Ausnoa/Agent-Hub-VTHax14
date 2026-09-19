@@ -2,6 +2,7 @@
 
 import { Fragment, use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { RotateCcw, ArrowLeft } from "lucide-react";
 import type { Composite, Run } from "../../../lib/contracts/index";
 import { api } from "../../../lib/api-client";
 import PageShell from "../../../components/layout/page-shell";
@@ -68,7 +69,7 @@ export default function ExecutionPage({ params }: { params: Promise<{ runId: str
         <StatusPill tone={toneForRunStatus(run.status)} running={run.status === "running"}>{run.status}</StatusPill>
         <span className="hint">Run {run.id.slice(0, 8)} · started {new Date(run.createdAt).toLocaleTimeString()}</span>
       </div>
-      {run.status === "failed" && <Button variant="secondary" disabled={busy} onClick={retry}>{busy ? "Retrying…" : "Retry failed step"}</Button>}
+      {run.status === "failed" && <Button variant="secondary" disabled={busy} onClick={retry}><RotateCcw size={14} className={busy ? "spin" : undefined} /> {busy ? "Retrying…" : "Retry failed step"}</Button>}
     </div>
 
     {error && <div role="alert" className="alert"><strong>Something needs attention</strong><p>{error}</p></div>}
@@ -134,7 +135,7 @@ export default function ExecutionPage({ params }: { params: Promise<{ runId: str
     </Card>}
 
     <div style={{ marginTop: 24 }}>
-      <Button variant="secondary" onClick={() => router.push(`/agents/${agent.id}`)}>← Back to agent interface</Button>
+      <Button variant="secondary" onClick={() => router.push(`/agents/${agent.id}`)}><ArrowLeft size={14} /> Back to agent interface</Button>
     </div>
   </PageShell>;
 }

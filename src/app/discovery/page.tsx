@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { ArrowRight, Radar, Search } from "lucide-react";
 import type { DiscoveredAgent } from "../../lib/ans/client";
 import type { CatalogEntry } from "../../lib/gateways/catalog";
 import { api } from "../../lib/api-client";
@@ -51,11 +52,11 @@ export default function DiscoveryPage() {
     <form className="search-bar" onSubmit={(event) => { event.preventDefault(); search(); }}>
       <label className="sr-only" htmlFor="query">Search ANS</label>
       <input id="query" value={query} maxLength={256} onChange={(event) => setQuery(event.target.value)} placeholder="Search for a capability" />
-      <Button variant="primary" disabled={busy}>{busy ? "Searching…" : "Search"}</Button>
+      <Button variant="primary" disabled={busy}>{busy ? "Searching…" : <><Search size={14} /> Search</>}</Button>
     </form>
     <div className="registry-list" style={{ marginTop: 12 }}>
       {discovered.map((item, index) => <article className="registry-item" key={`${item.ansId}-${index}`}>
-        <span className="registry-item-icon">◎</span>
+        <span className="registry-item-icon"><Radar size={15} /></span>
         <div style={{ minWidth: 0, flex: 1 }}>
           <h3>{item.name}</h3>
           <p>{item.ansName}</p>
@@ -82,7 +83,7 @@ export default function DiscoveryPage() {
       <Card>
         <CardHead>Compose an agent</CardHead>
         <p className="hint" style={{ marginBottom: 16 }}>Have an outcome in mind? Describe it and Agent Hub will decompose it into a capability plan, then resolve each capability against this same registry.</p>
-        <Link href="/create"><Button variant="primary">Start composing →</Button></Link>
+        <Link href="/create"><Button variant="primary">Start composing <ArrowRight size={14} /></Button></Link>
       </Card>
       {registryPanel}
     </div>
@@ -128,7 +129,7 @@ export default function DiscoveryPage() {
 
     <div style={{ marginTop: 24, display: "flex", justifyContent: "flex-end" }}>
       <Button variant="primary" disabled={!!proposal.blockers.length || !proposal.steps.length} onClick={() => router.push("/workflow")}>
-        Proceed to Workflow Review →
+        Proceed to Workflow Review <ArrowRight size={14} />
       </Button>
     </div>
   </PageShell>;

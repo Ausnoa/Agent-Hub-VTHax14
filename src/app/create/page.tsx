@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Search, ClipboardCheck, PlayCircle, ArrowRight } from "lucide-react";
 import type { Proposal } from "../../lib/contracts/index";
 import { api } from "../../lib/api-client";
 import { useComposerFlow } from "../../lib/composer-flow";
@@ -76,7 +77,7 @@ export default function CreateAgentPage() {
           options={[{ value: "pilot", label: "Pilot catalog" }, { value: "demo", label: "Offline demo" }, { value: "live", label: "ANS catalog" }]}
         />
         <Button variant="primary" disabled={busy || description.trim().length < 10} onClick={decompose}>
-          {busy ? "Decomposing…" : "Decompose & Discover ANS Agents →"}
+          {busy ? "Decomposing…" : <>Decompose & Discover ANS Agents <ArrowRight size={14} /></>}
         </Button>
       </div>
       <p className="hint" style={{ marginTop: 14 }}>
@@ -88,9 +89,9 @@ export default function CreateAgentPage() {
     </Card>
 
     <div className="metric-row" style={{ marginTop: 32 }}>
-      <Card tight><CardHead>Discover with ANS</CardHead><p className="hint">Find registered agents and inspect where they come from.</p></Card>
-      <Card tight><CardHead>Review the composition</CardHead><p className="hint">See each capability and approve the agents working together.</p></Card>
-      <Card tight><CardHead>Run it. Reuse it.</CardHead><p className="hint">Follow each A2A step, then use your saved agent again.</p></Card>
+      <Card tight><CardHead badge={<Search size={14} color="var(--accent)" />}>Discover with ANS</CardHead><p className="hint">Find registered agents and inspect where they come from.</p></Card>
+      <Card tight><CardHead badge={<ClipboardCheck size={14} color="var(--accent)" />}>Review the composition</CardHead><p className="hint">See each capability and approve the agents working together.</p></Card>
+      <Card tight><CardHead badge={<PlayCircle size={14} color="var(--accent)" />}>Run it. Reuse it.</CardHead><p className="hint">Follow each A2A step, then use your saved agent again.</p></Card>
     </div>
 
     <Card style={{ marginTop: 18 }}>

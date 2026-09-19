@@ -2,6 +2,7 @@
 
 import { Fragment, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowLeft, ArrowRight, Rocket } from "lucide-react";
 import type { Composite, Proposal } from "../../lib/contracts/index";
 import { api } from "../../lib/api-client";
 import { useComposerFlow } from "../../lib/composer-flow";
@@ -90,9 +91,9 @@ export default function WorkflowReviewPage() {
     </div>}
 
     <div style={{ marginTop: 24, display: "flex", justifyContent: "flex-end", gap: 12 }}>
-      <Button variant="secondary" onClick={() => router.push("/discovery")}>← Back to discovery</Button>
+      <Button variant="secondary" onClick={() => router.push("/discovery")}><ArrowLeft size={14} /> Back to discovery</Button>
       <Button variant="primary" disabled={busy || !!proposal.blockers.length || !proposal.steps.length} onClick={() => approve(proposal)}>
-        {busy ? "Deploying…" : "Deploy & Generate Agent Interface →"}
+        {busy ? "Deploying…" : <><Rocket size={14} /> Deploy & Generate Agent Interface <ArrowRight size={14} /></>}
       </Button>
     </div>
   </PageShell>;

@@ -1,7 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { LayoutGrid, ShieldCheck } from "lucide-react";
 
 const stages = [
   { key: "compose", label: "Compose", href: "/create" },
@@ -24,10 +26,10 @@ export default function TopNav() {
 
   return <header className="topnav">
     <Link href="/agents" className="topnav-brand">
-      <span className="topnav-mark">AH</span>
+      <Image src="/agent-emblem.svg" alt="" width={30} height={30} className="topnav-mark" priority />
       <span>Agent Hub<small>CORE EMBLEM</small></span>
     </Link>
-    <span className="topnav-verified"><span className="live-dot" /> AMS VERIFIED A2A NETWORK</span>
+    <span className="topnav-verified"><span className="live-dot" /><ShieldCheck size={12} /> ANS Verified A2A Network</span>
     <nav className="topnav-links" aria-label="Pipeline stages">
       {stages.map((stage) => (
         <Link key={stage.key} href={stage.href} className={`topnav-link${activeStage === stage.key ? " active" : ""}`}>
@@ -37,7 +39,7 @@ export default function TopNav() {
     </nav>
     <div className="topnav-right">
       <div className="topnav-stat">Local workspace<strong>MVP EDITION</strong></div>
-      <Link href="/agents" className={`topnav-agents-btn${isMyAgents ? " active" : ""}`}>My Agents</Link>
+      <Link href="/agents" className={`topnav-agents-btn${isMyAgents ? " active" : ""}`}><LayoutGrid size={14} /> My Agents</Link>
     </div>
   </header>;
 }

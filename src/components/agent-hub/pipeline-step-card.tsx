@@ -1,3 +1,4 @@
+import { ArrowRight } from "lucide-react";
 import type { PillTone } from "../ui/status-pill";
 import StatusPill from "../ui/status-pill";
 
@@ -27,5 +28,5 @@ export default function PipelineStepCard({ index, name, ansId, statusLabel, stat
 }
 
 export function PipelineConnector({ active }: { active?: boolean }) {
-  return <div className={`pipeline-connector${active ? " active" : ""}`} aria-hidden="true">→</div>;
+  return <div className={`pipeline-connector${active ? " active" : ""}`} aria-hidden="true"><ArrowRight size={16} /></div>;
 }
