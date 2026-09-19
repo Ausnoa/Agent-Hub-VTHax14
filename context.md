@@ -146,7 +146,8 @@ Example output:
 This becomes the workflow specification.
 
 8. ANS Discovery
-For each required capability, the backend searches ANS.
+For each required capability, the backend searches its local index of the ANS registry.
+The index is synced from live ANS in the background, starting when the server starts, and stores each agent's declared skills from its agent card. Matching uses those skills, because ANS search matches on names and descriptions only. Before a workflow runs, the selected agents are checked against live ANS again. See docs/DECISION-001-ANS-REGISTRY-INDEX.md.
 Only agents meeting the MVP's requirements are considered.
 Filters
 protocol = A2A
@@ -174,7 +175,7 @@ Research Agent C
         ▼
 Research Agent A
 Critical requirement
-Agent endpoints must come from ANS discovery rather than being hardcoded into the workflow.
+Agent endpoints must come from ANS discovery rather than being hardcoded into the workflow. A local index counts as ANS discovery only if it was filled from live ANS and records when each agent was last seen there.
 We can maintain compatibility logic for the agents we support, but the discovery process itself should genuinely use ANS.
 
 9. Agent Selection
@@ -515,8 +516,9 @@ Summary Agent did not respond.
  capabilities[]
          │
          ▼
-┌─────────────────┐
-│ ANS Client      │
+┌─────────────────┐       background sync       ┌─────────┐
+│ Registry Index  │ ◄────────────────────────── │   ANS   │
+│ (agents+skills) │   on startup + interval     └─────────┘
 └────────┬────────┘
          │
          ▼
@@ -541,7 +543,7 @@ Summary Agent did not respond.
 │                           │
 │ load workflow             │
 │      ↓                    │
-│ resolve agents            │
+│ re-check agents in ANS    │
 │      ↓                    │
 │ execute sequential steps  │
 └────────────┬──────────────┘
@@ -592,7 +594,10 @@ POST /api/plan
 Natural language → capabilities
 
 POST /api/discover
-Capabilities → ANS agents
+Capabilities → ANS agents (from the local registry index)
+
+GET /api/registry/status
+Last sync time and indexed agent count
 
 POST /api/agents
 Approved workflow → composite agent

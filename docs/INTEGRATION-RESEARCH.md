@@ -42,3 +42,7 @@ Findings:
 - `Agent Harbor AI Agent` (`commerce.agentharbor.agency`) registered no metadata URL in the ANS record; the conventional `.well-known/agent-card.json` path returns 404, so its actual capabilities are unconfirmed.
 
 Conclusion: deep search does not change the Phase 1 decision gate. No reachable, capability-matched candidate exists for any of the three demo capabilities. The most promising cluster (`agentworks.fr`) is blocked by an external, provider-side TLS failure outside our control, not by our search logic — retrying later is possible but not something to plan the demo around.
+
+## Full registry listing — September 19, 2026
+
+A request with an empty `query` and `protocols=A2A`, `statuses=ACTIVE`, `pageSize=20` returned HTTP 200 with 20 items and a `links[rel=next]` entry, without credentials. The full active A2A registry can therefore be enumerated by pagination, which the local registry index relies on (`DECISION-001-ANS-REGISTRY-INDEX.md`). The page token appears to encode a point-in-time search cursor, which may expire, so a sync should fetch pages back to back. The total agent count and full sync duration have not been measured.

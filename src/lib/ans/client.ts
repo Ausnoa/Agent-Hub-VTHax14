@@ -1,6 +1,7 @@
 export interface DiscoveredAgent {
   ansId: string;
   name: string;
+  description: string | null;
   ansName: string;
   endpoint: string;
   metadataUrl?: string;
@@ -33,6 +34,10 @@ function requiredString(value: unknown): string {
   return value;
 }
 
+function optionalString(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value : null;
+}
+
 function httpsUrl(value: unknown): string {
   const url = new URL(requiredString(value));
   if (url.protocol !== "https:" || url.username || url.password) {
@@ -58,6 +63,7 @@ export function normalizeAgents(payload: unknown): DiscoveredAgent[] {
       return [{
         ansId: requiredString(agent.agentId),
         name: requiredString(agent.agentDisplayName),
+        description: optionalString(agent.agentDescription),
         ansName: requiredString(agent.ansName),
         endpoint: httpsUrl(endpoint.agentUrl),
         metadataUrl: endpoint.metaDataUrl ? httpsUrl(endpoint.metaDataUrl) : undefined,
