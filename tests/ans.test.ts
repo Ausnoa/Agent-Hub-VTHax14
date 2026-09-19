@@ -41,3 +41,21 @@ test("sends documented filters and reports incomplete pagination", async () => {
 test("HTTP errors do not expose response bodies or credentials", async () => {
   await assert.rejects(discoverAgents({ query: "", fetcher: (async () => new Response("sensitive body", { status: 401 })) as typeof fetch }), /^Error: ANS discovery failed \(HTTP 401\)$/);
 });
+
+test("forwards an opaque page token and extracts the next one from the response", async () => {
+  const result = await discoverAgents({
+    query: "company research",
+    pageToken: "prior-token",
+    fetcher: (async (input) => {
+      const url = new URL(String(input));
+      assert.equal(url.searchParams.get("pageToken"), "prior-token");
+      assert.equal(url.searchParams.get("pageTokenDirection"), "forward");
+      return Response.json({
+        items: [agent],
+        links: [{ rel: "next", href: "https://api.godaddy.com/v1/ans/registered-agents?pageToken=next-token&pageTokenDirection=forward" }],
+      });
+    }) as typeof fetch,
+  });
+  assert.equal(result.hasMore, true);
+  assert.equal(result.nextPageToken, "next-token");
+});

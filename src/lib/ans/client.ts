@@ -64,14 +64,20 @@ export async function discoverAgents(options: {
   baseUrl?: string;
   authorization?: string;
   fetcher?: typeof fetch;
-}): Promise<{ agents: DiscoveredAgent[]; hasMore: boolean }> {
+  pageToken?: string;
+}): Promise<{ agents: DiscoveredAgent[]; hasMore: boolean; nextPageToken?: string }> {
   if (options.query.length > 256) throw new Error("Search query must be at most 256 characters");
   const base = new URL(options.baseUrl ?? "https://api.godaddy.com");
   if (base.protocol !== "https:" || base.username || base.password || base.pathname !== "/" || base.search || base.hash) {
     throw new Error("ANS base URL must be an HTTPS origin without credentials");
   }
   const url = new URL("/v1/ans/registered-agents", base);
-  url.search = new URLSearchParams({ query: options.query, protocols: "A2A", statuses: "ACTIVE", pageSize: "20" }).toString();
+  const params = new URLSearchParams({ query: options.query, protocols: "A2A", statuses: "ACTIVE", pageSize: "20" });
+  if (options.pageToken) {
+    params.set("pageToken", options.pageToken);
+    params.set("pageTokenDirection", "forward");
+  }
+  url.search = params.toString();
   const headers: Record<string, string> = { Accept: "application/json" };
   if (options.authorization) headers.Authorization = options.authorization;
   const response = await (options.fetcher ?? fetch)(url, {
@@ -81,8 +87,19 @@ export async function discoverAgents(options: {
   });
   if (!response.ok) throw new Error(`ANS discovery failed (HTTP ${response.status})`);
   const payload = record(await response.json());
+  const nextLink = Array.isArray(payload.links) ? payload.links.find((link) => record(link).rel === "next") : undefined;
+  let nextPageToken: string | undefined;
+  const nextHref = nextLink ? record(nextLink).href : undefined;
+  if (typeof nextHref === "string") {
+    try {
+      nextPageToken = new URL(nextHref).searchParams.get("pageToken") ?? undefined;
+    } catch {
+      // Malformed pagination link; treat as no further pages available via token.
+    }
+  }
   return {
     agents: normalizeAgents(payload),
-    hasMore: Array.isArray(payload.links) && payload.links.some((link) => record(link).rel === "next"),
+    hasMore: Boolean(nextLink),
+    nextPageToken,
   };
 }
