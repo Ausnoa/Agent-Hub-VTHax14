@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutGrid, ShieldCheck } from "lucide-react";
+import ThemeToggle from "./theme-toggle";
 
 const stages = [
   { key: "available", label: "Available agents", href: "/available" },
@@ -41,6 +42,7 @@ export default function TopNav() {
     </nav>
     <div className="topnav-right">
       <div className="topnav-stat">Local workspace<strong>MVP EDITION</strong></div>
+      <ThemeToggle />
       <Link href="/agents" className={`topnav-agents-btn${isMyAgents ? " active" : ""}`}><LayoutGrid size={14} /> My Agents</Link>
     </div>
   </header>;
