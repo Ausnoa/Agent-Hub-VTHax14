@@ -1,15 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { themeStorageKey } from "../../lib/theme";
 
 type Theme = "dark" | "light";
 
 export default function ThemeToggle() {
-  // Starts as dark on the server; the effect reads what the head script already applied.
+  // Starts as dark to match the server render. Before paint, re-apply the saved theme: in development
+  // React's Strict Mode remount resets <html> attributes, clearing what the head script set.
   const [theme, setTheme] = useState<Theme>("dark");
-  useEffect(() => { setTheme(document.documentElement.dataset.theme === "light" ? "light" : "dark"); }, []);
+  useLayoutEffect(() => {
+    let saved: string | null = null;
+    try { saved = localStorage.getItem(themeStorageKey); } catch { /* best-effort only */ }
+    if (saved === "light") { document.documentElement.dataset.theme = "light"; setTheme("light"); }
+  }, []);
 
   function toggle() {
     const next: Theme = theme === "dark" ? "light" : "dark";

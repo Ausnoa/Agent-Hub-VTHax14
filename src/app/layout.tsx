@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans, JetBrains_Mono, Playfair_Display } from "next/font/g
 import "./globals.css";
 import TopNav from "../components/layout/top-nav";
 import { themeScript } from "../lib/theme";
+import InlineScript from "../components/layout/inline-script";
 import { ComposerFlowProvider } from "../lib/composer-flow";
 
 const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-jakarta", weight: ["400", "500", "600", "700"] });
@@ -13,7 +14,7 @@ export const metadata: Metadata = { title: "Agent Hub — Orchestrate autonomous
 export default function Layout({ children }: { children: React.ReactNode }) {
   // suppressHydrationWarning: the theme script may set data-theme on <html> before React hydrates.
   return <html lang="en" className={`${jakarta.variable} ${jetbrainsMono.variable} ${playfair.variable}`} suppressHydrationWarning><head>
-    <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+    <InlineScript html={themeScript} />
   </head><body>
     <ComposerFlowProvider>
       <div className="app-shell">
