@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { setTimeout as pause } from "node:timers/promises";
-import { SendMessageRequest, GetTaskRequest, TaskState } from "@a2a-js/sdk";
+import { SendMessageRequest, GetTaskRequest, TaskState, Role } from "@a2a-js/sdk";
 import { LegacyJsonRpcTransport } from "@a2a-js/sdk/compat/v0_3/client";
 import { z } from "zod";
 import { makeAgentFetch } from "../a2a/network.ts";
@@ -36,8 +36,10 @@ export async function invokeGeneral(step: GeneralStep, input: Value, fetcher = m
     await pause(500, undefined, { signal });
     result = await transport.getTask(GetTaskRequest.fromJSON({ id: result.id }), { signal });
   }
-  const parts = "parts" in result ? result.parts : result.artifacts.flatMap((artifact) => artifact.parts);
-  if (!parts.length || parts.some((part) => !["text", "data"].includes(part.content?.$case ?? ""))) throw new Error("Unsupported or empty output; files are not supported");
+  let parts = "parts" in result ? result.parts : result.artifacts.flatMap((artifact) => artifact.parts);
+  if (!parts.length && "status" in result && result.status?.message?.role === Role.ROLE_AGENT) parts = result.status.message.parts;
+  if (!parts.length) throw new Error("Agent returned no output parts in its message, artifacts, or agent-authored completion message. Do not retry automatically; the external task may have completed.");
+  if (parts.some((part) => !["text", "data"].includes(part.content?.$case ?? ""))) throw new Error("Agent returned file or unsupported output parts; this workflow supports only text or JSON objects.");
   if (parts.length === 1 && parts[0].content?.$case === "data") return valueSchema.parse({ type: "json", value: parts[0].content.value });
   if (parts.some((part) => part.content?.$case !== "text")) throw new Error("Mixed text/data output requires a dedicated adapter");
   return valueSchema.parse({ type: "text", value: parts.map((part) => part.content?.$case === "text" ? part.content.value : "").join("\n") });

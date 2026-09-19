@@ -30,6 +30,19 @@ test("general schema allows eight arbitrary skills and rejects invalid input map
   assert.deepEqual(mapInput({ ...step, format: "json", instruction: "" }, { type: "json", value: { hello: 1 } }), { type: "json", value: { hello: 1 } });
 });
 
+test("completed tasks decode agent status messages without echoing user history", async () => {
+  const selected = { ...step, endpoint: "https://test.example/a2a", metadataUrl: "https://test.example/card", name: "Test" };
+  let role = "agent";
+  const fetcher: typeof fetch = async (url, init) => {
+    if (String(url) === selected.metadataUrl) return Response.json({ url: selected.endpoint, protocolVersion: "0.3.0", defaultInputModes: ["text/plain"], defaultOutputModes: ["text/plain"], skills: [{ id: step.skill }] });
+    const request = JSON.parse(String(init?.body));
+    return Response.json({ jsonrpc: "2.0", id: request.id, result: { kind: "task", id: "remote-task", contextId: "context", status: { state: "completed", message: { kind: "message", role, messageId: "completion", parts: [{ kind: "text", text: "Completed answer" }] } }, history: [{ kind: "message", role: "user", messageId: "input", parts: [{ kind: "text", text: "Do not echo me" }] }] } });
+  };
+  assert.deepEqual(await invokeGeneral(selected, { type: "text", value: "Hello" }, fetcher), { type: "text", value: "Completed answer" });
+  role = "user";
+  await assert.rejects(invokeGeneral(selected, { type: "text", value: "Hello" }, fetcher), /no output parts/);
+});
+
 test("general proposals use resolved endpoints; queue executes four steps without report schema", async () => {
   const store = new GeneralStore(":memory:");
   try {
