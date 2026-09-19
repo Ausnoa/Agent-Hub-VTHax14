@@ -8,13 +8,13 @@ The standalone Node route `POST /a2a` and card `GET /.well-known/agent-card.json
 
 Required server-side environment variables:
 
-- `AGENT_PUBLIC_ORIGIN`: canonical HTTPS origin, planned `https://agent.gloryforglorria.us`. Never inferred from client Host headers.
+- `AGENT_PUBLIC_ORIGIN`: canonical HTTPS origin, planned `https://www.gloryforglorria.us`. Never inferred from client Host headers.
 - `AGENT_ENABLED=true`: explicitly enables inference. Defaults off; leave off on unreviewed deployments.
 - `OPENAI_API_KEY` and `OPENAI_MODEL`: existing structured generation configuration. Never use NEXT_PUBLIC variables for secrets.
 
 The Vercel project currently deploys main. This branch must be selected for a preview or merged through review before these routes exist there. No branch setting or deployment has been changed by this implementation. Configure a 60-second function duration supported by the selected plan; the upstream model request times out after 45 seconds. Input body cap is 32 KB, combined source cap 12000 characters, model output cap 4000 tokens. No automatic model retry. Inference errors return generic JSON-RPC errors without credentials/provider response bodies.
 
-Use the actual Vercel-provided DNS target when adding agent.gloryforglorria.us in Porkbun. Verify HTTPS and the card before registration. Do not guess CNAME values or change unrelated DNS records.
+Use the actual Vercel-provided DNS target when adding www.gloryforglorria.us in Porkbun. Verify HTTPS and the card before registration. Do not guess CNAME values or change unrelated DNS records.
 
 ## Smoke request
 
@@ -32,9 +32,9 @@ Keep production GoDaddy credentials and private keys local, outside source contr
 
 Once hosting, CSR organization, and the certificate path are confirmed:
 
-1. Generate the identity CSR and, if using ANS-managed server issuance, a server CSR for agent.gloryforglorria.us and version 1.0.0.
+1. Generate the identity CSR and, if using ANS-managed server issuance, a server CSR for www.gloryforglorria.us and version 1.0.0.
 2. Resolve TLS certificate strategy for Vercel: managed platform TLS and ANS-issued server certificates are different. Confirm a supported BYOC certificate path/renewal process or compatible certificate installation before registration. Do not assume Vercel installs the ANS-issued certificate. Registration takes exactly one server CSR or server certificate.
-3. Register name `Glorria Brief`, description matching the card, endpoint `https://agent.gloryforglorria.us/a2a`, metadata `https://agent.gloryforglorria.us/.well-known/agent-card.json`, protocol `A2A`, transport `JSON-RPC`, and function `summarize-text:Summarize supplied text:summarization,text,action-items`. CLI transport defaults must be overridden.
+3. Register name `Glorria Brief`, description matching the card, endpoint `https://www.gloryforglorria.us/a2a`, metadata `https://www.gloryforglorria.us/.well-known/agent-card.json`, protocol `A2A`, transport `JSON-RPC`, and function `summarize-text:Summarize supplied text:summarization,text,action-items`. CLI transport defaults must be overridden.
 4. Publish the returned ACME challenge in Porkbun and run `ans-cli verify-acme <agentId>`.
 5. Publish the required returned ANS DNS records, including _ans and _ans-badge for the supplied registration flow. Follow returned names and values; publish TLSA only with the appropriate DNSSEC setup.
 6. Run `ans-cli verify-dns <agentId>` and `ans-cli status <agentId>`. Save nonsecret evidence of ACTIVE; pending is not completion.

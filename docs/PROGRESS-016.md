@@ -67,3 +67,7 @@ User selected a simple first agent. Domain: gloryforglorria.us at Porkbun. Hosti
 - Added bounded model output (4000 tokens) for this agent only; existing planner calls retain their prior behavior.
 - Deployment/registration and security plan: OWNED-AGENT.md. Vercel/ANS certificate compatibility and public abuse controls remain unresolved before public enablement. No public deployment, ANS submission, DNS change, or main-branch merge was performed.
 - Second live check used the existing SDK with in-process card/HTTP-handler routing and real model inference: descriptive office text produced “None explicitly stated” for actions. This verifies SDK/handler/model interoperability locally, not public HTTPS or ANS. Typecheck and production build passed again after the output-token limit change.
+
+## Interactive preview checkpoint
+
+Added /agent-preview with example notes, editable source, live A2A invocation, progress/error states, and result display. Added navigation entry. Selected the existing www.gloryforglorria.us host for the first registration to avoid introducing a second hostname. Production build, typecheck, and all 38 tests passed. A separate localhost production server on port 3001 enables inference for preview only; no persistent secret/config files changed. Registration remains pending.

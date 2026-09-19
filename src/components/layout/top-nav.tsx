@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { LayoutGrid, ShieldCheck } from "lucide-react";
 
 const stages = [
+  { key: "agent-preview", label: "Create an agent", href: "/agent-preview" },
   { key: "available", label: "Available agents", href: "/available" },
   { key: "compose", label: "Compose", href: "/create" },
   { key: "discovery", label: "Discovery", href: "/discovery" },
@@ -18,7 +19,8 @@ export default function TopNav() {
   const pathname = usePathname();
   const isAgentDetail = pathname.startsWith("/agents/");
   const isMyAgents = pathname === "/agents" || pathname === "/";
-  const activeStage = pathname.startsWith("/available") ? "available"
+  const activeStage = pathname.startsWith("/agent-preview") ? "agent-preview"
+    : pathname.startsWith("/available") ? "available"
     : pathname.startsWith("/create") ? "compose"
     : pathname.startsWith("/discovery") ? "discovery"
     : pathname.startsWith("/workflow") ? "workflow"
