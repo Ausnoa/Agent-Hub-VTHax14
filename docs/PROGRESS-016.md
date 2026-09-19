@@ -71,3 +71,5 @@ User selected a simple first agent. Domain: gloryforglorria.us at Porkbun. Hosti
 ## Interactive preview checkpoint
 
 Added /agent-preview with example notes, editable source, live A2A invocation, progress/error states, and result display. Added navigation entry. Selected the existing www.gloryforglorria.us host for the first registration to avoid introducing a second hostname. Production build, typecheck, and all 38 tests passed. A separate localhost production server on port 3001 enables inference for preview only; no persistent secret/config files changed. Registration remains pending.
+- Browser verification: production-mode local preview completed the example through /a2a with a real model response. Output retained Maya/Leo actions and the unresolved launch date, without treating the discussed upload feature as a commitment.
+- Branch pushed to origin; Vercel GitHub check started a preview deployment. Vercel dashboard requires user login in this browser, so hosted environment configuration cannot be inspected here. Local interactive preview is available at http://127.0.0.1:3001/agent-preview. No claim of ANS registration completion.
