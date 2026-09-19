@@ -29,3 +29,12 @@ All 42 automated tests, typecheck, and production build passed. Tests cover temp
 The user published the exact challenge TXT. ANS verify-acme returned DNS-record-not-found; investigation showed validating DNS resolvers fail DNSSEC. A diagnostic lookup with checking disabled finds the exact challenge, while the parent DS has no matching published DNSKEY. User enabled Porkbun DNSSEC; awaiting signing/propagation before another verification attempt. Registration remains pending, not ACTIVE.
 
 Final follow-up: after the user enabled DNSSEC, a second verify-acme attempt still returned 422 (DNS challenge not found; HTTP challenge 404). Public resolver DNSSEC errors and missing authoritative DNSKEY persisted. No final ANS records are available yet. Continue verification against the existing registration after DNSSEC publishes/propagates; do not submit again. The final production build/typecheck passed, and saved agents remained visible after restarting the local server. Changes pushed to codex/agent-creation; main was not merged.
+
+## DNSSEC recovered; domain verified
+
+September 19, 2026, 22:04 UTC: authoritative Porkbun DNS now publishes DNSKEY/RRSIG; Cloudflare and Google validating resolvers return the correct challenge with authenticated-data flags. verify-acme succeeded and DOMAIN_VALIDATION is complete. Registration 2076c6a9-5114-42c8-8d63-c76eabcea804 is now PENDING_DNS, not ACTIVE. Latest response saved locally in .data/ans/glorria-1.0.0/status.json. Required TXT records returned:
+
+- _ans.www: `v=ans1; version=v1.0.0; p=a2a; mode=direct; url=https://www.gloryforglorria.us/a2a`
+- _ans-badge.www: `v=ans-badge1; version=v1.0.0; url=https://transparency.ans.godaddy.com/v1/agents/2076c6a9-5114-42c8-8d63-c76eabcea804`
+
+TTL 3600. API also returns HTTPS and TLSA suggestions without required=true; do not replace the existing Vercel CNAME or bind a rotating leaf certificate without lifecycle planning. Next: publish required TXT records and run verify-dns.
