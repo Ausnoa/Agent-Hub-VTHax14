@@ -51,6 +51,17 @@ async function handle(request: Request, context: { params: Promise<{ path: strin
       const general = new GeneralStore();
       try {
         if (request.method === "GET" && path.length === 1) return json(general.list());
+        if (request.method === "GET" && path[1] === "available" && path.length === 2) {
+          const params = new URL(request.url).searchParams;
+          const query = z.string().max(256).parse(params.get("query") ?? "");
+          const offset = z.coerce.number().int().min(0).max(100000).parse(params.get("offset") ?? 0);
+          return json(withRegistry((registry) => ({ ...registry.available(query, offset), status: registry.status() })));
+        }
+        if (request.method === "POST" && path[1] === "check" && path.length === 2) {
+          const selection = z.object({ agentId: z.string().max(200), skill: z.string().max(200), format: z.enum(["text", "json"]) }).parse(await body(request));
+          const checked = await prepareGeneral({ name: "Compatibility check", steps: [{ ...selection, inputFrom: "original", instruction: "" }] });
+          return json({ step: checked.steps[0], checkedAt: new Date().toISOString() });
+        }
         if (request.method === "POST" && path[1] === "suggest" && path.length === 2) {
           const input = z.object({ description: z.string().trim().min(10).max(2000) }).parse(await body(request));
           return json(await suggestGeneral(input.description));

@@ -149,6 +149,24 @@ export function createRegistryGateway(db: DatabaseSync, now: () => Date = () => 
         endpoint: String(row.url), metadataUrl: String(row.metadata_url), capability,
         source: "ans", identityStatus: "not-verified", protocolVersion: "0.3.0" }));
     },
+
+    available(query = "", offset = 0) {
+      const current = now();
+      const rows = db.prepare(`SELECT a.agent_id, a.display_name, a.description, e.url, e.id
+        FROM registry_agents a JOIN registry_endpoints e ON e.agent_id=a.agent_id
+        WHERE a.listed=1 AND a.ans_status='ACTIVE' AND (a.expires_at IS NULL OR a.expires_at>?)
+          AND a.last_seen_at>=? AND a.last_seen_at<=?
+          AND e.protocol='A2A' AND e.metadata_url IS NOT NULL
+          AND EXISTS(SELECT 1 FROM json_each(e.transports) WHERE value IN ('JSON-RPC','JSONRPC'))
+          AND EXISTS(SELECT 1 FROM registry_functions f WHERE f.endpoint_id=e.id)
+          AND (instr(lower(a.display_name || ' ' || coalesce(a.description,'')),lower(?))>0
+            OR EXISTS(SELECT 1 FROM registry_functions f WHERE f.endpoint_id=e.id AND instr(lower(f.function_id || ' ' || coalesce(f.name,'')),lower(?))>0))
+        ORDER BY a.display_name,a.agent_id,e.id LIMIT 21 OFFSET ?`).all(current.toISOString(), new Date(current.getTime()-86400000).toISOString(), current.toISOString(), query, query, offset);
+      return { hasMore: rows.length>20, agents: rows.slice(0,20).map((row) => ({
+        agentId: String(row.agent_id), name: String(row.display_name), description: row.description as string | null,
+        endpoint: String(row.url), skills: (statements.functions.all(row.id as number) as Record<string, unknown>[]).map((skill) => ({ id: String(skill.function_id), name: String(skill.name ?? skill.function_id) })),
+      })) };
+    },
     /** Starts a sync run; throws if another sync is already running. */
     startSync(trigger: SyncTrigger): number {
       try {

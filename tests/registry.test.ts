@@ -46,6 +46,19 @@ function withDb(work: (db: DatabaseSync) => Promise<void> | void) {
 
 const fixedNow = () => new Date("2026-09-19T12:00:00.000Z");
 
+test("available browser excludes incompatible endpoints and searches declared skills", withDb((db) => {
+  const registry = createRegistryGateway(db, fixedNow);
+  const sync = registry.startSync("manual");
+  const compatible = item("compatible", { endpoints: [{ protocol: "A2A", agentUrl: "https://compatible.example/a2a", metaDataUrl: "https://compatible.example/card", transports: ["JSON-RPC"], functions: [{ id: "translate", name: "Translate" }] }] });
+  registry.recordPage(sync, [parseRegistryRecord(compatible), parseRegistryRecord(summarizer)], 0);
+  registry.completeSync(sync);
+  assert.equal(registry.available().agents.length, 1);
+  assert.equal(registry.available("translate").agents[0].agentId, "compatible");
+  assert.equal(registry.available("missing").agents.length, 0);
+  assert.equal(registry.available("", 20).agents.length, 0);
+  assert.equal(registry.available().hasMore, false);
+}));
+
 test("migrations apply once and record the schema version", withDb((db) => {
   assert.equal(schemaVersion(db), migrations.length);
   migrate(db);
