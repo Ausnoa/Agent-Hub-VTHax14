@@ -4,6 +4,7 @@ import "./globals.css";
 import "./stitch-ui.css";
 import WorkspaceFooter from "../components/layout/workspace-footer";
 import TopNav from "../components/layout/top-nav";
+import WorkspaceAccess from "../components/layout/workspace-access";
 import { themeScript } from "../lib/theme";
 import InlineScript from "../components/layout/inline-script";
 import { ComposerFlowProvider } from "../lib/composer-flow";
@@ -21,7 +22,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <ComposerFlowProvider>
       <div className="app-shell">
         <TopNav />
-        {children}
+        <WorkspaceAccess>{children}</WorkspaceAccess>
         <WorkspaceFooter />
       </div>
     </ComposerFlowProvider>
