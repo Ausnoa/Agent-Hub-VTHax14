@@ -66,3 +66,9 @@ test('invalid and oversized bodies and disabled testing consume no inference bud
   assert.equal((await handleHostedApi(req({text:'Hello'}),['agents',id,'test'],state.dependencies)).status,503);
   assert.deepEqual(state.calls,[]);
 });
+
+test('same-origin browser writes accept the public Host when Next uses an internal URL',async()=>{
+  const {dependencies}=setup();
+  const request=new Request('http://localhost:3001/api/hosted/agents',{method:'POST',headers:{Host:'127.0.0.1:3001',Origin:'http://127.0.0.1:3001',Authorization:'Bearer alice','Content-Type':'application/json'},body:JSON.stringify(definition)});
+  assert.equal((await handleHostedApi(request,['agents'],dependencies)).status,201);
+});

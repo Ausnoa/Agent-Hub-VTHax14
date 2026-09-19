@@ -23,7 +23,13 @@ export async function handleHostedApi(request: Request, path: string[], dependen
   try {
     // Bearer-only auth: cookies do not authorize requests, and no CORS is enabled.
     const origin = request.headers.get('origin');
-    if (request.method !== 'GET' && origin && origin !== new URL(request.url).origin) throw new HostedError(403, 'Cross-origin writes are not allowed');
+    if (request.method !== 'GET' && origin) {
+      // Next can expose an internal localhost URL behind its HTTP server/proxy.
+      // Compare the browser Origin with the actual request Host, not forwarded headers.
+      const browserOrigin = new URL(origin);
+      const host = request.headers.get('host') ?? new URL(request.url).host;
+      if (!['http:', 'https:'].includes(browserOrigin.protocol) || browserOrigin.host !== host || browserOrigin.origin !== origin) throw new HostedError(403, 'Cross-origin writes are not allowed');
+    }
     const identity = await dependencies.authenticate(request);
     const store = dependencies.repository(identity);
     if (path.length === 1 && path[0] === 'agents') {
