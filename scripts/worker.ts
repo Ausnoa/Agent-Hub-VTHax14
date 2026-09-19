@@ -5,6 +5,7 @@ import { executeRun } from "../src/lib/workflows/runtime.ts";
 import { openDatabase } from "../src/lib/gateways/db.ts";
 import { createRegistryGateway, type SyncTrigger } from "../src/lib/gateways/registry.ts";
 import { syncRegistry } from "../src/lib/registry/sync.ts";
+import { discoveryAuthorization } from "../src/lib/ans/client.ts";
 
 const store = new Store();
 const owner = randomUUID();
@@ -24,7 +25,7 @@ const syncMinutes = Number(process.env.ANS_SYNC_INTERVAL_MINUTES ?? "30");
 let syncing: Promise<void> | undefined;
 function startSync(trigger: SyncTrigger) {
   if (syncing) return;
-  syncing = syncRegistry(registry, { trigger, baseUrl: process.env.ANS_BASE_URL, authorization: process.env.ANS_AUTHORIZATION, signal: syncAbort.signal })
+  syncing = syncRegistry(registry, { trigger, baseUrl: process.env.ANS_BASE_URL, authorization: discoveryAuthorization(), signal: syncAbort.signal })
     .then((sync) => console.log(`Registry sync ${sync.id} completed: ${sync.agentsSeen} agents, ${sync.recordsSkipped} skipped, ${sync.delisted} delisted`))
     .catch((error) => { if (!syncAbort.signal.aborted) console.error(`Registry sync failed: ${error instanceof Error ? error.message : error}`); })
     .finally(() => { syncing = undefined; });

@@ -4,6 +4,7 @@ import { planDescription } from "../planner/index.ts";
 import { inspectAgent } from "../a2a/client.ts";
 import { SqliteAgentCatalog, type AgentCatalog } from "../gateways/catalog.ts";
 import { developmentAgents } from "../gateways/development-agents.ts";
+import { RegistryAgentCatalog } from "../gateways/registry-catalog.ts";
 
 export const localSteps = developmentAgents;
 
@@ -23,7 +24,7 @@ export async function compose(description: string, mode: "live" | "demo" | "pilo
   const proposal: Proposal = { id: randomUUID(), createdAt: new Date().toISOString(), originalPrompt: description, mode, planner: mode === "demo" ? "demo-template" : "llm", plan, steps: [], blockers: validatePlan(plan) };
   if (mode === "demo") { proposal.steps = localSteps(); return proposal; }
   if (proposal.blockers.length) return proposal;
-  const ownedCatalog = dependencies.catalog ? undefined : new SqliteAgentCatalog();
+  const ownedCatalog = dependencies.catalog ? undefined : mode === "live" ? new RegistryAgentCatalog() : new SqliteAgentCatalog();
   const catalog = dependencies.catalog ?? ownedCatalog!;
   try {
     for (const capability of plan.capabilities) {
@@ -39,7 +40,7 @@ export async function compose(description: string, mode: "live" | "demo" | "pilo
       if (selected) proposal.steps.push(selected);
       else proposal.blockers.push(mode === "pilot"
         ? `No running pilot agent for ${capability}. Start the local agent services and build again.`
-        : `No fresh, configured, reachable ANS catalog match for ${capability}. Refresh the small catalog and configure a tested adapter.`);
+        : `No fresh, configured, reachable registry match for ${capability}. Sync the main registry and configure a tested report adapter. Workflows are saved only on this site; ANS registration is not required.`);
     }
     return proposal;
   } finally { ownedCatalog?.close(); }
