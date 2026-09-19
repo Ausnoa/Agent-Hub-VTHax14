@@ -23,7 +23,7 @@ export const selectedAgentSchema = z.object({
 export type SelectedAgent = z.infer<typeof selectedAgentSchema>;
 export const planSchema = z.object({
   name: z.string().min(1).max(100), description: z.string().max(500),
-  capabilities: z.array(capabilitySchema).min(1).max(3), unsupported: z.array(z.string()).max(10),
+  capabilities: z.array(capabilitySchema).max(3), unsupported: z.array(z.string()).max(10),
 });
 export type Plan = z.infer<typeof planSchema>;
 export const proposalSchema = z.object({

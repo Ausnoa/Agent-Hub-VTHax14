@@ -9,6 +9,16 @@ export interface DiscoveredAgent {
   identityStatus: "not-verified";
 }
 
+export async function resolveAgent(id: string): Promise<DiscoveredAgent[]> {
+  const base = new URL(process.env.ANS_BASE_URL ?? "https://api.godaddy.com");
+  if (base.protocol !== "https:" || base.username || base.password) throw new Error("Invalid ANS base URL");
+  const headers: Record<string, string> = { Accept: "application/json" };
+  if (process.env.ANS_AUTHORIZATION) headers.Authorization = process.env.ANS_AUTHORIZATION;
+  const response = await fetch(new URL(`/v1/ans/registered-agents/${encodeURIComponent(id)}`, base), { headers, redirect: "error", signal: AbortSignal.timeout(15_000) });
+  if (!response.ok) throw new Error(`ANS resolution failed (HTTP ${response.status})`);
+  return normalizeAgents({ items: [await response.json()] });
+}
+
 function record(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw new Error("ANS returned an invalid record");
