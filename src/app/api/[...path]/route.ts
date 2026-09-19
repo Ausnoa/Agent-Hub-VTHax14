@@ -92,6 +92,13 @@ async function handle(request: Request, context: { params: Promise<{ path: strin
       if (request.method === "GET" && path.length === 2) return json({ agent, runs: store.runs(id) });
       if (request.method === "POST" && path[2] === "invoke" && path.length === 3) return json(store.createRun(id, inputSchema.parse(await body(request))), 202);
     }
+    if (request.method === "GET" && path.join("/") === "runs") {
+      const names = new Map<string, string>();
+      return json(store.recentRuns().map((run) => {
+        if (!names.has(run.agentId)) names.set(run.agentId, store.document<Composite>("agent", run.agentId)?.plan.name ?? "Deleted agent");
+        return { ...run, agentName: names.get(run.agentId) };
+      }));
+    }
     if (path[0] === "runs" && path[1]) {
       const id = z.string().uuid().parse(path[1]);
       const run = store.run(id);

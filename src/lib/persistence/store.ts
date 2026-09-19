@@ -38,6 +38,9 @@ export class Store {
   runs(agentId: string): Run[] {
     return this.db.prepare("SELECT body FROM runs WHERE json_extract(body,'$.agentId')=? ORDER BY rowid DESC LIMIT 20").all(agentId).map((row) => JSON.parse(row.body as string));
   }
+  recentRuns(limit = 50): Run[] {
+    return this.db.prepare("SELECT body FROM runs ORDER BY rowid DESC LIMIT ?").all(limit).map((row) => JSON.parse(row.body as string));
+  }
   saveRun(run: Run) {
     run.updatedAt = new Date().toISOString();
     this.db.prepare("UPDATE runs SET status=?,body=? WHERE id=?").run(run.status, JSON.stringify(run), run.id);

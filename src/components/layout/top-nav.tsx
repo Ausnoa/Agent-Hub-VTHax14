@@ -9,8 +9,8 @@ const stages = [
   { key: "compose", label: "Compose", href: "/create" },
   { key: "discovery", label: "Discovery", href: "/discovery" },
   { key: "workflow", label: "Workflow", href: "/workflow" },
-  { key: "interface", label: "Interface", href: "/agents" },
-  { key: "execution", label: "Execution", href: "/agents" },
+  { key: "interface", label: "Interface", href: "/interface" },
+  { key: "execution", label: "Execution", href: "/execution" },
 ] as const;
 
 export default function TopNav() {
@@ -21,7 +21,7 @@ export default function TopNav() {
     : pathname.startsWith("/discovery") ? "discovery"
     : pathname.startsWith("/workflow") ? "workflow"
     : pathname.startsWith("/execution") ? "execution"
-    : isAgentDetail ? "interface"
+    : isAgentDetail || pathname.startsWith("/interface") ? "interface"
     : "";
 
   return <header className="topnav">
