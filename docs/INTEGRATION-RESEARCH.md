@@ -29,3 +29,16 @@ Findings:
 - Also observed: registered agent cards use inconsistent `protocolVersion` values (`0.3.0` on the helpagent.club template vs `1.0` on Domain Impact Analyzer) and inconsistent well-known paths (`/.well-known/agent-card.json` vs `/.well-known/agent.json`). Any A2A client must tolerate both.
 
 Conclusion: as of this probe, live ANS does not reliably surface a genuinely compatible, reachable agent for any of the three demo capabilities (company-research, risk-analysis, summarization). This reaches the decision gate PLAN.md defines for Phase 1: candidates are effectively blocked, so the fallback path (build and register our own demo A2A agents, then discover them through the same live integration) should be evaluated before further UI or orchestrator work.
+
+## Deep pagination search — September 19, 2026
+
+Added cursor-based pagination to `discoverAgents` (`pageToken`/`nextPageToken`, following the ANS response's `links[rel=next].href`) and re-ran `company research`, `risk analysis`, `summarization`, and `investment analysis` across 5 pages each (~90–100 results per query) to check whether relevant candidates exist beyond the first page.
+
+Findings:
+
+- The `helpagent.club` customer-support template mill still accounts for the large majority of results at every depth.
+- A second, larger cluster of distinct, purpose-built, plausibly-relevant agents exists entirely on one provider's domain, `agentworks.fr`: `Balance Sheet Analysis`, `Competitor Analysis`, `Lease Analysis`, `Property Company Advisor`, `Tender Analysis`, `Climate Risk Map`, `Compliance Audit`, `EU AI Act Classifier`, `Meeting Summary`, `Insurance Premium Calculator`, `Insurance Coverage Check`, `Fleet Analysis`, `Patent Pre-analysis`, and others. Several of these are strong name/description matches for `risk-analysis` and `summarization`. However, every `agentworks.fr` endpoint checked fails the TLS handshake — confirmed as a genuine server-side TLS/certificate problem, not a local trust-store issue: TCP connects on port 443 (`Test-NetConnection` succeeds), but the handshake fails even with client-side certificate validation bypassed entirely. This is a systemic, provider-wide outage, not a per-agent issue. **This is currently the single largest source of plausible risk-analysis/summarization candidates, and all of it is unreachable.**
+- `DroneCraft Research Agent` (`dronecraft.co`) is real, reachable, and has genuine `search-documents` / `analyze-component` / `summarize-content` / `compare-components` skills — but is scoped to drone-component research, not company/investment research. Useful as a proof that well-formed multi-skill A2A agents with real summarization capability do exist and are reachable in principle.
+- `Agent Harbor AI Agent` (`commerce.agentharbor.agency`) registered no metadata URL in the ANS record; the conventional `.well-known/agent-card.json` path returns 404, so its actual capabilities are unconfirmed.
+
+Conclusion: deep search does not change the Phase 1 decision gate. No reachable, capability-matched candidate exists for any of the three demo capabilities. The most promising cluster (`agentworks.fr`) is blocked by an external, provider-side TLS failure outside our control, not by our search logic — retrying later is possible but not something to plan the demo around.
