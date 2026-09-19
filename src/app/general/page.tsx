@@ -44,7 +44,6 @@ export default function GeneralPage() {
     <div className="compose-hero"><div className="eyebrow">GENERAL A2A · EXPERIMENTAL</div><h1>Connect skills. Build a workflow.</h1>
       <p>One to eight steps. Arbitrary advertised skills. Text or JSON—not a fixed company report.</p>
       <Link href="/create">Back to report demo</Link></div>
-    <Link href="/available">Browse available agents & check compatibility →</Link>
     <Card><h2>Supported subset</h2><p>Public HTTPS, unauthenticated A2A 0.3 JSON-RPC. No files, streaming, or automatic retries. Identity is unverified. A compatible card does not guarantee useful outputs or safe behavior.</p></Card>
     {error && <div role="alert" className="alert">{error}</div>}
     <Card><h2>Optional: suggest steps with the LLM</h2><label>Desired outcome<textarea value={description} maxLength={2000} onChange={(event) => setDescription(event.target.value)} /></label><p>Sends this description and indexed skill IDs to the configured planner. Suggestions do not execute agents or prove compatibility.</p>

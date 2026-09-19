@@ -7,7 +7,6 @@ import { LayoutGrid, ShieldCheck } from "lucide-react";
 import ThemeToggle from "./theme-toggle";
 
 const stages = [
-  { key: "available", label: "Available agents", href: "/available" },
   { key: "compose", label: "Compose", href: "/create" },
   { key: "discovery", label: "Discovery", href: "/discovery" },
   { key: "workflow", label: "Workflow", href: "/workflow" },
@@ -19,8 +18,7 @@ export default function TopNav() {
   const pathname = usePathname();
   const isAgentDetail = pathname.startsWith("/agents/");
   const isMyAgents = pathname === "/agents" || pathname === "/";
-  const activeStage = pathname.startsWith("/available") ? "available"
-    : pathname.startsWith("/create") ? "compose"
+  const activeStage = pathname.startsWith("/create") ? "compose"
     : pathname.startsWith("/discovery") ? "discovery"
     : pathname.startsWith("/workflow") ? "workflow"
     : pathname.startsWith("/execution") ? "execution"
