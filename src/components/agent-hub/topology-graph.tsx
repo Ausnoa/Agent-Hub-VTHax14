@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { BrainCircuit, Network } from "lucide-react";
 
 export type TopologyNode = {
   id: string;
@@ -15,8 +16,8 @@ type Edge = { id: string; x1: number; y1: number; x2: number; y2: number };
 
 function position(angle: number, radius: number): { left: string; top: string } {
   const radians = (angle * Math.PI) / 180;
-  const left = 50 + Math.cos(radians) * radius * 42;
-  const top = 50 + Math.sin(radians) * radius * 42;
+  const left = 50 + Math.cos(radians) * radius * 34;
+  const top = 50 + Math.sin(radians) * radius * 34;
   return { left: `${left}%`, top: `${top}%` };
 }
 
@@ -87,6 +88,7 @@ export default function TopologyGraph({ coreLabel, coreSublabel, nodes, animated
     </svg>
     <div className="topology-core" ref={coreRef}>
       <div>
+        <BrainCircuit className="topology-core-icon" size={28} aria-hidden="true" />
         <strong style={{ display: "block", fontSize: 11 }}>{coreLabel}</strong>
         {coreSublabel && <span style={{ fontSize: 9, opacity: 0.85 }}>{coreSublabel}</span>}
       </div>
@@ -99,6 +101,7 @@ export default function TopologyGraph({ coreLabel, coreSublabel, nodes, animated
         className="topology-node"
         style={{ left, top, transform: "translate(-50%, -50%)", borderColor: node.tone ? `var(--${node.tone})` : undefined }}
       >
+        <Network size={16} className="topology-node-icon" aria-hidden="true" />
         <strong>{node.label}</strong>
         {node.sublabel && <span className="ans-id">{node.sublabel}</span>}
       </div>;

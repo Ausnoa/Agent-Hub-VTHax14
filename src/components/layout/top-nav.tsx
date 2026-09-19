@@ -11,7 +11,8 @@ import ThemeToggle from "./theme-toggle";
 const tabs = [
   { key: "discover", label: "Discover", href: "/discover", paths: ["/discover"] },
   { key: "compose", label: "Compose", href: "/create", paths: ["/create", "/discovery", "/workflow", "/general"] },
-  { key: "agents", label: "My Agents", href: "/agents", paths: ["/agents", "/execution"] },
+  { key: "agents", label: "My Agents", href: "/agents", paths: ["/agents"] },
+  { key: "execution", label: "Execution", href: "/execution", paths: ["/execution"] },
 ] as const;
 
 function owns(pathname: string, path: string) {
@@ -25,7 +26,7 @@ export default function TopNav() {
   return <header className="topnav">
     <Link href="/agents" className="topnav-brand">
       <Image src="/agent-emblem.svg" alt="" width={30} height={30} className="topnav-mark" priority />
-      <span>Agent Hub<small>CORE EMBLEM</small></span>
+      <span>AGENT HUB<small>COMPOSER ENGINE</small></span>
     </Link>
     <span className="topnav-verified"><span className="live-dot" /><ShieldCheck size={12} /> ANS Discovery · Identity unverified</span>
     <nav className="topnav-links" aria-label="Main navigation">

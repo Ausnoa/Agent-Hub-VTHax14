@@ -36,7 +36,7 @@ export default function ExecutionIndexPage() {
     || (filter === "running" ? run.status === "running" || run.status === "queued" : run.status === filter)), [runs, filter]);
   const count = (status: Run["status"]) => runs?.filter((run) => run.status === status).length ?? 0;
 
-  return <PageShell>
+  return <PageShell className="screen-history">
     <PageHeader
       eyebrow="EVERY A2A RUN ACROSS YOUR AGENTS"
       title="Execution history"

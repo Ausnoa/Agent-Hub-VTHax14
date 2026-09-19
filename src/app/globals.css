@@ -1,8 +1,8 @@
 /* ---------- tokens : "Liquid Specular" ---------- */
 :root {
-  --bg: #08080a;
+  --bg: #131315;
   --bg-raised: #0f0f14;
-  --bg-panel: rgba(255, 255, 255, 0.035);
+  --bg-panel: rgba(14, 14, 16, 0.82);
   --bg-panel-strong: rgba(255, 255, 255, 0.065);
   --bg-inset: rgba(0, 0, 0, 0.45);
   --bg-hover: rgba(255, 255, 255, 0.06);
@@ -13,9 +13,9 @@
 
   --text: #f5f7fa;
   --text-muted: #94a3b8;
-  --text-faint: #5b6474;
+  --text-faint: #849495;
 
-  --accent: #00e5f2;
+  --accent: #00f0ff;
   --accent-strong: #00c7d1;
   --accent-soft: rgba(0, 229, 242, 0.12);
   --accent-glow: rgba(0, 229, 242, 0.35);
@@ -133,7 +133,7 @@ code, .mono { font-family: var(--font-mono); }
     radial-gradient(560px 480px at 95% 15%, rgba(139, 92, 246, 0.12), transparent 60%),
     radial-gradient(700px 600px at 50% 110%, rgba(16, 185, 129, 0.06), transparent 60%);
 }
-.page-shell { max-width: 1280px; margin: 0 auto; width: 100%; padding: 36px 40px 64px; }
+.page-shell { max-width: 1480px; margin: 0 auto; width: 100%; padding: 28px 24px 64px; }
 .page-shell--narrow { max-width: 920px; }
 
 /* ---------- top nav ---------- */
@@ -281,7 +281,7 @@ a.card:hover { border-color: var(--border-strong); background: var(--bg-panel-st
 .metric-tile { background: var(--bg-panel); backdrop-filter: var(--blur-panel); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px 18px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06); }
 .metric-tile-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; color: var(--accent); }
 .metric-tile-label { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-faint); }
-.metric-tile-value { font-size: 24px; font-weight: 700; font-family: var(--font-display); letter-spacing: -0.5px; }
+.metric-tile-value { font-size: 32px; font-weight: 700; font-family: var(--font-sans); letter-spacing: -0.5px; }
 .metric-tile-delta { font-size: 11px; color: var(--green); margin-top: 4px; }
 .metric-tile-delta.down { color: var(--red); }
 
@@ -329,8 +329,8 @@ input:focus, textarea:focus { outline: none; border-color: var(--accent); box-sh
 .compose-actions { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 20px; border-top: 1px solid var(--border-soft); margin-top: 20px; flex-wrap: wrap; }
 
 /* ---------- agent fleet gallery ---------- */
-.fleet-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 18px; margin-top: 10px; }
-.agent-card { display: flex; flex-direction: column; gap: 14px; padding: 20px; }
+.fleet-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin-top: 10px; }
+.agent-card { display: flex; flex-direction: column; gap: 18px; padding: 24px; min-width: 0; }
 .agent-card:hover { box-shadow: 0 12px 40px rgba(0, 229, 242, 0.1), var(--shadow-card); }
 .agent-card-icon {
   width: 44px; height: 44px; border-radius: var(--radius-md); flex-shrink: 0;
@@ -338,7 +338,7 @@ input:focus, textarea:focus { outline: none; border-color: var(--accent); box-sh
   background: var(--bg-panel-strong); border: 1px solid var(--border); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 .agent-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
-.agent-card h2 { font-size: 14px; font-weight: 600; }
+.agent-card h2 { font-size: 22px; line-height: 1.35; letter-spacing: -0.6px; font-weight: 600; overflow-wrap: anywhere; }
 .agent-card .ans-id { font-family: var(--font-mono); font-size: 10px; color: var(--text-faint); word-break: break-all; }
 .agent-card-tags { display: flex; flex-wrap: wrap; gap: 6px; }
 .agent-card-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; font-size: 10.5px; color: var(--text-muted); border-top: 1px solid var(--border-soft); padding-top: 12px; }
@@ -515,4 +515,40 @@ input:focus, textarea:focus { outline: none; border-color: var(--accent); box-sh
   .compose-hero h1 { font-size: 24px; }
   .card-head { flex-wrap: wrap; }
   .pipeline-step { min-width: 160px; }
+}
+/* Stitch project 12991651217486243557: shared surfaces and fleet composition. */
+:root:not([data-theme="light"]) .page-header h1,
+:root:not([data-theme="light"]) .agent-card h2 { color: #dbfcff; }
+.page-header-row { align-items: flex-end; }
+.eyebrow .line { width: 6px; height: 6px; border-radius: 50%; opacity: 1; box-shadow: 0 0 10px var(--accent-glow); }
+.metric-tile { min-height: 126px; border-color: var(--border-soft); box-shadow: var(--shadow-card); }
+.metric-tile-label { color: var(--text-muted); }
+.metric-tile-delta { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); margin-top: 12px; }
+.metric-tile:nth-child(2) .metric-tile-head { color: var(--violet); }
+.metric-tile:nth-child(3) .metric-tile-head { color: var(--green); }
+.fleet-toolbar { display: flex; align-items: center; gap: 16px; padding: 16px; margin: 24px 0; border-radius: var(--radius-md); background: var(--bg-hover); }
+.fleet-search { position: relative; flex: 1; min-width: 220px; }
+.fleet-search > svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
+.fleet-search input { padding-left: 38px; font-size: 12px; }
+.fleet-toolbar .filter-bar { max-width: 55%; }
+.agent-card { border-color: var(--border-soft); }
+.agent-card-description { color: var(--text-muted); font-size: 12px; line-height: 1.7; margin-top: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.agent-card-tags .token-chip { font-size: 9px; padding: 4px 8px; border-radius: 5px; background: var(--bg-panel-strong); border-color: transparent; text-transform: uppercase; }
+.agent-card .btn-primary { box-shadow: none; }
+.agent-card .btn-ghost { background: var(--bg-panel-strong); }
+.agent-card-footer { flex-direction: row; flex-wrap: wrap; align-items: center; }
+.agent-card-footer .btn { padding: 9px 10px; font-size: 11px; }
+.agent-card-footer > a { min-width: 125px; }
+@media (min-width: 641px) and (max-width: 1100px) {
+  .fleet-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 1000px) {
+  .fleet-toolbar { flex-direction: column; align-items: stretch; }
+  .fleet-toolbar .filter-bar { max-width: 100%; }
+}
+@media (max-width: 640px) {
+  .fleet-search { min-width: 0; }
+  .agent-card { padding: 20px; }
+  .metric-tile { padding: 14px; }
+  .metric-tile-value { font-size: 28px; }
 }

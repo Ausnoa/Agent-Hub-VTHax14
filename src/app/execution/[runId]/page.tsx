@@ -2,7 +2,7 @@
 
 import { Fragment, use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { RotateCcw, ArrowLeft } from "lucide-react";
+import { RotateCcw, ArrowLeft, ShieldAlert, Activity, CheckCircle2, Clock } from "lucide-react";
 import type { Composite, Run } from "../../../lib/contracts/index";
 import { api } from "../../../lib/api-client";
 import PageShell from "../../../components/layout/page-shell";
@@ -13,6 +13,7 @@ import StatusPill, { toneForRunStatus } from "../../../components/ui/status-pill
 import PipelineStepCard, { PipelineConnector } from "../../../components/agent-hub/pipeline-step-card";
 import TerminalLogFeed, { type LogLine } from "../../../components/agent-hub/terminal-log-feed";
 import RunReceiptPanel from "../../../components/agent-hub/run-receipt-panel";
+import ReportPanel from "../../../components/agent-hub/report-panel";
 
 export default function ExecutionPage({ params }: { params: Promise<{ runId: string }> }) {
   const { runId } = use(params);
@@ -57,15 +58,16 @@ export default function ExecutionPage({ params }: { params: Promise<{ runId: str
       : attempt.status === "failed" ? `failed — ${attempt.error ?? "unknown error"}` : `attempt ${attempt.attempt} running…`,
   }));
 
-  return <PageShell>
+  return <PageShell className={`screen-execution${run.status === "failed" ? " screen-execution--failed" : ""}`}>
     <PageHeader
-      eyebrow="LIVE A2A EXECUTION"
+      eyebrow={run.status === "failed" ? "FAULT HANDLING & RECOVERY" : "A2A EXECUTION SEQUENCER"}
       title={agent.plan.name}
       description={`Step ${Math.min(completedCount + 1, steps.length)} of ${steps.length}`}
     />
 
     <div className={`card panel execution-banner${run.status === "failed" ? " fault" : ""}`}>
       <div className="execution-banner-left">
+        {run.status === "failed" ? <ShieldAlert size={24} /> : run.status === "completed" ? <CheckCircle2 size={24} /> : <Activity size={24} />}
         <StatusPill tone={toneForRunStatus(run.status)} running={run.status === "running"}>{run.status}</StatusPill>
         <span className="hint">Run {run.id.slice(0, 8)} · started {new Date(run.createdAt).toLocaleTimeString()}</span>
       </div>
@@ -75,8 +77,8 @@ export default function ExecutionPage({ params }: { params: Promise<{ runId: str
     {error && <div role="alert" className="alert"><strong>Something needs attention</strong><p>{error}</p></div>}
     {run.status === "failed" && run.error && <div className="alert"><strong>Execution failed</strong><p>{run.error}</p></div>}
 
-    <Card>
-      <CardHead>Pipeline sequencer</CardHead>
+    <Card className="pipeline-canvas execution-canvas">
+      <CardHead badge={<StatusPill tone={run.status === "failed" ? "red" : "accent"}>{completedCount}/{steps.length} complete</StatusPill>}>Pipeline sequencer</CardHead>
       <div className="pipeline-row">
         {steps.map((step, index) => {
           const attempts = run.attempts.filter((attempt) => attempt.capability === step.capability);
@@ -93,22 +95,32 @@ export default function ExecutionPage({ params }: { params: Promise<{ runId: str
               running={status === "running"}
               active={status === "running"}
               metrics={latest?.completedAt ? [{ label: "Duration", value: `${((Date.parse(latest.completedAt) - Date.parse(latest.startedAt)) / 1000).toFixed(1)}s` }] : undefined}
-              footer={latest?.output && <details style={{ marginTop: 10 }}>
+              footer={<>{latest?.error && <p className="step-error">{latest.error}</p>}{latest?.output && <details style={{ marginTop: 10 }}>
                 <summary style={{ cursor: "pointer", color: "var(--accent)", fontSize: 10.5 }}>View output</summary>
                 <pre style={{ fontSize: 10, background: "var(--bg-inset)", padding: 10, borderRadius: 6, marginTop: 8, overflow: "auto", maxHeight: 160 }}>{JSON.stringify(latest.output, null, 2)}</pre>
-              </details>}
+              </details>}{!latest && <p className="step-waiting"><Clock size={13} /> Awaiting this step</p>}</>}
             />
           </Fragment>;
         })}
       </div>
+      <div className="execution-progress"><span>PIPELINE COMPLETION</span><progress aria-label="Completed pipeline steps" value={completedCount} max={Math.max(steps.length, 1)} /><strong>{completedCount} / {steps.length}</strong></div>
     </Card>
 
-    <div className="split-layout" style={{ marginTop: 20 }}>
-      <Card>
-        <CardHead>Execution trace</CardHead>
+    {run.status === "failed" && <section className="recovery-panel">
+      <div className="recovery-heading"><ShieldAlert size={26} /><div><span className="section-kicker">EXECUTION NEEDS ATTENTION</span><h2>Fault diagnosis & recovery</h2><p>Review the failed attempt before retrying the workflow.</p></div></div>
+      <div className="recovery-table" role="table" aria-label="Step recovery status">
+        <div role="row" className="recovery-table-head"><span role="columnheader">PIPELINE STEP</span><span role="columnheader">LATEST ATTEMPT</span><span role="columnheader">STATE</span></div>
+        {steps.map((step) => { const latest = run.attempts.filter((attempt) => attempt.capability === step.capability).at(-1); return <div role="row" key={step.capability}><strong role="cell">{step.name}</strong><span role="cell">{latest ? `Attempt ${latest.attempt}${latest.error ? ` · ${latest.error}` : ""}` : "Not started"}</span><span role="cell"><StatusPill tone={latest?.status === "failed" ? "red" : latest?.status === "completed" ? "green" : "neutral"}>{latest?.status ?? "waiting"}</StatusPill></span></div>; })}
+      </div>
+      <p className="hint">Retry is manual. No automatic fallback or identity verification is claimed.</p>
+    </section>}
+
+    <div className="split-layout execution-details">
+      <Card className="trace-panel">
+        <CardHead badge={<Activity size={16} />}>{run.status === "failed" ? "Resilience log" : "A2A dispatch stream"}</CardHead>
         <TerminalLogFeed lines={logs} />
       </Card>
-      <Card>
+      <Card className="receipt-panel">
         <CardHead>Run receipt</CardHead>
         <RunReceiptPanel rows={[
           { label: "Run id", value: run.id },
@@ -120,19 +132,7 @@ export default function ExecutionPage({ params }: { params: Promise<{ runId: str
       </Card>
     </div>
 
-    {run.output && <Card style={{ marginTop: 20 }}>
-      <div className="eyebrow">COMPLETED BRIEFING {run.output.fixture && "· FIXTURE OUTPUT"}</div>
-      <h2 style={{ fontSize: 20, margin: "6px 0 12px" }}>{run.output.company}</h2>
-      <p className="hint" style={{ fontSize: 12.5 }}>{run.output.summary}</p>
-      <div className="split-layout" style={{ marginTop: 16 }}>
-        <div><h3 style={{ fontSize: 12 }}>Observations</h3><ul style={{ fontSize: 11.5, color: "var(--text-muted)", lineHeight: 1.9 }}>{run.output.facts.map((fact, index) => <li key={index}>{fact}</li>)}</ul></div>
-        <div>
-          <h3 style={{ fontSize: 12 }}>Possible risk signals</h3>
-          <ul style={{ fontSize: 11.5, color: "var(--text-muted)", lineHeight: 1.9 }}>{run.output.risks.map((risk, index) => <li key={index}>{risk}</li>)}</ul>
-          {!run.output.risks.length && <p className="hint">No signals matched this adapter.</p>}
-        </div>
-      </div>
-    </Card>}
+    {run.output && <ReportPanel report={run.output} />}
 
     <div style={{ marginTop: 24 }}>
       <Button variant="secondary" onClick={() => router.push(`/agents/${agent.id}`)}><ArrowLeft size={14} /> Back to agent interface</Button>

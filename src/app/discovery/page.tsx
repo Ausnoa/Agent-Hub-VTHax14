@@ -12,6 +12,7 @@ import Button from "../../components/ui/button";
 import StatusPill from "../../components/ui/status-pill";
 import TopologyGraph, { type TopologyNode } from "../../components/agent-hub/topology-graph";
 import RegistryBrowser from "../../components/agent-hub/registry-browser";
+import PipelineSummary from "../../components/agent-hub/pipeline-summary";
 
 // Step 2 of Compose. Browsing the registry without a composition lives at /discover.
 export default function DiscoveryPage() {
@@ -33,18 +34,18 @@ export default function DiscoveryPage() {
     tone: step.source === "ans" ? "violet" : "accent",
   }));
 
-  return <PageShell>
+  return <PageShell className="screen-discovery">
     <ComposeSteps current={2} />
     <PageHeader
       eyebrow="AUTONOMOUS PIPELINE DISCOVERY"
-      title={`Decomposing Prompt: "${proposal.plan.name}"`}
+      title={<>Decomposing Prompt: <em>{proposal.plan.name}</em></>}
       description={proposal.plan.description}
       action={<StatusPill tone={proposal.blockers.length ? "amber" : "green"}>{proposal.blockers.length ? "Needs attention" : "Decomposition complete"}</StatusPill>}
     />
 
     <div className="split-layout">
-      <Card>
-        <CardHead>Goal decomposition</CardHead>
+      <Card className="mesh-panel discovery-mesh">
+        <CardHead badge={<StatusPill tone="accent">{proposal.steps.length} nodes</StatusPill>}>A2A topology mesh</CardHead>
         <TopologyGraph coreLabel="Goal Decomposer" coreSublabel="+ Data Provisioning" nodes={nodes} animated />
         <div className="metric-row" style={{ marginTop: 4 }}>
           <div className="metric-tile"><div className="metric-tile-label">Resolved capabilities</div><div className="metric-tile-value">{proposal.steps.length}</div></div>
@@ -61,7 +62,9 @@ export default function DiscoveryPage() {
       <ul>{proposal.blockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul>
     </div>}
 
-    <div style={{ marginTop: 24, display: "flex", justifyContent: "flex-end" }}>
+    <PipelineSummary steps={proposal.steps} />
+    <div className="screen-actionbar">
+      <div><span className="section-kicker">DISCOVERED EXECUTION TOPOLOGY</span><p>Review the resolved agents before deployment.</p></div>
       <Button variant="primary" disabled={!!proposal.blockers.length || !proposal.steps.length} onClick={() => router.push("/workflow")}>
         Proceed to Workflow Review <ArrowRight size={14} />
       </Button>

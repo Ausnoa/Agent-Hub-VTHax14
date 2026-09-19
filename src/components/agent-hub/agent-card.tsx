@@ -56,6 +56,7 @@ export default function AgentCard({ agent }: { agent: Composite }) {
     </div>
     <div>
       <h2>{agent.plan.name}</h2>
+      <p className="agent-card-description">{agent.plan.description}</p>
     </div>
     <AgentDagPreview nodes={dagNodes} flowSummary={flowSummary} metricBadge={metricBadge} />
     <div className="agent-card-tags">

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Boxes, Network, Sparkles, ShieldCheck, Plus, History } from "lucide-react";
+import { Boxes, Network, Sparkles, ShieldCheck, Plus, History, Search } from "lucide-react";
 import type { Composite } from "../../lib/contracts/index";
 import { api } from "../../lib/api-client";
 import PageShell from "../../components/layout/page-shell";
@@ -41,10 +41,11 @@ export default function MyAgentsPage() {
   const distinctCapabilities = capabilities.length;
   const ansResolvedSteps = agents?.reduce((sum, agent) => sum + agent.steps.filter((step) => step.source === "ans").length, 0) ?? 0;
 
-  return <PageShell>
+  return <PageShell className="screen-fleet">
     <PageHeader
-      eyebrow="SUPERVISE, MONITOR, AND INVOKE CRYPTOGRAPHIC ANS-CERTIFIED MULTI-AGENT WORKFLOWS"
+      eyebrow="A2A DEPLOYMENT REGISTRY · LOCAL WORKSPACE"
       title="My Agent Fleet"
+      description="Supervise, monitor, and invoke your multi-agent workflows. One workspace for your entire fleet."
       action={<div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
         <Link href="/execution"><Button variant="secondary"><History size={14} /> Run history</Button></Link>
         <Link href="/create"><Button variant="primary"><Plus size={14} /> Compose New Agent</Button></Link>
@@ -52,20 +53,23 @@ export default function MyAgentsPage() {
     />
     {error && <div role="alert" className="alert"><strong>Something needs attention</strong><p>{error}</p></div>}
     <div className="metric-row">
-      <MetricTile label="Fleet size" value={String(agents?.length ?? 0)} icon={<Boxes size={16} />} />
-      <MetricTile label="Connected agents" value={String(totalSteps)} icon={<Network size={16} />} />
-      <MetricTile label="Distinct capabilities" value={String(distinctCapabilities)} icon={<Sparkles size={16} />} />
-      <MetricTile label="ANS-resolved steps" value={String(ansResolvedSteps)} icon={<ShieldCheck size={16} />} />
+      <MetricTile label="Fleet nodes" value={agents ? String(agents.length) : "—"} delta="Saved ensembles" icon={<Boxes size={16} />} />
+      <MetricTile label="Connected agents" value={agents ? String(totalSteps) : "—"} delta="Across your pipelines" icon={<Network size={16} />} />
+      <MetricTile label="Distinct capabilities" value={agents ? String(distinctCapabilities) : "—"} delta="Available in your fleet" icon={<Sparkles size={16} />} />
+      <MetricTile label="Registry presence" value={agents ? String(ansResolvedSteps) : "—"} delta="ANS-resolved steps · identity unverified" icon={<ShieldCheck size={16} />} />
     </div>
-    <div className="search-bar" style={{ marginBottom: 16 }}>
+    <section className="fleet-toolbar" aria-label="Filter your fleet">
+    <div className="search-bar fleet-search">
+      <Search size={16} aria-hidden="true" />
       <label className="sr-only" htmlFor="fleet-search">Search agents</label>
       <input id="fleet-search" placeholder="Search by agent name, capability, or ANS id" value={query} onChange={(event) => setQuery(event.target.value)} />
     </div>
-    {!!capabilities.length && <div className="filter-bar" style={{ marginBottom: 24 }}>
-      <button className={`filter-chip${capability === "all" ? " active" : ""}`} onClick={() => setCapability("all")}>All ({agents?.length ?? 0})</button>
-      {capabilities.map((cap) => <button key={cap} className={`filter-chip${capability === cap ? " active" : ""}`} onClick={() => setCapability(cap)}>{cap}</button>)}
+    {!!capabilities.length && <div className="filter-bar">
+      <button aria-pressed={capability === "all"} className={`filter-chip${capability === "all" ? " active" : ""}`} onClick={() => setCapability("all")}>All ({agents?.length ?? 0})</button>
+      {capabilities.map((cap) => <button aria-pressed={capability === cap} key={cap} className={`filter-chip${capability === cap ? " active" : ""}`} onClick={() => setCapability(cap)}>{cap}</button>)}
     </div>}
-    {filtered === undefined && <p className="hint">Loading your fleet…</p>}
+    </section>
+    {filtered === undefined && !error && <p role="status" className="hint">Loading your fleet…</p>}
     {filtered && <div className="fleet-grid">
       {filtered.map((agent) => <AgentCard agent={agent} key={agent.id} />)}
       <Link href="/create" className="card add-agent-card">

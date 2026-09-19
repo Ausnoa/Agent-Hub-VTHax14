@@ -40,7 +40,7 @@ export default function GeneralPage() {
     setBusy(true); setError(""); try { await action(); } catch (reason) { setError(reason instanceof Error ? reason.message : "Request failed"); } finally { setBusy(false); }
   }
   function edit(index: number, update: Partial<Selection>) { setSteps((items) => items.map((step, position) => position === index ? { ...step, ...update } : step)); setProposal(undefined); }
-  return <PageShell narrow>
+  return <PageShell narrow className="screen-general">
     <div className="compose-hero"><div className="eyebrow">GENERAL A2A · EXPERIMENTAL</div><h1>Connect skills. Build a workflow.</h1>
       <p>One to eight steps. Arbitrary advertised skills. Text or JSON—not a fixed company report.</p>
       <Link href="/create">Back to report demo</Link></div>

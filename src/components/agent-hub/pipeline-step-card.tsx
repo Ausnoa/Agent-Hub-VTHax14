@@ -1,4 +1,4 @@
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Network } from "lucide-react";
 import type { PillTone } from "../ui/status-pill";
 import StatusPill from "../ui/status-pill";
 
@@ -13,11 +13,12 @@ export default function PipelineStepCard({ index, name, ansId, statusLabel, stat
   footer?: React.ReactNode;
   active?: boolean;
 }) {
-  return <div className={`card pipeline-step${active ? " card--active" : ""}`}>
+  return <div className={`card pipeline-step pipeline-step--${statusTone}${active ? " card--active" : ""}`}>
     <div className="pipeline-step-head">
-      <span className="card-index">0{index + 1}</span>
+      <span className="card-index">STEP {String(index + 1).padStart(2, "0")}</span>
       <StatusPill tone={statusTone} running={running}>{statusLabel}</StatusPill>
     </div>
+    <Network className="pipeline-node-icon" size={22} aria-hidden="true" />
     <h3>{name}</h3>
     {ansId && <span className="ans-id">{ansId}</span>}
     {!!metrics?.length && <div className="pipeline-step-metrics">

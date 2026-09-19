@@ -35,8 +35,8 @@ export default function RegistryBrowser() {
     }
   }
 
-  return <Card>
-    <CardHead>ANS capability resolution</CardHead>
+  return <Card className="registry-panel">
+    <CardHead badge={<Radar size={16} />}>ANS capability resolution</CardHead>
     {error && <div role="alert" className="alert"><strong>Something needs attention</strong><p>{error}</p></div>}
     <CatalogPanel entries={catalog} />
     <h3 style={{ fontSize: 12, color: "var(--text-muted)", margin: "18px 0 10px" }}>Search the live ANS registry</h3>

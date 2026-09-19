@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Search, ClipboardCheck, PlayCircle, ArrowRight } from "lucide-react";
+import { Search, ClipboardCheck, PlayCircle, ArrowRight, Sparkles, Radio } from "lucide-react";
 import type { Proposal } from "../../lib/contracts/index";
 import { api } from "../../lib/api-client";
 import { useComposerFlow } from "../../lib/composer-flow";
@@ -54,7 +54,7 @@ export default function CreateAgentPage() {
     }
   }
 
-  return <PageShell>
+  return <PageShell className="screen-compose">
     <ComposeSteps current={1} />
     <div className="compose-hero">
       <div className="eyebrow"><span className="line" /> FROM IDEA TO ORCHESTRATION</div>
@@ -66,7 +66,7 @@ export default function CreateAgentPage() {
     {error && <div role="alert" className="alert"><strong>Something needs attention</strong><p>{error}</p></div>}
 
     <Card className="compose-card">
-      <CardHead index="01" badge={<StatusPill tone="accent">New composition</StatusPill>}>What should your agent do?</CardHead>
+      <CardHead badge={<StatusPill tone="accent">New composition</StatusPill>}><Sparkles size={18} /> Operational directive</CardHead>
       <label className="sr-only" htmlFor="description">Operational directive</label>
       <span className="field-label">Operational directive</span>
       <textarea id="description" className="prompt-area" value={description} maxLength={2000} onChange={(event) => setDescription(event.target.value)} />
@@ -102,7 +102,8 @@ export default function CreateAgentPage() {
       <Card tight><CardHead badge={<PlayCircle size={14} color="var(--accent)" />}>Run it. Reuse it.</CardHead><p className="hint">Follow each A2A step, then use your saved agent again.</p></Card>
     </div>
 
-    <Card style={{ marginTop: 18 }}>
+    <div className="composer-bottom">
+    <Card className="mesh-panel">
       <CardHead>Composition topology preview</CardHead>
       <p className="hint" style={{ marginBottom: 6 }}>Illustrative only — your directive is decomposed into capabilities, then resolved against the ANS mesh in the next step.</p>
       <TopologyGraph
@@ -114,5 +115,15 @@ export default function CreateAgentPage() {
         ]}
       />
     </Card>
+    <Card className="composer-guide">
+      <CardHead badge={<Radio size={16} />}>From intent to execution</CardHead>
+      <ol className="guide-feed">
+        <li><span className="guide-dot" /><div><strong>Describe the outcome</strong><p>Set the task and provide the context your agents need.</p></div></li>
+        <li><span className="guide-dot violet" /><div><strong>Resolve capabilities</strong><p>Inspect matching agents and review the proposed pipeline.</p></div></li>
+        <li><span className="guide-dot green" /><div><strong>Run your composition</strong><p>Follow each step and return to the saved interface.</p></div></li>
+      </ol>
+      <div className="section-kicker guide-status">WORKSPACE <span>{plannerConfigured ? "PLANNER CONFIGURED" : "OFFLINE DEMO AVAILABLE"}</span></div>
+    </Card>
+    </div>
   </PageShell>;
 }

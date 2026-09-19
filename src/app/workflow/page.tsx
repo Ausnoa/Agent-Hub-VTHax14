@@ -13,6 +13,7 @@ import Card, { CardHead } from "../../components/ui/card";
 import Button from "../../components/ui/button";
 import StatusPill from "../../components/ui/status-pill";
 import PipelineStepCard, { PipelineConnector } from "../../components/agent-hub/pipeline-step-card";
+import PipelineSummary from "../../components/agent-hub/pipeline-summary";
 
 const modeNotice = {
   pilot: "Pilot catalog · Real LLM plan · Local test agents · Not registered with ANS",
@@ -44,7 +45,7 @@ export default function WorkflowReviewPage() {
     }
   }
 
-  return <PageShell>
+  return <PageShell className="screen-workflow">
     <ComposeSteps current={3} />
     <PageHeader
       eyebrow="A2A PIPELINE BUILDER"
@@ -56,8 +57,8 @@ export default function WorkflowReviewPage() {
     <p className="notice">{modeNotice[proposal.mode]}</p>
     {error && <div role="alert" className="alert"><strong>Something needs attention</strong><p>{error}</p></div>}
 
-    <Card>
-      <CardHead>Composed pipeline</CardHead>
+    <Card className="pipeline-canvas">
+      <CardHead badge={<StatusPill tone="accent">A2A 0.3.0</StatusPill>}>Composed pipeline</CardHead>
       <div className="pipeline-row">
         {proposal.steps.map((step, index) => <Fragment key={step.capability}>
           {index > 0 && <PipelineConnector />}
@@ -86,13 +87,14 @@ export default function WorkflowReviewPage() {
         <div className="metric-tile"><div className="metric-tile-label">Identity verification</div><div className="metric-tile-value" style={{ fontSize: 14, color: "var(--amber)" }}>Not verified</div></div>
       </div>
     </Card>
+    <PipelineSummary steps={proposal.steps} />
 
     {!!proposal.blockers.length && <div className="alert" style={{ marginTop: 22 }}>
       <strong>This composition is incomplete</strong>
       <ul>{proposal.blockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul>
     </div>}
 
-    <div style={{ marginTop: 24, display: "flex", justifyContent: "flex-end", gap: 12 }}>
+    <div className="screen-actionbar">
       <Button variant="secondary" onClick={() => router.push("/discovery")}><ArrowLeft size={14} /> Back to discovery</Button>
       <Button variant="primary" disabled={busy || !!proposal.blockers.length || !proposal.steps.length} onClick={() => approve(proposal)}>
         {busy ? "Deploying…" : <><Rocket size={14} /> Deploy & Generate Agent Interface <ArrowRight size={14} /></>}
