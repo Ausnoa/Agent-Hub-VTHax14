@@ -1,3 +1,6 @@
+import { getOwned } from "../owned-agent/store.ts";
+import { templateFor } from "../owned-agent/templates.ts";
+import { runDefinition } from "../owned-agent/run.ts";
 import { randomUUID } from "node:crypto";
 import { resolveAgent } from "../ans/client.ts";
 import { inspectGeneral, invokeGeneral } from "./client.ts";
@@ -9,6 +12,12 @@ export async function prepareGeneral(input: unknown, resolve = resolveAgent, ins
   const steps: GeneralStep[] = [];
   for (const selection of draft.steps) {
     if (selection.format === "json" && selection.instruction) throw new Error("JSON mappings cannot include text instructions");
+    if (selection.agentId.startsWith("owned:")) {
+      const agent = getOwned(selection.agentId);
+      if (!agent || templateFor(agent.template).skill !== selection.skill || selection.format !== "text") throw new Error("Created agent or text skill is unavailable");
+      steps.push({ ...selection, endpoint: agent.id, metadataUrl: agent.id, name: agent.name });
+      continue;
+    }
     const agents = await resolve(selection.agentId);
     let selected: GeneralStep | undefined;
     const failures: string[] = [];
@@ -26,12 +35,19 @@ export async function prepareGeneral(input: unknown, resolve = resolveAgent, ins
   return { id: randomUUID(), version: 1, name: draft.name, createdAt: new Date().toISOString(), steps, identity: "not-verified" };
 }
 
-export async function executeGeneral(store: GeneralStore, run: GeneralRun, invoke = invokeGeneral, resolve = resolveAgent) {
+export async function executeGeneral(store: GeneralStore, run: GeneralRun, invoke = invokeGeneral, resolve = resolveAgent, runOwned = runDefinition) {
   try {
     const workflow = store.get(run.workflowId, true);
     if (!workflow) throw new Error("Approved workflow missing");
     for (const [index, step] of workflow.steps.entries()) {
       run.activeStep = index; store.update(run);
+      if (step.agentId.startsWith("owned:")) {
+        const agent = getOwned(step.agentId);
+        if (!agent || step.endpoint !== agent.id || step.metadataUrl !== agent.id || step.skill !== templateFor(agent.template).skill || step.format !== "text") throw new Error("Created agent configuration no longer matches");
+        const input = mapInput(step, run.input, run.outputs.at(-1));
+        run.outputs.push({ type: "text", value: await runOwned(agent, String(input.value)) });
+        store.update(run); continue;
+      }
       const fresh = await resolve(step.agentId);
       if (!fresh.some((agent) => agent.ansId === step.agentId && agent.endpoint === step.endpoint && agent.metadataUrl === step.metadataUrl)) throw new Error("Agent registration changed; rebuild and review");
       const input = mapInput(step, run.input, run.outputs.at(-1));

@@ -16,7 +16,7 @@
 .topnav { gap: 16px; }
 .topnav-brand { color: var(--stitch-heading); }
 .topnav-verified { font-size: 8px; letter-spacing: .25px; margin-left: 0; white-space: nowrap; }
-.topnav-links { max-width: 510px; margin: 0 auto; }
+.topnav-links { max-width: 620px; margin: 0 auto; overflow-x: auto; }
 .topnav-link { font-size: 13px; }
 .topnav-link.active { color: var(--stitch-heading); background: var(--stitch-raised); }
 .topnav-stat strong { font-size: 10px; color: var(--accent); }
@@ -223,7 +223,7 @@
   .topnav-stat { display: none; }
   .topnav { gap: 8px; }
   .topnav-links { margin: 0; }
-  .topnav-link { padding: 8px; font-size: 12px; }
+  .topnav-link { padding: 8px; font-size: 12px; flex: 1 0 auto; }
   .screen-actionbar .btn { white-space: normal; }
   .pipeline-row { flex-direction: column; padding: 16px 0; }
   .pipeline-step { min-width: 0; min-height: 180px; }

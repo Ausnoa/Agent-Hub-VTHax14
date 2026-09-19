@@ -9,7 +9,8 @@ import ThemeToggle from "./theme-toggle";
 // Each tab owns the pages under it: Compose covers its three-step flow (and the general
 // workflow builder); My Agents covers each agent's interface and its runs.
 const tabs = [
-  { key: "discover", label: "Discover", href: "/discover", paths: ["/discover"] },
+  { key: "agent-preview", label: "Create agent", href: "/agent-preview", paths: ["/agent-preview"] },
+  { key: "discover", label: "Discover", href: "/discover", paths: ["/discover", "/available"] },
   { key: "compose", label: "Compose", href: "/create", paths: ["/create", "/discovery", "/workflow", "/general"] },
   { key: "agents", label: "My Agents", href: "/agents", paths: ["/agents"] },
   { key: "execution", label: "Execution", href: "/execution", paths: ["/execution"] },
