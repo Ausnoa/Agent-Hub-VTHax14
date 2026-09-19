@@ -1,0 +1,43 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+const stages = [
+  { key: "compose", label: "Compose", href: "/create" },
+  { key: "discovery", label: "Discovery", href: "/discovery" },
+  { key: "workflow", label: "Workflow", href: "/workflow" },
+  { key: "interface", label: "Interface", href: "/agents" },
+  { key: "execution", label: "Execution", href: "/agents" },
+] as const;
+
+export default function TopNav() {
+  const pathname = usePathname();
+  const isAgentDetail = pathname.startsWith("/agents/");
+  const isMyAgents = pathname === "/agents" || pathname === "/";
+  const activeStage = pathname.startsWith("/create") ? "compose"
+    : pathname.startsWith("/discovery") ? "discovery"
+    : pathname.startsWith("/workflow") ? "workflow"
+    : pathname.startsWith("/execution") ? "execution"
+    : isAgentDetail ? "interface"
+    : "";
+
+  return <header className="topnav">
+    <Link href="/agents" className="topnav-brand">
+      <span className="topnav-mark">AH</span>
+      <span>Agent Hub<small>CORE EMBLEM</small></span>
+    </Link>
+    <span className="topnav-verified"><span className="live-dot" /> AMS VERIFIED A2A NETWORK</span>
+    <nav className="topnav-links" aria-label="Pipeline stages">
+      {stages.map((stage) => (
+        <Link key={stage.key} href={stage.href} className={`topnav-link${activeStage === stage.key ? " active" : ""}`}>
+          {stage.label}
+        </Link>
+      ))}
+    </nav>
+    <div className="topnav-right">
+      <div className="topnav-stat">Local workspace<strong>MVP EDITION</strong></div>
+      <Link href="/agents" className={`topnav-agents-btn${isMyAgents ? " active" : ""}`}>My Agents</Link>
+    </div>
+  </header>;
+}

@@ -1,3 +1,5 @@
-import Composer from "../components/composer";
+import { redirect } from "next/navigation";
 
-export default function Page() { return <Composer />; }
+export default function Page() {
+  redirect("/agents");
+}
