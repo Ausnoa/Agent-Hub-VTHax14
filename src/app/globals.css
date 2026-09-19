@@ -253,6 +253,23 @@ input:focus, textarea:focus { outline: none; border-color: var(--accent); box-sh
 .topology-node .ans-id { font-family: var(--font-mono); font-size: 9px; color: var(--text-faint); }
 .topology-edge { position: absolute; height: 1px; background: linear-gradient(90deg, var(--accent), transparent); transform-origin: left center; opacity: 0.55; }
 
+/* ---------- split layout ---------- */
+.split-layout { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 20px; align-items: start; }
+@media (max-width: 1000px) { .split-layout { grid-template-columns: 1fr; } }
+
+/* ---------- registry / directory lists ---------- */
+.registry-list { display: grid; gap: 10px; margin-top: 6px; }
+.registry-item { display: flex; gap: 14px; align-items: flex-start; background: var(--bg-inset); border: 1px solid var(--border-soft); border-radius: var(--radius-md); padding: 14px 16px; }
+.registry-item-icon { flex-shrink: 0; width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; background: var(--bg-hover); border: 1px solid var(--border-strong); color: var(--accent); font-size: 13px; }
+.registry-item h3 { font-size: 12.5px; font-weight: 600; margin-bottom: 4px; }
+.registry-item p { font-size: 10.5px; color: var(--text-muted); margin: 0; }
+.registry-item .pill { margin-left: auto; flex-shrink: 0; }
+.registry-item details { margin-top: 8px; }
+.registry-item summary { cursor: pointer; color: var(--accent); font-size: 10.5px; }
+.registry-item dl { font-size: 10.5px; color: var(--text-muted); line-height: 1.8; margin: 8px 0 0; overflow-wrap: anywhere; }
+.registry-item dt { color: var(--text-faint); font-weight: 600; margin-top: 6px; }
+.registry-item dd { margin-left: 0; }
+
 /* ---------- discovery feed ---------- */
 .feed-panel { display: flex; flex-direction: column; gap: 0; max-height: 420px; overflow-y: auto; }
 .feed-item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border-soft); font-size: 11px; }
