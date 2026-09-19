@@ -1,0 +1,11 @@
+{
+  "name": "agent-composer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "test": "node --test tests/*.test.ts",
+    "probe:ans": "node --env-file-if-exists=.env.local scripts/probe-ans.ts"
+  }
+}
