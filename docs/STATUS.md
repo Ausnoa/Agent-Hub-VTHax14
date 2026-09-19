@@ -6,11 +6,12 @@
 - Builder, approval, saved-agent library, reusable runner, execution trace, and reports.
 - Three separate local fixture processes exchanging real A2A 0.3.0 JSON-RPC messages through the official client SDK.
 - SQLite persistence, atomic queue claiming, worker lease, run history, explicit retries, and interrupted-run recovery.
-- Optional structured LLM planner and conservative allowlisted live-agent selection.
+- Verified live structured LLM planner, with pilot composition selecting local services through a replaceable catalog interface.
+- Small SQLite catalog: three local test agents and six genuine ANS records, explicitly separated by provenance.
+- Conservative allowlisted ANS-agent selection; registry presence alone never implies compatibility or verified identity.
 
 ## Not yet demonstrated
 
-- LLM planning against a configured live model.
 - A company-research pipeline using agents discovered through ANS. Suitable registered candidates have not been confirmed reachable and compatible.
 - Cryptographic ANS identity verification. Every identity remains explicitly unverified.
 - Registering our own public agents, which requires domain control, public hosting, and authorized ANS registration setup.

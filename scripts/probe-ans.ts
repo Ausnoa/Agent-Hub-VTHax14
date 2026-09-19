@@ -1,4 +1,4 @@
-import { discoverAgents, type DiscoveredAgent } from "../src/lib/ans/client.ts";
+import { discoverAgents, discoveryAuthorization, type DiscoveredAgent } from "../src/lib/ans/client.ts";
 
 const MAX_PAGES = Number(process.env.ANS_PROBE_MAX_PAGES ?? "5");
 
@@ -12,7 +12,7 @@ try {
     const page = await discoverAgents({
       query,
       baseUrl: process.env.ANS_BASE_URL,
-      authorization: process.env.ANS_AUTHORIZATION,
+      authorization: discoveryAuthorization(),
       pageToken,
     });
     agents.push(...page.agents);

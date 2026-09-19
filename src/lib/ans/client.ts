@@ -8,13 +8,19 @@ export interface DiscoveredAgent {
   transports: string[];
   discoveredAt: string;
   identityStatus: "not-verified";
+  skills?: { id: string; name: string; tags: string[] }[];
+}
+
+export function discoveryAuthorization(): string | undefined {
+  return process.env.ANS_AUTHENTICATED_DISCOVERY === "true" ? process.env.ANS_AUTHORIZATION : undefined;
 }
 
 export async function resolveAgent(id: string): Promise<DiscoveredAgent[]> {
   const base = new URL(process.env.ANS_BASE_URL ?? "https://api.godaddy.com");
   if (base.protocol !== "https:" || base.username || base.password) throw new Error("Invalid ANS base URL");
   const headers: Record<string, string> = { Accept: "application/json" };
-  if (process.env.ANS_AUTHORIZATION) headers.Authorization = process.env.ANS_AUTHORIZATION;
+  const authorization = discoveryAuthorization();
+  if (authorization) headers.Authorization = authorization;
   const response = await fetch(new URL(`/v1/ans/registered-agents/${encodeURIComponent(id)}`, base), { headers, redirect: "error", signal: AbortSignal.timeout(15_000) });
   if (!response.ok) throw new Error(`ANS resolution failed (HTTP ${response.status})`);
   return normalizeAgents({ items: [await response.json()] });
@@ -70,6 +76,11 @@ export function normalizeAgents(payload: unknown): DiscoveredAgent[] {
         transports: endpoint.transports as string[],
         discoveredAt,
         identityStatus: "not-verified" as const,
+        skills: Array.isArray(endpoint.functions) ? endpoint.functions.flatMap((item) => {
+          const skill = record(item);
+          if (typeof skill.id !== "string" || typeof skill.name !== "string") return [];
+          return [{ id: skill.id, name: skill.name, tags: Array.isArray(skill.tags) ? skill.tags.filter((tag): tag is string => typeof tag === "string") : [] }];
+        }) : [],
       }];
     });
   });
@@ -81,7 +92,7 @@ export async function discoverAgents(options: {
   authorization?: string;
   fetcher?: typeof fetch;
   pageToken?: string;
-}): Promise<{ agents: DiscoveredAgent[]; hasMore: boolean; nextPageToken?: string }> {
+}): Promise<{ agents: DiscoveredAgent[]; hasMore: boolean; nextPageToken?: string; skippedRecords: number }> {
   if (options.query.length > 256) throw new Error("Search query must be at most 256 characters");
   const base = new URL(options.baseUrl ?? "https://api.godaddy.com");
   if (base.protocol !== "https:" || base.username || base.password || base.pathname !== "/" || base.search || base.hash) {
@@ -103,6 +114,16 @@ export async function discoverAgents(options: {
   });
   if (!response.ok) throw new Error(`ANS discovery failed (HTTP ${response.status})`);
   const payload = record(await response.json());
+  if (!Array.isArray(payload.items)) throw new Error("ANS response is missing items");
+  let skippedRecords = 0;
+  const agents = payload.items.flatMap((item) => {
+    try {
+      return normalizeAgents({ items: [item] });
+    } catch {
+      skippedRecords += 1;
+      return [];
+    }
+  });
   const nextLink = Array.isArray(payload.links) ? payload.links.find((link) => record(link).rel === "next") : undefined;
   let nextPageToken: string | undefined;
   const nextHref = nextLink ? record(nextLink).href : undefined;
@@ -114,7 +135,8 @@ export async function discoverAgents(options: {
     }
   }
   return {
-    agents: normalizeAgents(payload),
+    agents,
+    skippedRecords,
     hasMore: Boolean(nextLink),
     nextPageToken,
   };

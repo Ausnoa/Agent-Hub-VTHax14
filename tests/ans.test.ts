@@ -49,6 +49,13 @@ test("HTTP errors do not expose response bodies or credentials", async () => {
   await assert.rejects(discoverAgents({ query: "", fetcher: (async () => new Response("sensitive body", { status: 401 })) as typeof fetch }), /^Error: ANS discovery failed \(HTTP 401\)$/);
 });
 
+test("discovery skips malformed records but rejects a malformed envelope", async () => {
+  const result = await discoverAgents({ query: "", fetcher: (async () => Response.json({ items: [agent, { ...agent, endpoints: [{ ...agent.endpoints[0], agentUrl: "invalid" }] }] })) as typeof fetch });
+  assert.equal(result.agents.length, 1);
+  assert.equal(result.skippedRecords, 1);
+  await assert.rejects(discoverAgents({ query: "", fetcher: (async () => Response.json({})) as typeof fetch }), /missing items/);
+});
+
 test("forwards an opaque page token and extracts the next one from the response", async () => {
   const result = await discoverAgents({
     query: "company research",

@@ -1,9 +1,10 @@
 import { z } from "zod";
 import { Store } from "../../../lib/persistence/store.ts";
 import { compose, validatePlan } from "../../../lib/workflows/composer.ts";
-import { discoverAgents } from "../../../lib/ans/client.ts";
+import { discoverAgents, discoveryAuthorization } from "../../../lib/ans/client.ts";
 import { inputSchema, proposalSchema, type Composite, type Proposal } from "../../../lib/contracts/index.ts";
 import { reportForm } from "../../../lib/contracts/ui.ts";
+import { SqliteAgentCatalog } from "../../../lib/gateways/catalog.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -36,15 +37,23 @@ async function handle(request: Request, context: { params: Promise<{ path: strin
   const store = new Store();
   try {
     if (request.method === "GET" && path.join("/") === "status") return json({ plannerConfigured: Boolean(process.env.OPENAI_API_KEY && process.env.OPENAI_MODEL) });
+    if (request.method === "GET" && path.join("/") === "catalog") {
+      const params = new URL(request.url).searchParams;
+      const query = z.string().max(256).parse(params.get("query") ?? "");
+      const source = z.enum(["ans", "local-fixture"]).optional().parse(params.get("source") ?? undefined);
+      const catalog = new SqliteAgentCatalog();
+      try { return json(await catalog.search(query, source)); }
+      finally { catalog.close(); }
+    }
     if (request.method === "POST" && path.join("/") === "proposals") {
-      const input = z.object({ description: z.string().trim().min(10).max(2000), mode: z.enum(["live", "demo"]) }).parse(await body(request));
+      const input = z.object({ description: z.string().trim().min(10).max(2000), mode: z.enum(["live", "demo", "pilot"]) }).parse(await body(request));
       const proposal = await compose(input.description, input.mode);
       store.saveDocument("proposal", proposal);
       return json(proposal, 201);
     }
     if (request.method === "POST" && path.join("/") === "discover") {
       const input = z.object({ query: z.string().max(256), pageToken: z.string().max(4000).optional() }).parse(await body(request));
-      return json(await discoverAgents({ ...input, baseUrl: process.env.ANS_BASE_URL, authorization: process.env.ANS_AUTHORIZATION }));
+      return json(await discoverAgents({ ...input, baseUrl: process.env.ANS_BASE_URL, authorization: discoveryAuthorization() }));
     }
     if (request.method === "GET" && path.join("/") === "agents") return json(store.agents());
     if (request.method === "POST" && path.join("/") === "agents") {

@@ -5,6 +5,8 @@ flowchart LR
   Browser["Builder / review / runner"] --> API["Next.js API"]
   API --> Planner["Optional structured LLM planner"]
   API --> ANS["Real ANS discovery"]
+  API --> Catalog["AgentCatalog interface"]
+  Catalog --> Pilot["SQLite registry snapshot + separate local fixtures"]
   API --> DB["SQLite proposals, composites, runs"]
   Worker["Separate Node worker"] --> DB
   Worker --> Resolve["Re-resolve live ANS identity"]
@@ -16,7 +18,7 @@ flowchart LR
 
 ## Request flow
 
-`POST /api/proposals` combines planning and discovery into one reviewable, server-stored proposal. This consolidates the separate planning/discovery calls proposed in the initial PRD. Live directory browsing still uses `POST /api/discover` independently.
+`POST /api/proposals` combines planning and catalog selection into one reviewable, server-stored proposal. Pilot mode uses the real planner and local catalog services; ANS mode uses fresh indexed, allowlisted registry candidates. Offline demo bypasses the planner. `GET /api/catalog` exposes the small catalog, with query and source filters. Live directory browsing still uses `POST /api/discover` independently.
 
 `POST /api/agents` accepts only a proposal identifier and copies the reviewed server-side definition into an immutable version-one composite, including its form configuration. It rejects incomplete or expired proposals. Extra client-supplied endpoints do not become executable configuration.
 

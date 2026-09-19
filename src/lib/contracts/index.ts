@@ -29,7 +29,7 @@ export const planSchema = z.object({
 export type Plan = z.infer<typeof planSchema>;
 export const proposalSchema = z.object({
   id: z.string().uuid(), createdAt: z.string(), originalPrompt: z.string(),
-  mode: z.enum(["live", "demo"]), planner: z.enum(["llm", "demo-template"]),
+  mode: z.enum(["live", "demo", "pilot"]), planner: z.enum(["llm", "demo-template"]),
   plan: planSchema, steps: z.array(selectedAgentSchema).max(3), blockers: z.array(z.string()),
 });
 export type Proposal = z.infer<typeof proposalSchema>;
