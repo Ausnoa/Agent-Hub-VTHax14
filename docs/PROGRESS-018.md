@@ -33,3 +33,9 @@ September 19, 2026 at 22:31 UTC: verify-acme succeeded for both new registration
 - _ans-badge.extract: `v=ans-badge1; version=v1.0.0; url=https://transparency.ans.godaddy.com/v1/agents/39f5e2f3-7b54-4153-8757-0fe0733c5393`
 - _ans.ask: `v=ans1; version=v1.0.0; p=a2a; mode=direct; url=https://ask.gloryforglorria.us/a2a`
 - _ans-badge.ask: `v=ans-badge1; version=v1.0.0; url=https://transparency.ans.godaddy.com/v1/agents/51d689d3-146f-41d6-91dd-0966fc4d7aaa`
+
+## Both registrations ACTIVE
+
+September 19, 2026 at 22:35 UTC: verify-dns succeeded for Glorria Extract (39f5e2f3-7b54-4153-8757-0fe0733c5393) and Glorria Answers (51d689d3-146f-41d6-91dd-0966fc4d7aaa). Independent status calls confirmed ACTIVE for each. Responses saved in ignored .data/ans/<agent>-1.0.0/. Domain validation, certificate issuance, and DNS provisioning are complete.
+
+Fresh public HTTPS checks still return 404 for both agent-card URLs. Registration is complete but public A2A orchestration remains blocked on deployment of this branch and hosted environment configuration described in HOSTED-AGENTS.md. Do not report the public workflow successful until real ANS resolution, card checks, and invocation pass.
