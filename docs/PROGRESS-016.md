@@ -58,3 +58,12 @@ Each implementation checkpoint records actual checks and remaining blockers. Do 
 ## Implementation checkpoint
 
 User selected a simple first agent. Domain: gloryforglorria.us at Porkbun. Hosting: Vercel, currently deploying main; implementation remains on codex/agent-creation. Added Glorria Brief, a stateless supplied-text summarizer, public /a2a and /.well-known/agent-card.json routes. Reuses structured model generation; no SQLite/worker dependency. Inference is disabled unless AGENT_ENABLED=true. The card requires a configured HTTPS origin rather than trusting request headers. Focused tests and live validation follow in the next checkpoint.
+
+## Test and deployment-plan checkpoint
+
+- Four new focused tests cover existing SDK invocation against our card/handler, invalid and oversized requests, disabled inference, generic upstream failures, missing actions, unsafe card origins, and invalid model output.
+- Full suite: 38/38 passed. Typecheck and production build passed; build lists /a2a and /.well-known/agent-card.json as dynamic routes.
+- Real model smoke: supplied notes assigning Maya a Friday draft and Leo a Monday review yielded exactly those two action items; launch uncertainty and unchanged budget were preserved. This is one observed quality check, not a guarantee against hallucination.
+- Added bounded model output (4000 tokens) for this agent only; existing planner calls retain their prior behavior.
+- Deployment/registration and security plan: OWNED-AGENT.md. Vercel/ANS certificate compatibility and public abuse controls remain unresolved before public enablement. No public deployment, ANS submission, DNS change, or main-branch merge was performed.
+- Second live check used the existing SDK with in-process card/HTTP-handler routing and real model inference: descriptive office text produced “None explicitly stated” for actions. This verifies SDK/handler/model interoperability locally, not public HTTPS or ANS. Typecheck and production build passed again after the output-token limit change.
