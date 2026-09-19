@@ -4,6 +4,13 @@ import { compose, validatePlan } from "../../../lib/workflows/composer.ts";
 import { discoverAgents } from "../../../lib/ans/client.ts";
 import { inputSchema, proposalSchema, type Composite, type Proposal } from "../../../lib/contracts/index.ts";
 import { reportForm } from "../../../lib/contracts/ui.ts";
+import { openDatabase } from "../../../lib/gateways/db.ts";
+import { createRegistryGateway, type RegistryGateway } from "../../../lib/gateways/registry.ts";
+
+function withRegistry<T>(work: (registry: RegistryGateway) => T): T {
+  const db = openDatabase();
+  try { return work(createRegistryGateway(db)); } finally { db.close(); }
+}
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -45,6 +52,15 @@ async function handle(request: Request, context: { params: Promise<{ path: strin
     if (request.method === "POST" && path.join("/") === "discover") {
       const input = z.object({ query: z.string().max(256), pageToken: z.string().max(4000).optional() }).parse(await body(request));
       return json(await discoverAgents({ ...input, baseUrl: process.env.ANS_BASE_URL, authorization: process.env.ANS_AUTHORIZATION }));
+    }
+    if (request.method === "GET" && path.join("/") === "registry/status") return json(withRegistry((registry) => registry.status()));
+    if (request.method === "POST" && path.join("/") === "registry/search") {
+      const input = z.object({ query: z.string().trim().min(1).max(256), limit: z.number().int().min(1).max(50).optional() }).parse(await body(request));
+      return json(withRegistry((registry) => ({
+        source: "local-ans-index",
+        indexedAt: registry.status().lastCompleted?.finishedAt ?? null,
+        candidates: registry.searchCandidates(input.query, input.limit),
+      })));
     }
     if (request.method === "GET" && path.join("/") === "agents") return json(store.agents());
     if (request.method === "POST" && path.join("/") === "agents") {

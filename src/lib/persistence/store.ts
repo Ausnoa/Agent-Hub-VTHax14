@@ -3,10 +3,11 @@ import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { randomUUID } from "node:crypto";
 import type { Composite, Proposal, Run } from "../contracts/index.ts";
+import { databasePath } from "../gateways/db.ts";
 
 export class Store {
   db: DatabaseSync;
-  constructor(path = process.env.COMPOSER_DB ?? ".data/composer.sqlite") {
+  constructor(path = databasePath()) {
     if (path !== ":memory:") mkdirSync(dirname(path), { recursive: true });
     this.db = new DatabaseSync(path);
     this.db.exec(`PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;
