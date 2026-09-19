@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import type { Proposal } from "../../lib/contracts/index";
 import { api } from "../../lib/api-client";
 import { useComposerFlow } from "../../lib/composer-flow";
@@ -78,7 +79,12 @@ export default function CreateAgentPage() {
           {busy ? "Decomposing…" : "Decompose & Discover ANS Agents →"}
         </Button>
       </div>
-      <p className="hint" style={{ marginTop: 14 }}>{modeCopy[mode]} {mode === "pilot" && `Planner ${plannerConfigured ? "configured" : "not configured"}.`}</p>
+      <p className="hint" style={{ marginTop: 14 }}>
+        {modeCopy[mode]} {mode !== "demo" && `Planner ${plannerConfigured ? "configured" : "not configured"}.`}
+      </p>
+      {mode !== "demo" && !plannerConfigured && <p className="hint" style={{ marginTop: 6 }}>
+        No LLM key on this workspace — decomposing a directive needs one. You can still <Link href="/discovery" style={{ color: "var(--accent)" }}>browse the ANS registry directly</Link> (no key required), or switch to Offline demo above.
+      </p>}
     </Card>
 
     <div className="metric-row" style={{ marginTop: 32 }}>
