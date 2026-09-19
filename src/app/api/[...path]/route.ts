@@ -7,6 +7,9 @@ import { reportForm } from "../../../lib/contracts/ui.ts";
 import { SqliteAgentCatalog } from "../../../lib/gateways/catalog.ts";
 import { openDatabase } from "../../../lib/gateways/db.ts";
 import { createRegistryGateway, type RegistryGateway } from "../../../lib/gateways/registry.ts";
+import { GeneralStore } from "../../../lib/general/store.ts";
+import { prepareGeneral } from "../../../lib/general/service.ts";
+import { valueSchema } from "../../../lib/general/contracts.ts";
 
 function withRegistry<T>(work: (registry: RegistryGateway) => T): T {
   const db = openDatabase();
@@ -43,6 +46,29 @@ async function handle(request: Request, context: { params: Promise<{ path: strin
   const { path } = await context.params;
   const store = new Store();
   try {
+    if (path[0] === "general") {
+      const general = new GeneralStore();
+      try {
+        if (request.method === "GET" && path.length === 1) return json(general.list());
+        if (request.method === "POST" && path[1] === "proposals" && path.length === 2) {
+          const proposal = await prepareGeneral(await body(request));
+          general.save(proposal); return json(proposal, 201);
+        }
+        if (path[1] === "runs" && path[2] && path.length === 3 && request.method === "GET") {
+          const run = general.run(z.string().uuid().parse(path[2]));
+          return run ? json(run) : json({ error: "Run not found" }, 404);
+        }
+        if (path[1] && path.length === 3 && request.method === "POST") {
+          const id = z.string().uuid().parse(path[1]);
+          if (path[2] === "approve") return json(general.approve(id));
+          if (path[2] === "invoke") {
+            const input = z.object({ input: valueSchema, confirmExternalExecution: z.literal(true) }).parse(await body(request));
+            return json(general.enqueue(id, input.input), 202);
+          }
+        }
+        return json({ error: "Route not found" }, 404);
+      } finally { general.close(); }
+    }
     if (request.method === "GET" && path.join("/") === "status") return json({ plannerConfigured: Boolean(process.env.OPENAI_API_KEY && process.env.OPENAI_MODEL) });
     if (request.method === "GET" && path.join("/") === "catalog") {
       const params = new URL(request.url).searchParams;

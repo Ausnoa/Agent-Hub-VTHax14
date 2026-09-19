@@ -6,11 +6,15 @@ import { openDatabase } from "../src/lib/gateways/db.ts";
 import { createRegistryGateway, type SyncTrigger } from "../src/lib/gateways/registry.ts";
 import { syncRegistry } from "../src/lib/registry/sync.ts";
 import { discoveryAuthorization } from "../src/lib/ans/client.ts";
+import { GeneralStore } from "../src/lib/general/store.ts";
+import { executeGeneral } from "../src/lib/general/service.ts";
 
 const store = new Store();
 const owner = randomUUID();
 if (!store.acquireWorker(owner)) { store.close(); throw new Error("Another worker owns this database. After a crash, its lease expires within two minutes."); }
 store.recoverInterruptedRuns();
+const generalStore = new GeneralStore();
+generalStore.recover();
 let stopping = false;
 const heartbeat = setInterval(() => { if (!store.acquireWorker(owner)) { console.error("Worker lease lost"); process.exit(1); } }, 10_000);
 process.on("SIGINT", () => { stopping = true; });
@@ -38,10 +42,12 @@ try {
   while (!stopping) {
     const run = store.claim();
     if (run) await executeRun(store, run);
-    else await pause(500);
+    const generalRun = generalStore.claim();
+    if (generalRun) await executeGeneral(generalStore, generalRun);
+    if (!run && !generalRun) await pause(500);
   }
 } finally {
   clearInterval(heartbeat); clearInterval(syncTimer);
   syncAbort.abort(); await syncing;
-  registryDb.close(); store.releaseWorker(owner); store.close();
+  generalStore.close(); registryDb.close(); store.releaseWorker(owner); store.close();
 }
