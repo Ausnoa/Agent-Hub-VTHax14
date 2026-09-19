@@ -8,6 +8,7 @@ import { api } from "../../lib/api-client";
 import { useComposerFlow } from "../../lib/composer-flow";
 import PageShell from "../../components/layout/page-shell";
 import PageHeader from "../../components/layout/page-header";
+import ComposeSteps from "../../components/layout/compose-steps";
 import Card, { CardHead } from "../../components/ui/card";
 import Button from "../../components/ui/button";
 import StatusPill from "../../components/ui/status-pill";
@@ -44,6 +45,7 @@ export default function WorkflowReviewPage() {
   }
 
   return <PageShell>
+    <ComposeSteps current={3} />
     <PageHeader
       eyebrow="A2A PIPELINE BUILDER"
       title={proposal.plan.name}

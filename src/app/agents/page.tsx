@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Boxes, Network, Sparkles, ShieldCheck, Plus } from "lucide-react";
+import { Boxes, Network, Sparkles, ShieldCheck, Plus, History } from "lucide-react";
 import type { Composite } from "../../lib/contracts/index";
 import { api } from "../../lib/api-client";
 import PageShell from "../../components/layout/page-shell";
@@ -45,7 +45,10 @@ export default function MyAgentsPage() {
     <PageHeader
       eyebrow="SUPERVISE, MONITOR, AND INVOKE CRYPTOGRAPHIC ANS-CERTIFIED MULTI-AGENT WORKFLOWS"
       title="My Agent Fleet"
-      action={<Link href="/create"><Button variant="primary"><Plus size={14} /> Compose New Agent</Button></Link>}
+      action={<div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+        <Link href="/execution"><Button variant="secondary"><History size={14} /> Run history</Button></Link>
+        <Link href="/create"><Button variant="primary"><Plus size={14} /> Compose New Agent</Button></Link>
+      </div>}
     />
     {error && <div role="alert" className="alert"><strong>Something needs attention</strong><p>{error}</p></div>}
     <div className="metric-row">

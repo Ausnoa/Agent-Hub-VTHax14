@@ -6,7 +6,6 @@ import { Play } from "lucide-react";
 import type { Composite, Run } from "../../../lib/contracts/index";
 import { reportForm } from "../../../lib/contracts/ui";
 import { api } from "../../../lib/api-client";
-import { rememberAgent } from "../../../lib/recent";
 import PageShell from "../../../components/layout/page-shell";
 import PageHeader from "../../../components/layout/page-header";
 import Card, { CardHead } from "../../../components/ui/card";
@@ -34,7 +33,7 @@ export default function RuntimeInterfacePage({ params }: { params: Promise<{ id:
 
   useEffect(() => {
     api<{ agent: Composite; runs: Run[] }>(`agents/${id}`)
-      .then((data) => { setAgent(data.agent); setHistory(data.runs); rememberAgent(id); })
+      .then((data) => { setAgent(data.agent); setHistory(data.runs); })
       .catch(() => setError("Could not load this agent"));
   }, [id]);
 

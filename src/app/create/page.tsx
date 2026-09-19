@@ -8,6 +8,7 @@ import type { Proposal } from "../../lib/contracts/index";
 import { api } from "../../lib/api-client";
 import { useComposerFlow } from "../../lib/composer-flow";
 import PageShell from "../../components/layout/page-shell";
+import ComposeSteps from "../../components/layout/compose-steps";
 import Card, { CardHead } from "../../components/ui/card";
 import Button from "../../components/ui/button";
 import StatusPill from "../../components/ui/status-pill";
@@ -54,6 +55,7 @@ export default function CreateAgentPage() {
   }
 
   return <PageShell>
+    <ComposeSteps current={1} />
     <div className="compose-hero">
       <div className="eyebrow"><span className="line" /> FROM IDEA TO ORCHESTRATION</div>
       <h1>Orchestrate Autonomous Intelligence</h1>
@@ -90,7 +92,7 @@ export default function CreateAgentPage() {
         {modeCopy[mode]} {mode !== "demo" && `Planner ${plannerConfigured ? "configured" : "not configured"}.`}
       </p>
       {mode !== "demo" && !plannerConfigured && <p className="hint" style={{ marginTop: 6 }}>
-        No LLM key on this workspace — decomposing a directive needs one. You can still <Link href="/discovery" style={{ color: "var(--accent)" }}>browse the ANS registry directly</Link> (no key required), or switch to Offline demo above.
+        No LLM key on this workspace — decomposing a directive needs one. You can still <Link href="/discover" style={{ color: "var(--accent)" }}>browse the ANS registry directly</Link> (no key required), or switch to Offline demo above.
       </p>}
     </Card>
 

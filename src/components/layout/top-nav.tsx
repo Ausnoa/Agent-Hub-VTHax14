@@ -3,27 +3,24 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import ThemeToggle from "./theme-toggle";
 
-const stages = [
-  { key: "compose", label: "Compose", href: "/create" },
-  { key: "discovery", label: "Discovery", href: "/discovery" },
-  { key: "workflow", label: "Workflow", href: "/workflow" },
-  { key: "interface", label: "Interface", href: "/interface" },
-  { key: "execution", label: "Execution", href: "/execution" },
+// Each tab owns the pages under it: Compose covers its three-step flow (and the general
+// workflow builder); My Agents covers each agent's interface and its runs.
+const tabs = [
+  { key: "discover", label: "Discover", href: "/discover", paths: ["/discover"] },
+  { key: "compose", label: "Compose", href: "/create", paths: ["/create", "/discovery", "/workflow", "/general"] },
+  { key: "agents", label: "My Agents", href: "/agents", paths: ["/agents", "/execution"] },
 ] as const;
+
+function owns(pathname: string, path: string) {
+  return pathname === path || pathname.startsWith(`${path}/`);
+}
 
 export default function TopNav() {
   const pathname = usePathname();
-  const isAgentDetail = pathname.startsWith("/agents/");
-  const isMyAgents = pathname === "/agents" || pathname === "/";
-  const activeStage = pathname.startsWith("/create") ? "compose"
-    : pathname.startsWith("/discovery") ? "discovery"
-    : pathname.startsWith("/workflow") ? "workflow"
-    : pathname.startsWith("/execution") ? "execution"
-    : isAgentDetail || pathname.startsWith("/interface") ? "interface"
-    : "";
+  const activeTab = pathname === "/" ? "agents" : tabs.find((tab) => tab.paths.some((path) => owns(pathname, path)))?.key;
 
   return <header className="topnav">
     <Link href="/agents" className="topnav-brand">
@@ -31,17 +28,16 @@ export default function TopNav() {
       <span>Agent Hub<small>CORE EMBLEM</small></span>
     </Link>
     <span className="topnav-verified"><span className="live-dot" /><ShieldCheck size={12} /> ANS Discovery · Identity unverified</span>
-    <nav className="topnav-links" aria-label="Pipeline stages">
-      {stages.map((stage) => (
-        <Link key={stage.key} href={stage.href} className={`topnav-link${activeStage === stage.key ? " active" : ""}`}>
-          {stage.label}
+    <nav className="topnav-links" aria-label="Main navigation">
+      {tabs.map((tab) => (
+        <Link key={tab.key} href={tab.href} className={`topnav-link${activeTab === tab.key ? " active" : ""}`} aria-current={activeTab === tab.key ? "page" : undefined}>
+          {tab.label}
         </Link>
       ))}
     </nav>
     <div className="topnav-right">
       <div className="topnav-stat">Local workspace<strong>MVP EDITION</strong></div>
       <ThemeToggle />
-      <Link href="/agents" className={`topnav-agents-btn${isMyAgents ? " active" : ""}`}><LayoutGrid size={14} /> My Agents</Link>
     </div>
   </header>;
 }
