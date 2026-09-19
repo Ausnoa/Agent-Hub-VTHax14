@@ -24,3 +24,12 @@ Both user-configured subdomains resolve to Vercel and present TLS-valid certific
 Both are PENDING_VALIDATION. Private keys and registration responses are ignored under .data/ans/extract-1.0.0 and .data/ans/qa-1.0.0. Requested exact DNS-01 TXT challenges from the user, expiring September 20 at 22:27 UTC. Do not resubmit registrations or overwrite keys.
 
 Production build and typecheck pass. Live local HTTP A2A calls using real model inference extracted owner Maya, deadline Friday, decision undecided, then answered owner/deadline with literal JSON evidence. This validates local transport/model chaining, not public reachability: both public cards still return 404. User must deploy the branch and configure the three canonical origin variables plus model settings before hosted workflow acceptance.
+
+## Domain verification complete
+
+September 19, 2026 at 22:31 UTC: verify-acme succeeded for both new registrations. Both are PENDING_DNS, awaiting their final required TXT records. Exact returned records (Porkbun hosts relative to gloryforglorria.us; TTL 3600):
+
+- _ans.extract: `v=ans1; version=v1.0.0; p=a2a; mode=direct; url=https://extract.gloryforglorria.us/a2a`
+- _ans-badge.extract: `v=ans-badge1; version=v1.0.0; url=https://transparency.ans.godaddy.com/v1/agents/39f5e2f3-7b54-4153-8757-0fe0733c5393`
+- _ans.ask: `v=ans1; version=v1.0.0; p=a2a; mode=direct; url=https://ask.gloryforglorria.us/a2a`
+- _ans-badge.ask: `v=ans-badge1; version=v1.0.0; url=https://transparency.ans.godaddy.com/v1/agents/51d689d3-146f-41d6-91dd-0966fc4d7aaa`
