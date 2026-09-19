@@ -38,7 +38,7 @@ export default function TopNav() {
       ))}
     </nav>
     <div className="topnav-right">
-      <div className="topnav-stat">Local workspace<strong>MVP EDITION</strong></div>
+      <div className="topnav-stat">Agent workspace<strong>MVP EDITION</strong></div>
       <ThemeToggle />
     </div>
   </header>;

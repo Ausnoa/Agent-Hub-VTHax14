@@ -18,17 +18,17 @@ export default function WorkspaceAccess({ children }: { children: ReactNode }) {
   if (local === undefined) return <PageShell><p role="status">Loading workspace…</p></PageShell>;
   if (local) return children;
   return <PageShell narrow>
-    <PageHeader eyebrow="HOSTED PREVIEW" title="Your workspace runs locally for now"
-      description="Saved agents, registry browsing, workflow creation, and run history are available in the local workspace. This hosted preview is not connected to a personal workspace yet." />
+    <PageHeader eyebrow="HOSTED PREVIEW" title="Workflow execution runs locally for now"
+      description="Registry browsing, multi-agent workflows, and their run history still require the local workspace. The template builder has a separate hosted account flow." />
     <Card>
-      <h2>Explore the agent templates</h2>
-      <p>Preview the Summarizer, Information extractor, and Document Q&A templates. Saving and testing agents currently require the local workspace.</p>
-      <Link className="filter-chip" href="/agent-preview">Explore templates →</Link>
+      <h2>Create and test template agents</h2>
+      <p>Open the template builder to sign in, save your agents, and test them once hosted accounts are configured. You can also explore the templates without signing in.</p>
+      <Link className="filter-chip" href="/agent-preview">Open template builder →</Link>
     </Card>
     <Card>
       <h2>Continue in your local workspace</h2>
       <p>If you have Agent Hub running on your computer, open the localhost address shown in your terminal. Your saved agents and workflows remain there.</p>
-      <p>Hosted accounts, storage, and workflow execution are still being developed. ANS registration is separate from this workspace.</p>
+      <p>Hosted workflow execution is a later milestone. Saving a template agent does not publish it or register it with ANS.</p>
     </Card>
   </PageShell>;
 }
