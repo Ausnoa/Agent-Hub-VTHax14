@@ -1,3 +1,5 @@
+import { OwnedStore } from "../../../lib/owned-agent/store.ts";
+import { runDefinition } from "../../../lib/owned-agent/run.ts";
 import { z } from "zod";
 import { Store } from "../../../lib/persistence/store.ts";
 import { compose, validatePlan } from "../../../lib/workflows/composer.ts";
@@ -47,6 +49,20 @@ async function handle(request: Request, context: { params: Promise<{ path: strin
   const { path } = await context.params;
   const store = new Store();
   try {
+    if (path[0] === "owned") {
+      const owned = new OwnedStore();
+      try {
+        if (path.length === 1 && request.method === "GET") return json(owned.list());
+        if (path.length === 1 && request.method === "POST") return json(owned.create(await body(request)), 201);
+        if (path.length === 3 && path[2] === "test" && request.method === "POST") {
+          const agent = owned.get(path[1]);
+          if (!agent) return json({ error: "Created agent not found" }, 404);
+          const input = z.object({ text: z.string().trim().min(1).max(12000) }).parse(await body(request));
+          return json({ output: await runDefinition(agent, input.text) });
+        }
+        return json({ error: "Route not found" }, 404);
+      } finally { owned.close(); }
+    }
     if (path[0] === "general") {
       const general = new GeneralStore();
       try {

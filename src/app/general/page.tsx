@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { templateFor, type OwnedAgent } from "../../lib/owned-agent/templates";
 import Link from "next/link";
 import PageShell from "../../components/layout/page-shell";
 import Card from "../../components/ui/card";
@@ -10,6 +11,8 @@ import type { RegistryCandidate } from "../../lib/gateways/registry";
 import type { Selection, GeneralWorkflow, GeneralRun } from "../../lib/general/contracts";
 
 export default function GeneralPage() {
+  const [owned, setOwned] = useState<OwnedAgent[]>([]);
+  useEffect(() => { api<OwnedAgent[]>("owned").then(setOwned).catch(reason => setError(reason.message)); }, []);
   const [query, setQuery] = useState("");
   const [description, setDescription] = useState("");
   const [candidates, setCandidates] = useState<RegistryCandidate[]>([]);
@@ -45,7 +48,10 @@ export default function GeneralPage() {
       <p>One to eight steps. Arbitrary advertised skills. Text or JSON—not a fixed company report.</p>
       <Link href="/create">Back to report demo</Link></div>
     <Link href="/available">Browse available agents & check compatibility →</Link>
-    <Card><h2>Supported subset</h2><p>Public HTTPS, unauthenticated A2A 0.3 JSON-RPC. No files, streaming, or automatic retries. Identity is unverified. A compatible card does not guarantee useful outputs or safe behavior.</p></Card>
+    <Card><h2>Your created agents</h2><Link href="/agent-preview">Create an agent from a template →</Link>
+      {owned.map(agent => <div key={agent.id}><strong>{agent.name}</strong><p>{templateFor(agent.template).name} · Local execution · Not ANS registered</p><Button disabled={busy || steps.length >= 8} onClick={() => {setSteps([...steps, {agentId:agent.id,skill:templateFor(agent.template).skill,inputFrom:steps.length ? "previous" : "original",format:"text",instruction:""}]);setProposal(undefined);}}>Add {agent.name}</Button></div>)}
+    </Card>
+    <Card><h2>Supported subset</h2><p>Created agents run locally through saved templates. External agents require public HTTPS, unauthenticated A2A 0.3 JSON-RPC. No files, streaming, or automatic retries. Identity is unverified. A compatible card does not guarantee useful outputs or safe behavior.</p></Card>
     {error && <div role="alert" className="alert">{error}</div>}
     <Card><h2>Optional: suggest steps with the LLM</h2><label>Desired outcome<textarea value={description} maxLength={2000} onChange={(event) => setDescription(event.target.value)} /></label><p>Sends this description and indexed skill IDs to the configured planner. Suggestions do not execute agents or prove compatibility.</p>
       <Button disabled={busy || description.length < 10} onClick={() => work(async () => { const draft = await api<{ name: string; steps: Selection[] }>("general/suggest", { description }); setName(draft.name); setSteps(draft.steps); setProposal(undefined); })}>Suggest workflow</Button></Card>
@@ -62,7 +68,7 @@ export default function GeneralPage() {
         {step.format === "text" && <label>Instructions<textarea value={step.instruction} maxLength={2000} onChange={(event) => edit(index, { instruction: event.target.value })} /></label>}
         <Button disabled={busy} onClick={() => { setSteps(steps.filter((_, position) => position !== index).map((item, position) => position === 0 ? { ...item, inputFrom: "original" } : item)); setProposal(undefined); }}>Remove step</Button>
       </fieldset>)}
-      <Button disabled={busy || !steps.length} onClick={() => work(async () => { setProposal(await api<GeneralWorkflow>("general/proposals", { name, steps })); })}>Check cards & build proposal</Button>
+      <Button disabled={busy || !steps.length} onClick={() => work(async () => { setProposal(await api<GeneralWorkflow>("general/proposals", { name, steps })); })}>Validate steps & build proposal</Button>
       {proposal && <div><h3>Review destination endpoints</h3><ol>{proposal.steps.map((step, index) => <li key={index}>{step.name} · {step.skill} · {step.inputFrom} → {step.format}<br />{step.endpoint}</li>)}</ol>
         <p>Saved only on this site. No ANS registration or identity verification.</p>
         <Button disabled={busy} onClick={() => work(async () => { const approved = await api<GeneralWorkflow>(`general/${proposal.id}/approve`, {}); setSelected(approved); setConfirmed(false); setSaved(await api<GeneralWorkflow[]>("general")); })}>Approve & save workflow</Button></div>}
