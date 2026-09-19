@@ -13,6 +13,8 @@ import type { Selection, GeneralWorkflow, GeneralRun } from "../../lib/general/c
 export default function GeneralPage() {
   const [owned, setOwned] = useState<OwnedAgent[]>([]);
   useEffect(() => { api<OwnedAgent[]>("owned").then(setOwned).catch(reason => setError(reason.message)); }, []);
+  const [ansId, setAnsId] = useState("");
+  const [ansSkill, setAnsSkill] = useState("");
   const [query, setQuery] = useState("");
   const [description, setDescription] = useState("");
   const [candidates, setCandidates] = useState<RegistryCandidate[]>([]);
@@ -50,6 +52,15 @@ export default function GeneralPage() {
     <Link href="/available">Browse available agents & check compatibility →</Link>
     <Card><h2>Your created agents</h2><Link href="/agent-preview">Create an agent from a template →</Link>
       {owned.map(agent => <div key={agent.id}><strong>{agent.name}</strong><p>{templateFor(agent.template).name} · Local execution · Not ANS registered</p><Button disabled={busy || steps.length >= 8} onClick={() => {setSteps([...steps, {agentId:agent.id,skill:templateFor(agent.template).skill,inputFrom:steps.length ? "previous" : "original",format:"text",instruction:""}]);setProposal(undefined);}}>Add {agent.name}</Button></div>)}
+    </Card>
+    <Card><h2>Connect a registered agent</h2><p>Add an ANS registration directly without waiting for the search index to refresh. Its registration and A2A card must resolve successfully.</p>
+      <label>ANS agent ID<input value={ansId} maxLength={200} onChange={event => setAnsId(event.target.value)} /></label>
+      <label>Skill ID<input value={ansSkill} maxLength={200} onChange={event => setAnsSkill(event.target.value)} placeholder="extract-information or answer-from-reference" /></label>
+      <Button disabled={busy || steps.length >= 8 || !ansId.trim() || !ansSkill.trim()} onClick={() => work(async () => {
+        const selection: Selection = { agentId: ansId.trim(), skill: ansSkill.trim(), format: "text", inputFrom: steps.length ? "previous" : "original", instruction: ansSkill.trim() === "answer-from-reference" ? "Question: Who is the owner and what is the deadline?\nReference:" : "" };
+        await api("general/check", { agentId: selection.agentId, skill: selection.skill, format: selection.format });
+        setSteps([...steps, selection]); setProposal(undefined); setAnsId(""); setAnsSkill("");
+      })}>Check card & add agent</Button>
     </Card>
     <Card><h2>Supported subset</h2><p>Created agents run locally through saved templates. External agents require public HTTPS, unauthenticated A2A 0.3 JSON-RPC. No files, streaming, or automatic retries. Identity is unverified. A compatible card does not guarantee useful outputs or safe behavior.</p></Card>
     {error && <div role="alert" className="alert">{error}</div>}
