@@ -10,6 +10,7 @@ Based on `context.md`. Target: a working hackathon demo within 48 hours.
 - Phase 4: builder, review, saved-agent runner, directory, reports, and execution trace implemented and browser-tested.
 - Phase 5: local failure handling and reload recovery verified. Public deployment and identity verification remain unfinished.
 - Phase 6: local demo rehearsed; live hackathon acceptance and publishing stretch goal remain open.
+- Registry index: the worker syncs live ANS into the local SQLite index, searchable through `POST /api/registry/search`. Proposal building and the directory still query ANS live; switching them to the index is open.
 
 See `docs/STATUS.md`, `docs/LOCAL-DEMO.md`, and the numbered progress records for evidence and setup.
 
@@ -28,7 +29,7 @@ The initial demo is company research → risk analysis → summary, subject to f
 - Obtain agent endpoints through ANS. Compatibility configuration may identify supported agents but must not substitute hardcoded endpoints for discovery.
 - Discover from a local index of the ANS registry, synced in the background from live ANS and enriched with agent card skills. Check selected agents against live ANS before execution. See `docs/DECISION-001-ANS-REGISTRY-INDEX.md`.
 - Generate form configuration from validated schemas using a fixed set of components.
-- Persist workflows, runs, step attempts, and outputs in a relational database. Choose the database and hosting together after confirming deployment constraints.
+- Persist workflows, runs, step attempts, and outputs in SQLite on the local machine, which hosts the app, worker, and database for the hackathon.
 - Keep credentials and external agent calls on the server.
 - Route all database access through gateways in `lib/gateways/`, one per area of data. API routes and server-side jobs call gateways; nothing else touches the database. See `docs/DECISION-002-GATEWAY-AND-DATA-ACCESS.md`.
 - Defer accounts, billing, marketplace features, arbitrary graphs, arbitrary schema translation, and workflow editing.
@@ -54,7 +55,7 @@ Decision gate: if registration, access, or compatible agents are blocked, resolv
 4. Build a sequential orchestrator that resolves agents, validates compatibility, prepares input, invokes A2A, waits for completion, validates output, and persists results.
 5. Preserve original input, accumulated context, previous output, and results indexed by step. Preserve research source references throughout the pipeline.
 6. Add bounded timeouts and explicit failure states. Stop downstream execution when a step fails.
-7. Build the registry sync: on server start and on an interval, page through all active A2A agents in ANS, upsert them into the local index, then fetch agent cards and store declared skills. Record each sync run. Startup must not wait for the sync.
+7. Build the registry sync: when the worker starts and on an interval, page through all active A2A agents in ANS and upsert them, with their ANS functions and tags, into the local index. Record each sync run. The worker's run loop must not wait for the sync. Agent cards are fetched later, only for discovery candidates.
 
 Acceptance: run the same stored workflow twice with different inputs. The second agent receives the first agent's real output, and each execution has an independent persisted trace. A sync from live ANS populates the index, and a failed sync leaves the previous index intact.
 
@@ -62,7 +63,7 @@ Acceptance: run the same stored workflow twice with different inputs. The second
 
 1. Send the description to an LLM planner and validate its structured response against the supported capability catalog.
 2. Keep planning separate from selection: the planner proposes capabilities, not agent identities or endpoint URLs.
-3. Search the local registry index for each capability, matching against declared agent card skills rather than ANS display names. Return each candidate with when it was last seen in ANS.
+3. Search the local registry index for each capability, matching against descriptions and the functions and tags agents declare rather than ANS display names alone. Return each candidate with when it was last seen in ANS.
 4. Filter candidates by A2A support, usable status, and known compatibility. Rank eligible candidates by simple capability relevance and available identity evidence.
 5. Return a reviewable proposal with selected agents, their purposes, provenance, and any unsupported capabilities.
 6. Validate the approved proposal server-side before saving it. Do not accept arbitrary client-supplied endpoints or claim every submitted workflow is compatible.
@@ -124,11 +125,12 @@ src/
   lib/contracts/       Validated internal schemas
   lib/planner/         Capability planning
   lib/ans/             Discovery, resolution, identity evidence
-  lib/registry/        Registry sync, agent card fetching, local index search
+  lib/registry/        Registry sync job
   lib/a2a/             Protocol client and task lifecycle
   lib/adapters/        Supported capability and data adapters
   lib/workflows/       Proposal validation and sequential execution
-  lib/gateways/        Only database access: registry index, composite, workflow, run, and step storage
+  lib/gateways/        Only database access: connection, migrations, registry index
+  lib/persistence/     Proposal, composite, and run storage; moves into lib/gateways/ when next changed
 agents/                Demo A2A services if needed
 tests/                 Contract and end-to-end checks
 ```
@@ -152,7 +154,8 @@ Tables, keys, and constraints for these objects are defined in `docs/DECISION-00
 | Endpoint | Responsibility |
 | --- | --- |
 | `POST /api/plan` | Description → validated capabilities |
-| `POST /api/discover` | Capabilities → compatible candidates from the local ANS index, and proposal |
+| `POST /api/discover` | One page of live ANS results for the directory |
+| `POST /api/registry/search` | Query → eligible candidates from the local ANS index, with index age |
 | `GET /api/registry/status` | Last sync time, result, and indexed agent count |
 | `POST /api/agents` | Validate and save approved proposal |
 | `GET /api/agents/:id` | Read composite configuration |
@@ -166,7 +169,7 @@ Tables, keys, and constraints for these objects are defined in `docs/DECISION-00
 - Contract checks for planner responses, normalized ANS records, and adapter inputs/outputs.
 - Runtime checks for sequential ordering, correct data passing, failure stopping, and retry behavior.
 - Integration checks against real ANS and at least two independently running A2A agents.
-- Registry sync checks: full pagination, upsert, inactive marking, failed sync preserving the index, and unreachable or malformed agent cards.
+- Registry sync checks: full pagination, rate-limit pauses, upsert, delisting, failed sync preserving the index, and skipped malformed records.
 - Browser check of the full user journey and recovery after reloading a running or completed invocation.
 - Negative cases: no candidate, unsupported capability, invalid planner output, incompatible result, timeout, failed identity check, and duplicate retry.
 
@@ -193,7 +196,7 @@ With multiple contributors, split after agreeing on shared contracts: one owns A
 - Which agents and capabilities can be exercised reliably?
 - Which A2A versions and transports do those agents actually support?
 - What identity checks can the application perform and accurately display?
-- Which LLM provider and hosting environment are available to the team? The host needs a persistent filesystem for the SQLite index, or the index moves to a hosted database.
+- Which LLM provider is available to the team? Hosting is resolved: the local machine runs the app, worker, and SQLite database for the hackathon.
 - How many active A2A agents does ANS hold, and how long does a full sync take?
 - How many contributors can work in parallel?
 

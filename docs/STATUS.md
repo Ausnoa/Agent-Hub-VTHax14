@@ -9,6 +9,7 @@
 - Verified live structured LLM planner, with pilot composition selecting local services through a replaceable catalog interface.
 - Small SQLite catalog: three local test agents and six genuine ANS records, explicitly separated by provenance.
 - Conservative allowlisted ANS-agent selection; registry presence alone never implies compatibility or verified identity.
+- Local ANS registry index: the worker syncs live ANS into SQLite, searchable through `POST /api/registry/search`. Proposal building does not use it yet.
 
 ## Not yet demonstrated
 

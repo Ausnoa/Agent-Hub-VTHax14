@@ -24,9 +24,19 @@ test("keeps the ANS description and uses null when it is absent", () => {
   assert.equal(undescribed.description, null);
 });
 
-test("rejects malformed responses and unsafe endpoint schemes", () => {
+test("rejects malformed responses and skips unsafe endpoints without failing the page", () => {
   assert.throws(() => normalizeAgents({}));
-  assert.throws(() => normalizeAgents({ items: [{ ...agent, endpoints: [{ ...agent.endpoints[0], agentUrl: "file:///etc/passwd" }] }] }));
+  const agents = normalizeAgents({ items: [{ ...agent, endpoints: [{ ...agent.endpoints[0], agentUrl: "file:///etc/passwd" }] }, { agentId: "no-fields" }, agent] });
+  assert.deepEqual(agents.map((item) => item.ansId), ["fixture-agent"]);
+});
+
+test("tolerates record shapes observed in live ANS data", () => {
+  const [missingTransports, relativeCard] = normalizeAgents({ items: [
+    { ...agent, agentId: "no-transports", endpoints: [{ protocol: "A2A", agentUrl: "https://stock.example" }] },
+    { ...agent, agentId: "relative-card", endpoints: [{ protocol: "A2A", agentUrl: "https://travel.example/a2a", metaDataUrl: "/.well-known/agent-card.json", transports: ["JSON-RPC"] }] },
+  ] });
+  assert.deepEqual(missingTransports.transports, []);
+  assert.equal(relativeCard.metadataUrl, "https://travel.example/.well-known/agent-card.json");
 });
 
 test("sends documented filters and reports incomplete pagination", async () => {

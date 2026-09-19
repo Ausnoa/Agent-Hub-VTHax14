@@ -1,6 +1,16 @@
 # Decision 003 — Database schema
 
-Status: accepted, not yet implemented. Date: September 19, 2026.
+Status: accepted; registry index implemented, application tables are the target design. Date: September 19, 2026.
+
+## Implementation state
+
+- **Registry index: implemented** as migration 1 in `src/lib/gateways/migrations.ts`, with `src/lib/gateways/registry.ts` and the worker's sync. `agent_cards`, `card_skills`, and `identity_checks` are not created yet; a later migration adds them with card fetching and identity verification.
+- **Application tables: not built.** Proposals, composites, and runs are stored as JSON documents by `src/lib/persistence/store.ts` (tables `documents`, `runs`, `worker_lease`, created outside the migrations). Rewriting working storage during the hackathon is not worth the risk. The relational tables below are adopted when that storage next needs to change. Until then:
+  - Proposal validation already works as designed: approval accepts only a stored proposal's ID.
+  - Immutability is by convention: `Store` inserts saved agents and never updates them. There is no database trigger.
+  - One active attempt per run is enforced by `Store.claim()`'s transaction and the single-worker lease, not by an index.
+  - Runs re-resolve each agent against live ANS, but do not store the resolved snapshot per attempt.
+- Both storage areas share one SQLite file (`COMPOSER_DB`, default `.data/composer.sqlite`) on the local machine, which hosts the app, worker, and database for the hackathon.
 
 ## Context
 
@@ -10,13 +20,14 @@ Verified on Node 24.21.0 (`node:sqlite`, SQLite 3.53.4): FTS5 with the `porter u
 
 ## Conventions
 
-- Every table is `STRICT`.
+- Every table is `STRICT`, except FTS5 virtual tables, which do not support it.
 - Timestamps are `TEXT` in UTC ISO 8601 with milliseconds, exactly as `Date.prototype.toISOString()` produces (`2026-09-19T12:00:00.000Z`). ANS timestamps are normalized to this format before storage so string comparison orders correctly.
 - JSON is stored as `TEXT` with a `CHECK (json_valid(column))` constraint.
 - Booleans are `INTEGER` restricted to 0 and 1.
 - ANS identifiers are stored as ANS returns them. Application identifiers that appear in URLs (proposals, composites, runs) are `crypto.randomUUID()` values.
 - Every connection sets `PRAGMA foreign_keys = ON`, `PRAGMA journal_mode = WAL`, and `PRAGMA busy_timeout = 5000`. WAL lets API reads continue while a sync writes.
-- Stored third-party documents (`raw_json`, agent card bodies) are capped at 256 KB. A larger document is not stored and its row records why.
+- Stored third-party documents (`raw_json`, agent card bodies) are capped at 256 KB. A larger document is stored as null; agent cards also record `too_large`.
+- Fields ANS sometimes omits are nullable rather than causing a record to be skipped. A record is skipped only when it lacks an agent ID, ANS name, display name, lifecycle status, or any HTTPS endpoint.
 
 ## Gateway ownership
 
@@ -55,22 +66,22 @@ One row per ANS registration (`agentId`). A host that re-registers a new version
 | --- | --- | --- |
 | `agent_id` | TEXT PK | ANS `agentId` |
 | `ans_name` | TEXT | e.g. `ans://v1.0.1.host.example` |
-| `host` | TEXT | `agentHost`; indexed |
-| `version` | TEXT | `agentVersion` |
+| `host` | TEXT | `agentHost`, or the first endpoint's hostname when absent; indexed |
+| `version` | TEXT | `agentVersion`, null when absent |
 | `provider_id` | TEXT | Null when ANS omits it |
 | `display_name` | TEXT | `agentDisplayName` |
 | `description` | TEXT | `agentDescription`, null when absent |
 | `ans_status` | TEXT | `lifecycle.status` as reported |
-| `expires_at` | TEXT | `expiresAt` |
-| `trust_score` | INTEGER | `scores.trustScore`, null when absent |
+| `expires_at` | TEXT | `expiresAt`, null when absent or unparseable |
+| `trust_score` | REAL | `scores.trustScore`, null when absent. REAL because ANS scores are not guaranteed to be whole numbers. |
 | `log_id`, `leaf_index` | TEXT, INTEGER | Transparency log entry |
 | `ans_indexed_at` | TEXT | `indexedAt` |
 | `first_seen_at`, `last_seen_at` | TEXT | When our syncs first and last saw it |
 | `last_seen_sync_id` | INTEGER FK → `sync_runs` | |
 | `listed` | INTEGER | 0 once a completed sync no longer returns it |
-| `raw_json` | TEXT | The search record as returned, as evidence |
+| `raw_json` | TEXT | The search record as returned, as evidence; null above the size cap |
 
-An agent is **eligible** for discovery only when `listed = 1`, `ans_status = 'ACTIVE'`, and `expires_at` is in the future. ANS can report `ACTIVE` after expiry, so status alone is not enough. Discovery shows at most one registration per host: the eligible one with the latest `ans_indexed_at`.
+An agent is **eligible** for discovery only when `listed = 1`, `ans_status = 'ACTIVE'`, `expires_at` is in the future or unknown, and it has an A2A endpoint. ANS can report `ACTIVE` after expiry, so status alone is not enough. Discovery shows at most one registration per host: the eligible one with the latest `ans_indexed_at`.
 
 Registry rows are never deleted, because saved workflows reference them.
 
@@ -84,7 +95,7 @@ Every endpoint ANS lists for an agent, including non-A2A ones. Only `A2A` endpoi
 | `agent_id` | TEXT FK → `registry_agents` | |
 | `position` | INTEGER | Order in the ANS response |
 | `protocol` | TEXT | `A2A`, `HTTP-API`, `MCP`, … |
-| `url` | TEXT | `agentUrl`; HTTPS only |
+| `url` | TEXT | `agentUrl`; HTTPS only. Endpoints with other schemes are dropped. |
 | `metadata_url` | TEXT | `metaDataUrl` resolved against `url` when relative; null if absent or invalid |
 | `documentation_url` | TEXT | Null when absent |
 | `transports` | TEXT (JSON array) | Empty array when ANS omits it |
@@ -106,7 +117,7 @@ Primary key `(endpoint_id, function_id)`.
 
 ### `agent_cards`
 
-The latest fetch of an agent's card. Cards are fetched only for agents that appear as discovery candidates, then reused for 6 hours, instead of fetching thousands of cards during every sync.
+Not yet created. The latest fetch of an agent's card. Cards are fetched only for agents that appear as discovery candidates, then reused for 6 hours, instead of fetching thousands of cards during every sync.
 
 | Column | Type | Notes |
 | --- | --- | --- |
@@ -121,7 +132,7 @@ The latest fetch of an agent's card. Cards are fetched only for agents that appe
 
 ### `card_skills`
 
-Skills declared by a fetched card. They add descriptions and input/output modes that ANS functions lack.
+Not yet created. Skills declared by a fetched card. They add descriptions and input/output modes that ANS functions lack.
 
 | Column | Type | Notes |
 | --- | --- | --- |
@@ -134,7 +145,7 @@ Primary key `(agent_id, skill_id)`. Replaced whenever the card is refetched.
 
 ### `identity_checks`
 
-Checks our application performed itself. The UI may show an agent as identity-verified only when it has a `pass` row from the last 24 hours.
+Not yet created. Checks our application performed itself. The UI may show an agent as identity-verified only when it has a `pass` row from the last 24 hours.
 
 | Column | Type | Notes |
 | --- | --- | --- |
@@ -151,14 +162,13 @@ FTS5 table for discovery, tokenized with `porter unicode61` so "summarize" match
 
 | Column | Source |
 | --- | --- |
-| `agent_id` | Unindexed key |
+| `rowid` | Same as the agent's `registry_agents.rowid`, so a row is replaced by rowid instead of scanning the table |
 | `display_name` | `registry_agents.display_name` |
 | `description` | `registry_agents.description` |
-| `functions` | Names and IDs from `registry_functions` for A2A endpoints |
-| `tags` | Tags from `registry_functions` |
-| `skills` | Names and descriptions from `card_skills`, when a card was fetched |
+| `functions` | IDs (hyphens split into words) and names from `registry_functions` for A2A endpoints |
+| `tags` | Tags from `registry_functions` for A2A endpoints |
 
-Updated in the same transaction as the rows it copies. Ranking combines FTS5 `bm25()` with `trust_score`; the exact weighting is a tuning detail, not a schema decision.
+Updated in the same transaction as the rows it copies. A `skills` column for card skills is added, by recreating the table, in the migration that introduces card fetching. User queries are split into words and quoted, so FTS5 syntax in input is never interpreted. Results are ordered by FTS5 `bm25()`, then `trust_score`; weighting is a tuning detail, not a schema decision.
 
 ## Application tables
 
@@ -257,7 +267,7 @@ Unique on `(run_id, step_position, attempt)`. A partial unique index on `run_id`
 
 ## Sync behavior
 
-1. Startup marks any `sync_runs` row left `running` by a crash as `failed`, then starts a new sync without waiting for it.
+1. The sync runs in the worker process (`npm run worker`), beside the run loop and never blocking it. Worker startup marks any `sync_runs` row left `running` by a crash as `failed`, then starts a sync, repeating every `ANS_SYNC_INTERVAL_MINUTES` (default 30; 0 disables it). The worker lease guarantees one sync process.
 2. The sync requests `pageSize=100`, the API maximum. ANS allows 60 requests per rate-limit window and reports `ratelimit-remaining` and `ratelimit-reset`; the sync pauses until reset when remaining reaches zero instead of triggering HTTP 429.
 3. Each page is written in one transaction. A record that fails validation is skipped and counted in `records_skipped`; it never fails the page.
 4. When the last page is reached, one transaction marks every listed agent not seen in this sync as `listed = 0` and completes the sync row.
@@ -265,14 +275,14 @@ Unique on `(run_id, step_position, attempt)`. A partial unique index on `run_id`
 
 ## Schema creation and migrations
 
-- Migrations are numbered SQL files in `src/lib/gateways/migrations/` (`001-initial.sql`, `002-….sql`).
-- On startup, before serving requests, the server applies every migration numbered above `PRAGMA user_version`, each in its own transaction that also sets `user_version`.
-- An applied migration is never edited; changes go in a new file.
-- Tests use an in-memory database with the same migrations. Test fixtures are never written to the `DATABASE_PATH` database.
+- Migrations are numbered SQL strings in `src/lib/gateways/migrations.ts`. They are not separate `.sql` files because the Next.js build bundles server code and would not include loose files.
+- `openDatabase()` applies every migration numbered above `PRAGMA user_version`, each in its own transaction that also sets `user_version`. The web server and worker can both open the database first; the transaction makes that safe.
+- An applied migration is never edited; changes go in a new entry.
+- Tests use an in-memory database with the same migrations. Test fixtures are never written to the `COMPOSER_DB` database.
 
 ## Deferred
 
 - Retention for delisted agents, old sync runs, and old runs.
 - Storing the full per-signal ANS trust breakdown from the single-agent endpoint.
 - Backups.
-- Moving to a hosted database if the chosen host cannot provide a persistent filesystem.
+- A hosted database. The local machine hosts everything for the hackathon; revisit only for a public deployment.

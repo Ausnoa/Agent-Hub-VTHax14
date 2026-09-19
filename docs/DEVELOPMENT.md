@@ -16,24 +16,27 @@ Requires Node.js 24 or later and `npm install`. Command-line tools use native Ty
 
 The probe follows pagination up to `ANS_PROBE_MAX_PAGES` pages (default 5) and reports whether more results exist. It does not invoke discovered URLs, validate agent identity, or establish semantic compatibility.
 
-## Backend server and registry index (planned)
+## Database and registry index
 
-Not implemented yet. See `docs/DECISION-001-ANS-REGISTRY-INDEX.md` for the design.
+Everything runs on the local machine. The app, worker, and registry index share one SQLite file. Design: `DECISION-001` (index), `DECISION-002` (gateways), `DECISION-003` (schema).
 
-The backend keeps a local SQLite index of the ANS registry. On startup it begins a background sync that pages through all active A2A agents, then fetches their agent cards and stores declared skills. The server accepts requests before the sync finishes, using the last successful index. Prompt-time discovery reads the index; only workflow execution calls ANS live, to confirm selected agents are still active and unchanged.
+- `src/lib/gateways/` is the only code that touches the database for the registry index: `db.ts` opens connections and applies migrations, `registry.ts` is the registry gateway. Proposals, composites, and runs are still in `src/lib/persistence/store.ts`.
+- `npm run worker` syncs every active A2A registration from live ANS into the index at startup and then on an interval, alongside running workflows. A full sync is rate-limited by ANS and takes a few minutes; the worker logs each result.
+- `GET /api/registry/status` reports the last sync and indexed agent counts. `POST /api/registry/search` with `{ "query": "summarization" }` returns eligible candidates with the index's age.
+- Prompt-time proposal building and the Discover directory still query ANS live.
 
-Planned configuration, in `.env.local`:
+Configuration, in `.env.local`:
 
 | Variable | Purpose |
 | --- | --- |
 | `ANS_BASE_URL` | ANS API origin (default `https://api.godaddy.com`) |
 | `ANS_AUTHORIZATION` | Optional authorization header value |
-| `DATABASE_PATH` | SQLite file location, kept out of Git |
-| `ANS_SYNC_INTERVAL_MINUTES` | How often to refresh the index |
+| `COMPOSER_DB` | SQLite file (default `.data/composer.sqlite`, ignored by Git) |
+| `ANS_SYNC_INTERVAL_MINUTES` | Minutes between syncs (default 30; 0 disables syncing) |
 
-When working on the backend:
+When working on the database:
 
-- Never write test fixtures into the index database. Tests use a separate temporary database.
-- A fresh clone starts with an empty index; discovery returns no candidates until the first sync completes. Check sync status before assuming ANS has no match.
-- Delete the database file to force a full rebuild.
-- Schema changes go in a new numbered file in `src/lib/gateways/migrations/`; never edit an applied migration. See `docs/DECISION-003-DATABASE-SCHEMA.md`.
+- Never write test fixtures into the `COMPOSER_DB` database. Tests use in-memory or temporary databases.
+- A fresh database has an empty index until the worker's first sync completes. Check `/api/registry/status` before concluding ANS has no match.
+- Delete the database file to rebuild from scratch. This also deletes saved agents and runs.
+- Schema changes are a new entry at the end of `src/lib/gateways/migrations.ts`; never edit an applied migration.

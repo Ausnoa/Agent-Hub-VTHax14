@@ -1,6 +1,8 @@
 # Decision 002 — Gateway and data access layer
 
-Status: accepted, not yet implemented. Date: September 19, 2026.
+Status: accepted, partly implemented. Date: September 19, 2026.
+
+The registry gateway (`src/lib/gateways/registry.ts`) and shared connection and migrations (`src/lib/gateways/db.ts`) exist. Proposals, composites, and runs are still stored by `src/lib/persistence/store.ts`, which already acts as their gateway; it moves into `src/lib/gateways/` the next time it changes, rather than disrupting working code.
 
 ## Context
 
@@ -36,6 +38,6 @@ browser ──► API routes (parse, validate, shape response)
 ## Consequences
 
 - Queries, data rules, and credential handling live in one place.
-- One server process owns the SQLite database, avoiding write contention between processes.
-- Hosting must provide a long-lived process with a persistent filesystem. Serverless platforms that run many short-lived instances without persistent disk cannot host SQLite; choosing one would mean moving to a hosted database behind the same gateways.
+- The web server and the worker share one SQLite file. WAL mode and a busy timeout let them read and write concurrently, provided every write transaction stays short and never waits on the network.
+- For the hackathon, the local machine hosts the app, worker, and database (decided September 19, 2026). A public deployment would need a long-lived process with a persistent filesystem; serverless platforms without persistent disk cannot host SQLite, and would mean moving to a hosted database behind the same gateways.
 - The gateways could later move into a separate service without changing the browser's API contract. This is not worth the extra deployment, network hop, and service-to-service authentication within the hackathon window.

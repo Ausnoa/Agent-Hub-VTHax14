@@ -32,7 +32,7 @@ Catalog data lives in `.data/pilot-catalog.sqlite` (override with `PILOT_CATALOG
 
 Keep `OPENAI_API_KEY` and `OPENAI_MODEL` in ignored `.env.local`, never in the tracked example. Restart the app after configuring them. Public ANS discovery omits credentials by default; set `ANS_AUTHENTICATED_DISCOVERY=true` only with valid authorized `ANS_AUTHORIZATION`. The configured credential returned HTTP 401 during testing, while public discovery succeeded.
 
-The SQLite database is stored in `.data/composer.sqlite`, ignored by Git. The worker is separate from the web request lifecycle. Runs survive page reloads; an interrupted worker marks unfinished work failed after its lease can be reclaimed. A crashed worker's lease expires within two minutes.
+The SQLite database is stored in `.data/composer.sqlite`, ignored by Git. The worker is separate from the web request lifecycle. It also syncs the live ANS registry into a local index when it starts and every 30 minutes; check progress at http://127.0.0.1:3000/api/registry/status. Runs survive page reloads; an interrupted worker marks unfinished work failed after its lease can be reclaimed. A crashed worker's lease expires within two minutes.
 
 ## Live functionality
 
