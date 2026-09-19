@@ -38,3 +38,9 @@ September 19, 2026, 22:04 UTC: authoritative Porkbun DNS now publishes DNSKEY/RR
 - _ans-badge.www: `v=ans-badge1; version=v1.0.0; url=https://transparency.ans.godaddy.com/v1/agents/2076c6a9-5114-42c8-8d63-c76eabcea804`
 
 TTL 3600. API also returns HTTPS and TLSA suggestions without required=true; do not replace the existing Vercel CNAME or bind a rotating leaf certificate without lifecycle planning. Next: publish required TXT records and run verify-dns.
+
+## ANS registration ACTIVE
+
+September 19, 2026, 22:13 UTC: both required TXT records resolve with exact expected values. verify-dns succeeded with status ACTIVE, phase COMPLETED, and completed domain validation, certificate issuance, and DNS provisioning. A separate status request confirmed ACTIVE for registration 2076c6a9-5114-42c8-8d63-c76eabcea804 (ans://v1.0.0.www.gloryforglorria.us). Responses saved in ignored .data/ans/glorria-1.0.0/. Neither optional HTTPS nor TLSA records was needed for activation.
+
+Public agent-card URL still returns HTTP 404. Registration is complete, but hosted runtime acceptance is not: deploy the agent-creation branch to the canonical domain, configure server environment, and smoke-test A2A before claiming the agent is usable end to end.
