@@ -12,7 +12,7 @@ export async function prepareGeneral(input: unknown, resolve = resolveAgent, ins
     const agents = await resolve(selection.agentId);
     let selected: GeneralStep | undefined;
     for (const agent of agents) {
-      if (!agent.metadataUrl) continue;
+      if (agent.ansId !== selection.agentId || !agent.metadataUrl) continue;
       const step = { ...selection, endpoint: agent.endpoint, metadataUrl: agent.metadataUrl, name: agent.name };
       try { await inspect(step); selected = step; break; } catch { continue; }
     }
@@ -29,7 +29,7 @@ export async function executeGeneral(store: GeneralStore, run: GeneralRun, invok
     for (const [index, step] of workflow.steps.entries()) {
       run.activeStep = index; store.update(run);
       const fresh = await resolve(step.agentId);
-      if (!fresh.some((agent) => agent.endpoint === step.endpoint && agent.metadataUrl === step.metadataUrl)) throw new Error("Agent registration changed; rebuild and review");
+      if (!fresh.some((agent) => agent.ansId === step.agentId && agent.endpoint === step.endpoint && agent.metadataUrl === step.metadataUrl)) throw new Error("Agent registration changed; rebuild and review");
       const input = mapInput(step, run.input, run.outputs.at(-1));
       run.outputs.push(await invoke(step, input)); store.update(run);
     }

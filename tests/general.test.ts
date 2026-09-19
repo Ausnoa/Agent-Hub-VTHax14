@@ -3,9 +3,24 @@ import assert from "node:assert/strict";
 import { GeneralStore } from "../src/lib/general/store.ts";
 import { draftSchema, mapInput, type GeneralStep } from "../src/lib/general/contracts.ts";
 import { prepareGeneral, executeGeneral } from "../src/lib/general/service.ts";
+import { inspectGeneral, invokeGeneral } from "../src/lib/general/client.ts";
 
 const step = { agentId: "synthetic", skill: "translate", inputFrom: "original" as const, format: "text" as const, instruction: "Translate to French" };
 const resolve = async () => [{ ansId: "synthetic", name: "Translator", description: null, ansName: "ans://test.example", endpoint: "https://test.example/a2a", metadataUrl: "https://test.example/card", transports: ["JSON-RPC"], discoveredAt: new Date().toISOString(), identityStatus: "not-verified" as const }];
+
+test("general SDK transports text and rejects authenticated cards", async () => {
+  const selected = { ...step, endpoint: "https://test.example/a2a", metadataUrl: "https://test.example/card", name: "Test" };
+  const card = { url: selected.endpoint, protocolVersion: "0.3.0", defaultInputModes: ["text/plain"], defaultOutputModes: ["text/plain"], skills: [{ id: step.skill }] };
+  const fetcher: typeof fetch = async (url, init) => {
+    if (String(url) === selected.metadataUrl) return Response.json(card);
+    const request = JSON.parse(String(init?.body));
+    assert.equal(request.method, "message/send");
+    assert.equal(request.params.message.parts[0].text, "Hello");
+    return Response.json({ jsonrpc: "2.0", id: request.id, result: { kind: "message", messageId: "reply", role: "agent", parts: [{ kind: "text", text: "Bonjour" }] } });
+  };
+  assert.deepEqual(await invokeGeneral(selected, { type: "text", value: "Hello" }, fetcher), { type: "text", value: "Bonjour" });
+  await assert.rejects(inspectGeneral(selected, async () => Response.json({ ...card, security: [{ oauth: [] }] })), /authentication/);
+});
 
 test("general schema allows eight arbitrary skills and rejects invalid input mappings", () => {
   assert.equal(draftSchema.parse({ name: "Translate", steps: Array(8).fill(step) }).steps.length, 8);

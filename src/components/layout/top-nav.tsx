@@ -29,7 +29,7 @@ export default function TopNav() {
       <Image src="/agent-emblem.svg" alt="" width={30} height={30} className="topnav-mark" priority />
       <span>Agent Hub<small>CORE EMBLEM</small></span>
     </Link>
-    <span className="topnav-verified"><span className="live-dot" /><ShieldCheck size={12} /> ANS Verified A2A Network</span>
+    <span className="topnav-verified"><span className="live-dot" /><ShieldCheck size={12} /> ANS Discovery · Identity unverified</span>
     <nav className="topnav-links" aria-label="Pipeline stages">
       {stages.map((stage) => (
         <Link key={stage.key} href={stage.href} className={`topnav-link${activeStage === stage.key ? " active" : ""}`}>

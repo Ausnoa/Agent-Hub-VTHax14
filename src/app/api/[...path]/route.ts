@@ -10,6 +10,7 @@ import { createRegistryGateway, type RegistryGateway } from "../../../lib/gatewa
 import { GeneralStore } from "../../../lib/general/store.ts";
 import { prepareGeneral } from "../../../lib/general/service.ts";
 import { valueSchema } from "../../../lib/general/contracts.ts";
+import { suggestGeneral } from "../../../lib/general/planner.ts";
 
 function withRegistry<T>(work: (registry: RegistryGateway) => T): T {
   const db = openDatabase();
@@ -50,6 +51,10 @@ async function handle(request: Request, context: { params: Promise<{ path: strin
       const general = new GeneralStore();
       try {
         if (request.method === "GET" && path.length === 1) return json(general.list());
+        if (request.method === "POST" && path[1] === "suggest" && path.length === 2) {
+          const input = z.object({ description: z.string().trim().min(10).max(2000) }).parse(await body(request));
+          return json(await suggestGeneral(input.description));
+        }
         if (request.method === "POST" && path[1] === "proposals" && path.length === 2) {
           const proposal = await prepareGeneral(await body(request));
           general.save(proposal); return json(proposal, 201);

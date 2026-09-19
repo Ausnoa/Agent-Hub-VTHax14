@@ -6,8 +6,8 @@ import { z } from "zod";
 import { makeAgentFetch } from "../a2a/network.ts";
 import { valueSchema, type GeneralStep, type Value } from "./contracts.ts";
 
-export async function inspectGeneral(step: GeneralStep) {
-  const response = await makeAgentFetch()(step.metadataUrl);
+export async function inspectGeneral(step: GeneralStep, fetcher = makeAgentFetch()) {
+  const response = await fetcher(step.metadataUrl);
   if (!response.ok) throw new Error("Agent card unavailable");
   const card = z.object({ url: z.string().url(), protocolVersion: z.literal("0.3.0"),
     preferredTransport: z.literal("JSONRPC").optional(), security: z.array(z.unknown()).optional(),
@@ -23,9 +23,9 @@ export async function inspectGeneral(step: GeneralStep) {
   if (!(skill.outputModes ?? card.defaultOutputModes).some((mode) => ["text/plain", "application/json"].includes(mode))) throw new Error("Agent does not advertise supported text/JSON output");
 }
 
-export async function invokeGeneral(step: GeneralStep, input: Value): Promise<Value> {
-  await inspectGeneral(step);
-  const transport = new LegacyJsonRpcTransport({ endpoint: step.endpoint, fetchImpl: makeAgentFetch() });
+export async function invokeGeneral(step: GeneralStep, input: Value, fetcher = makeAgentFetch()): Promise<Value> {
+  await inspectGeneral(step, fetcher);
+  const transport = new LegacyJsonRpcTransport({ endpoint: step.endpoint, fetchImpl: fetcher });
   const signal = AbortSignal.timeout(60000);
   let result = await transport.sendMessage(SendMessageRequest.fromJSON({ message: { messageId: randomUUID(), role: "ROLE_USER",
     parts: [input.type === "text" ? { text: input.value } : { data: input.value, mediaType: "application/json" }],

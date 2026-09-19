@@ -180,7 +180,7 @@ export function normalizeAgents(payload: unknown): DiscoveredAgent[] {
   return envelope.items.flatMap((item) => {
     let agent: RegistryRecord;
     try { agent = parseRegistryRecord(item); } catch { return []; }
-    if (agent.status !== "ACTIVE") return [];
+    if (agent.status !== "ACTIVE" || (agent.expiresAt && Date.parse(agent.expiresAt) <= Date.now())) return [];
     return agent.endpoints.filter((endpoint) => endpoint.protocol === "A2A").map((endpoint) => ({
       ansId: agent.agentId,
       name: agent.displayName,
