@@ -7,6 +7,7 @@
     "node": ">=24"
   },
   "scripts": {
+    "agents:audit": "node --env-file-if-exists=.env.local scripts/audit-connections.ts",
     "registry:sync": "node --env-file-if-exists=.env.local scripts/sync-registry.ts",
     "catalog:seed": "node --env-file-if-exists=.env.local scripts/seed-catalog.ts",
     "dev": "next dev --hostname 127.0.0.1",

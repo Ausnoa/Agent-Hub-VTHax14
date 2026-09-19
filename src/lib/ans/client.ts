@@ -1,3 +1,5 @@
+export interface AnsSkill { id: string; name: string; tags: string[] }
+
 export interface DiscoveredAgent {
   ansId: string;
   name: string;
@@ -8,7 +10,8 @@ export interface DiscoveredAgent {
   transports: string[];
   discoveredAt: string;
   identityStatus: "not-verified";
-  skills?: { id: string; name: string; tags: string[] }[];
+  skills?: AnsSkill[];
+  trustScore?: number | null;
 }
 
 export function discoveryAuthorization(): string | undefined {
@@ -181,6 +184,7 @@ export function normalizeAgents(payload: unknown): DiscoveredAgent[] {
     return agent.endpoints.filter((endpoint) => endpoint.protocol === "A2A").map((endpoint) => ({
       ansId: agent.agentId,
       name: agent.displayName,
+      trustScore: agent.trustScore,
       description: agent.description,
       ansName: agent.ansName,
       endpoint: endpoint.url,

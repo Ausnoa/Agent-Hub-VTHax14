@@ -1,6 +1,7 @@
 import type { DatabaseSync } from "node:sqlite";
 import type { RegistryRecord } from "../ans/client.ts";
 import { transaction } from "./db.ts";
+import type { Capability, SelectedAgent } from "../contracts/index.ts";
 
 // Registry gateway: the only code that reads or writes the local ANS index.
 // Design: docs/DECISION-001-ANS-REGISTRY-INDEX.md and docs/DECISION-003-DATABASE-SCHEMA.md.
@@ -131,6 +132,23 @@ export function createRegistryGateway(db: DatabaseSync, now: () => Date = () => 
   }
 
   return {
+    reportCandidates(capability: Capability, current = now()): SelectedAgent[] {
+      const rows = db.prepare(`
+        SELECT DISTINCT a.agent_id, a.display_name, e.url, e.metadata_url
+        FROM registry_agents a JOIN registry_endpoints e ON e.agent_id = a.agent_id
+        JOIN registry_functions f ON f.endpoint_id = e.id
+        WHERE a.listed = 1 AND a.ans_status = 'ACTIVE'
+          AND (a.expires_at IS NULL OR a.expires_at > ?)
+          AND a.last_seen_at >= ? AND a.last_seen_at <= ?
+          AND e.protocol = 'A2A' AND e.metadata_url IS NOT NULL
+          AND f.function_id = ?
+          AND EXISTS (SELECT 1 FROM json_each(e.transports) WHERE value IN ('JSON-RPC', 'JSONRPC'))
+        ORDER BY a.agent_id, e.url
+      `).all(current.toISOString(), new Date(current.getTime() - 86_400_000).toISOString(), current.toISOString(), capability);
+      return rows.map((row) => ({ ansId: String(row.agent_id), name: String(row.display_name),
+        endpoint: String(row.url), metadataUrl: String(row.metadata_url), capability,
+        source: "ans", identityStatus: "not-verified", protocolVersion: "0.3.0" }));
+    },
     /** Starts a sync run; throws if another sync is already running. */
     startSync(trigger: SyncTrigger): number {
       try {

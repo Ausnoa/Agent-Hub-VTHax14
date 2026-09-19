@@ -28,17 +28,7 @@ export class RegistryAgentCatalog implements AgentCatalog {
     const allowlist = z.record(z.string(), z.array(z.string())).parse(JSON.parse(process.env.COMPATIBLE_AGENTS_JSON ?? "{}"));
     const approved = allowlist[capability] ?? [];
     if (!approved.length) return [];
-    return this.registry.searchCandidates(capability.replaceAll("-", " "), 50).flatMap((agent) => {
-      const age = this.now() - Date.parse(agent.lastSeenAt);
-      if (!approved.includes(agent.agentId) || !Number.isFinite(age) || age < 0 || age > 86_400_000) return [];
-      return agent.endpoints.filter((endpoint) => endpoint.metadataUrl &&
-        endpoint.transports.some((transport) => ["JSON-RPC", "JSONRPC"].includes(transport)) &&
-        endpoint.functions.some((skill) => skill.id === capability)).map((endpoint) => ({
-          ansId: agent.agentId, name: agent.displayName, endpoint: endpoint.url,
-          metadataUrl: endpoint.metadataUrl!, capability, source: "ans" as const,
-          identityStatus: "not-verified" as const, protocolVersion: "0.3.0",
-        }));
-    });
+    return this.registry.reportCandidates(capability, new Date(this.now())).filter((agent) => approved.includes(agent.ansId));
   }
   close() { this.ownedDb?.close(); }
 }

@@ -9,4 +9,8 @@ Composed workflows are saved and reused on this site. Nothing registers them wit
 
 An empty, stale, incompatible, or unreachable selection returns a blocker instead of silently using fixtures. Pilot/demo mode remains available when explicitly selected. Identity is still unverified; public deployment and accounts are outside this milestone.
 
-The main gateway currently searches up to 50 ranked registrations per capability. Broader candidate pagination and additional report adapters can be added separately.
+The main gateway now selects exact declared report capabilities across the registry rather than only the first 50 text matches. Browse searches remain bounded; execution still requires explicit compatibility approval.
+
+## Connection audit
+
+Run `npm run agents:audit` to distinguish index size from compatible and approved public candidates. Add `-- --probe` to read all three local cards and up to 12 public candidate cards. A passing card does not prove report-output compatibility or verified identity. No public tasks are invoked by the audit.

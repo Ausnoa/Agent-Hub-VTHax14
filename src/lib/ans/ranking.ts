@@ -62,7 +62,7 @@ export function rankBySkill(agents: DiscoveredAgent[], capability: string): Rank
   return agents
     .flatMap((agent) => {
       let best: RankedAgent | undefined;
-      for (const skill of agent.skills) {
+      for (const skill of agent.skills ?? []) {
         const { coverage, score } = scoreSkill(wanted, skill);
         if (coverage && (!best || coverage > best.coverage || (coverage === best.coverage && score > best.score))) {
           best = { agent, skill, coverage, score };
