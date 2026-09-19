@@ -19,6 +19,7 @@ The initial demo is company research → risk analysis → summary, subject to f
 - Generate form configuration from validated schemas using a fixed set of components.
 - Persist workflows, runs, step attempts, and outputs in a relational database. Choose the database and hosting together after confirming deployment constraints.
 - Keep credentials and external agent calls on the server.
+- Route all database access through gateways in `lib/gateways/`, one per area of data. API routes and server-side jobs call gateways; nothing else touches the database. See `docs/DECISION-002-GATEWAY-AND-DATA-ACCESS.md`.
 - Defer accounts, billing, marketplace features, arbitrary graphs, arbitrary schema translation, and workflow editing.
 
 ## Phase 1 — Prove ANS and A2A access (hours 0–6)
@@ -116,17 +117,19 @@ src/
   lib/a2a/             Protocol client and task lifecycle
   lib/adapters/        Supported capability and data adapters
   lib/workflows/       Proposal validation and sequential execution
-  lib/persistence/     Composite, workflow, run, and step storage
+  lib/gateways/        Only database access: registry index, composite, workflow, run, and step storage
 agents/                Demo A2A services if needed
 tests/                 Contract and end-to-end checks
 ```
 
 ## Data model
 
+Tables, keys, and constraints for these objects are defined in `docs/DECISION-003-DATABASE-SCHEMA.md`.
+
 | Object | Purpose |
 | --- | --- |
 | DiscoveredAgent | ANS identity, description, protocol, capabilities, endpoint, discovery timestamp, raw evidence reference |
-| Registry index | Synced ANS agents, endpoints, agent cards, declared skills, and sync runs; schema in `docs/DECISION-001-ANS-REGISTRY-INDEX.md` |
+| Registry index | Synced ANS agents, endpoints, functions, fetched agent cards, identity checks, and sync runs |
 | WorkflowProposal | Planned capabilities, selected candidates, compatibility checks, review state |
 | CompositeAgent | Name, description, original prompt, current approved version |
 | WorkflowVersion | Immutable ordered steps, adapter versions, input schema, UI configuration |

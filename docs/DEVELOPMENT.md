@@ -34,3 +34,4 @@ When working on the backend:
 - Never write test fixtures into the index database. Tests use a separate temporary database.
 - A fresh clone starts with an empty index; discovery returns no candidates until the first sync completes. Check sync status before assuming ANS has no match.
 - Delete the database file to force a full rebuild.
+- Schema changes go in a new numbered file in `src/lib/gateways/migrations/`; never edit an applied migration. See `docs/DECISION-003-DATABASE-SCHEMA.md`.
