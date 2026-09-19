@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><title>Agent Hub — AI Agent Composer</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;family=Playfair+Display:ital,wght@0,400;0,600;1,400&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-surface":"#e5e1e4","surface-tint":"#00dbe9","on-tertiary-fixed":"#002113","primary":"#dbfcff","surface-container-high":"#2a2a2c","background":"#131315","on-secondary-fixed-variant":"#5516be","on-background":"#e5e1e4","surface":"#131315","outline-variant":"#3b494b","on-secondary-container":"#c4abff","on-primary":"#00363a","on-tertiary":"#003824","primary-fixed":"#7df4ff","error":"#ffb4ab","surface-container-low":"#1c1b1e","on-secondary":"#3c0091","tertiary-fixed-dim":"#4edea3","surface-bright":"#39393b","outline":"#849495","secondary-container":"#571bc1","primary-fixed-dim":"#00dbe9","on-error":"#690005","secondary-fixed":"#e9ddff","on-primary-fixed-variant":"#004f54","surface-variant":"#353437","tertiary":"#d8ffe7","secondary":"#d0bcff","on-primary-container":"#006970","surface-container":"#201f22","tertiary-fixed":"#6ffbbe","inverse-surface":"#e5e1e4","inverse-on-surface":"#313032","on-secondary-fixed":"#23005c","secondary-fixed-dim":"#d0bcff","surface-dim":"#131315","on-surface-variant":"#b9cacb","on-error-container":"#ffdad6","on-primary-fixed":"#002022","on-tertiary-fixed-variant":"#005236","primary-container":"#00f0ff","tertiary-container":"#65f2b5","surface-container-highest":"#353437","on-tertiary-container":"#006d4a","error-container":"#93000a","inverse-primary":"#006970","surface-container-lowest":"#0e0e10"},borderRadius:{DEFAULT:"0.25rem",lg:"0.5rem",xl:"0.75rem",full:"9999px"},spacing:{"space-sm":"0.5rem","space-xs":"0.25rem","space-xl":"2.5rem","margin-sm":"1rem","space-lg":"1.5rem","space-md":"1rem",gutter:"1.5rem","gutter-sm":"1rem",margin:"2rem"},fontFamily:{"headline-lg":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"],"label-caps":["Plus Jakarta Sans"],"body-sm":["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"display-hero":["Playfair Display"],"display-hero-mobile":["Playfair Display"],"headline-lg-mobile":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"],"label-telemetry":["JetBrains Mono"],"body-lg":["Plus Jakarta Sans"],"label-code":["JetBrains Mono"]},fontSize:{"headline-lg":["32px",{lineHeight:"40px",letterSpacing:"-0.02em",fontWeight:"600"}],"headline-md":["22px",{lineHeight:"30px",letterSpacing:"-0.01em",fontWeight:"600"}],"label-caps":["11px",{lineHeight:"14px",letterSpacing:"0.06em",fontWeight:"700"}],"body-sm":["12px",{lineHeight:"16px",letterSpacing:"0.01em",fontWeight:"400"}],"headline-sm":["18px",{lineHeight:"24px",letterSpacing:"-0.005em",fontWeight:"600"}],"display-hero":["56px",{lineHeight:"64px",letterSpacing:"-0.02em",fontWeight:"400"}],"display-hero-mobile":["36px",{lineHeight:"44px",letterSpacing:"-0.01em",fontWeight:"400"}],"headline-lg-mobile":["26px",{lineHeight:"34px",letterSpacing:"-0.015em",fontWeight:"600"}],"body-md":["14px",{lineHeight:"20px",letterSpacing:"0em",fontWeight:"400"}],"label-telemetry":["10px",{lineHeight:"12px",letterSpacing:"0.08em",fontWeight:"600"}],"body-lg":["16px",{lineHeight:"24px",letterSpacing:"0em",fontWeight:"400"}],"label-code":["12px",{lineHeight:"16px",letterSpacing:"0.02em",fontWeight:"500"}]}}}}</script></head><body class="bg-background font-body-md text-on-surface min-h-screen flex flex-col selection:bg-primary-container selection:text-on-primary-container"><header class="fixed top-0 w-full z-50 bg-surface-container-lowest/80 backdrop-blur-2xl shadow-[0_4px_30px_rgba(0,0,0,0.5)]"><div class="h-16 w-full px-gutter flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md flex-shrink-0"><img alt="Agent Hub Core Emblem" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1X4VwgW6Jy-B_9Zg76JoiWd_Dc7tnrd4R11454v98RVxgZXC8EkLoXOvUscLdUBCNPOMBwfP5gmfTT-yGPyJAwtLofqNsuYAKcG-idxEnxahkm1F5dBP48uAohuCqzWx1xTj1Uwn_CR1EuH4DrM1nBp3LicQ1cAMt1jTVMQ20WpwW9P5ZAmoj0orMtl_mDEgAiQIAomn1ecJxq04xq8_p8-iBj4Uq0BcJV4I5LZXlbOxw"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-primary tracking-tight font-bold">AGENT HUB</span><span class="hidden lg:inline-flex font-label-telemetry text-label-telemetry text-on-surface-variant">v2.4 COMPOSER ENGINE</span></div><div class="hidden xl:flex items-center gap-space-xs px-2.5 py-0.5 rounded-full bg-surface-container-low shadow-[0_0_12px_rgba(111,251,190,0.08)]"><span class="w-1.5 h-1.5 rounded-full bg-tertiary-fixed animate-pulse"></span><span class="font-label-caps text-label-caps text-tertiary uppercase tracking-widest">ANS VERIFIED A2A NETWORK</span></div></div><nav class="hidden md:flex items-center gap-space-xs p-1 rounded-xl bg-surface-container-lowest/60 backdrop-blur-md" data-active-classes="bg-surface-container-high text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]"><a class="px-3.5 py-1.5 rounded-lg font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all duration-200" data-path="compose" href="#">Compose</a><a class="px-3.5 py-1.5 rounded-lg font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all duration-200" data-path="discovery" href="#">Discovery</a><a class="px-3.5 py-1.5 rounded-lg font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all duration-200" data-path="workflow-review" href="#">Workflow</a><a class="px-3.5 py-1.5 rounded-lg font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all duration-200" data-path="generated-agent" href="#">Interface</a><a aria-current="page" class="px-3.5 py-1.5 rounded-lg font-body-md transition-all duration-200 bg-surface-container-high text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]" data-path="live-execution" href="#">Execution</a><a class="px-3.5 py-1.5 rounded-lg font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all duration-200" data-path="my-agents" href="#">My Agents</a></nav><div class="flex items-center gap-space-md flex-shrink-0"><div class="hidden 2xl:flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-low"><span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim animate-ping"></span><span class="font-label-telemetry text-label-telemetry text-tertiary font-semibold tracking-wider">GoDaddy ANS: Synchronized · 1,420 Verified Nodes</span></div><div class="hidden sm:flex items-center gap-space-xs px-3 py-1 rounded-lg bg-surface-container-low/80"><span class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">GAS</span><span class="font-label-telemetry text-label-telemetry text-primary-fixed-dim font-bold">18.4 Gwei</span><span class="text-outline-variant font-label-telemetry text-label-telemetry">•</span><span class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">TOKENS</span><span class="font-label-code text-label-code text-primary font-semibold">4.2M</span></div><div class="flex items-center gap-space-sm pl-2"><img alt="Profile" class="w-8 h-8 rounded-full object-cover shadow-[0_0_0_1px_rgba(219,252,255,0.2)] hover:shadow-[0_0_0_2px_rgba(0,219,233,0.6)] transition-all cursor-pointer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpDd0CqoPS7VC_9LT-tNf62GIrQTpF3TuynCA7329bxIvqmgWQu4ArCHrdggMCleIEw_1LNpoeIzuGwdfC5i4q-ySB9YcP7asXV1dbNMKb8krvRDnijb5geLors9XrS2ONQEUWsrqtlfe1oXm3lqH8yOSmRdWZtJT8s9Zfd2GThCX1eWY98A5pCO25L3nHF1GzJ3B_pbIpOSbRd79LdleKDUErfKUUSctC6qISJaV2"/></div></div></div></header><main class="w-full pt-16 bg-background flex-1"><div class="flex flex-col w-full">
+<div class="w-full relative px-gutter py-space-lg flex flex-col gap-space-lg overflow-hidden">
+<!-- Ambient Specular Radial Flares -->
+<div class="absolute -top-32 left-1/4 w-96 h-96 rounded-full bg-primary-container/10 blur-[140px] pointer-events-none"></div>
+<div class="absolute top-1/2 right-10 w-[30rem] h-[30rem] rounded-full bg-secondary-container/15 blur-[180px] pointer-events-none"></div>
+<div class="absolute bottom-10 left-1/3 w-80 h-80 rounded-full bg-tertiary-container/10 blur-[160px] pointer-events-none"></div>
+<!-- Top Status Header Deck -->
+<div class="w-full rounded-xl bg-surface-container-lowest/80 backdrop-blur-2xl p-space-md shadow-2xl flex flex-col xl:flex-row items-start xl:items-center justify-between gap-space-md relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-r from-primary-container/5 via-transparent to-secondary/5 pointer-events-none"></div>
+<div class="flex flex-wrap items-center gap-space-md z-10">
+<div class="flex items-center gap-space-sm">
+<div class="relative flex items-center justify-center w-4 h-4">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-fixed-dim opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary-container"></span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-primary tracking-tight">Live A2A Execution in Progress</span>
+<span class="font-label-telemetry text-label-telemetry text-outline tracking-wider uppercase">JOB #ANS-8849-EXEC • RUNTIME ID: 0x9bf4_a2a_cluster</span>
+</div>
+</div>
+<div class="flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-high shadow-inner">
+<span class="w-2 h-2 rounded-full bg-primary-fixed-dim animate-pulse"></span>
+<span class="font-label-caps text-label-caps text-primary uppercase tracking-wider">Step 3 of 4: Options Hedger Running</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-low">
+<span class="material-symbols-outlined text-outline text-[16px]">schedule</span>
+<span class="font-label-code text-label-code text-on-surface tracking-widest" id="live-timer">142ms elapsed</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm z-10 self-end xl:self-auto">
+<div class="flex items-center gap-space-xs px-3 py-1.5 rounded-lg bg-surface-container-low shadow-sm">
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">Cluster Sync:</span>
+<span class="font-label-telemetry text-label-telemetry text-tertiary-fixed-dim font-bold">OPTIMAL</span>
+</div>
+<button class="flex items-center gap-space-xs px-4 py-1.5 rounded-lg bg-error-container/40 hover:bg-error-container text-error hover:text-on-error font-body-md text-body-md transition-all shadow-md active:scale-95 cursor-pointer" id="abort-btn">
+<span class="material-symbols-outlined text-[16px]">stop_circle</span>
+<span>Abort Execution</span>
+</button>
+</div>
+</div>
+<!-- Center Cinematic A2A Visualizer Canvas -->
+<div class="w-full rounded-2xl bg-surface-container-lowest/90 backdrop-blur-3xl p-space-lg shadow-2xl relative flex flex-col gap-space-lg overflow-hidden">
+<!-- Top HUD micro-bar -->
+<div class="flex items-center justify-between text-outline border-b-0 pb-1 z-10">
+<div class="flex items-center gap-space-sm">
+<span class="font-label-telemetry text-label-telemetry text-primary-fixed tracking-widest uppercase">ANS Topography: Autonomous Subgraph 4-Hop Pipeline</span>
+<span class="text-outline-variant font-label-telemetry text-label-telemetry">•</span>
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant">E2E Cryptographic Mesh</span>
+</div>
+<div class="flex items-center gap-space-md">
+<span class="font-label-telemetry text-label-telemetry text-outline">TX ID: 0x9321c…f76b</span>
+<span class="font-label-telemetry text-label-telemetry text-tertiary">TLS 1.3 SECURE POD-BUS</span>
+</div>
+</div>
+<!-- Orchestration Stage (SVG Bezier Paths + Glass Nodes Overlay) -->
+<div class="relative w-full py-8 min-h-[360px] flex items-center justify-between">
+<!-- SVG Interactive Conduit Overlay -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none z-0" preserveaspectratio="none" viewbox="0 0 1000 360" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<lineargradient id="gradCompleted" x1="0%" x2="100%" y1="0%" y2="0%">
+<stop offset="0%" stop-color="#4edea3" stop-opacity="0.9"></stop>
+<stop offset="100%" stop-color="#4edea3" stop-opacity="0.9"></stop>
+</lineargradient>
+<lineargradient id="gradActive" x1="0%" x2="100%" y1="0%" y2="0%">
+<stop offset="0%" stop-color="#4edea3" stop-opacity="0.7"></stop>
+<stop offset="50%" stop-color="#00f0ff" stop-opacity="1"></stop>
+<stop offset="100%" stop-color="#00f0ff" stop-opacity="0.9"></stop>
+</lineargradient>
+<lineargradient id="gradQueued" x1="0%" x2="100%" y1="0%" y2="0%">
+<stop offset="0%" stop-color="#3b494b" stop-opacity="0.4"></stop>
+<stop offset="100%" stop-color="#2a2a2c" stop-opacity="0.2"></stop>
+</lineargradient>
+<filter height="140%" id="glowCyan" width="140%" x="-20%" y="-20%">
+<fegaussianblur result="blur" stddeviation="5"></fegaussianblur>
+<femerge>
+<femergenode in="blur"></femergenode>
+<femergenode in="SourceGraphic"></femergenode>
+</femerge>
+</filter>
+<filter height="140%" id="glowGreen" width="140%" x="-20%" y="-20%">
+<fegaussianblur result="blur" stddeviation="4"></fegaussianblur>
+<femerge>
+<femergenode in="blur"></femergenode>
+<femergenode in="SourceGraphic"></femergenode>
+</femerge>
+</filter>
+</defs>
+<!-- Conduit 1 -> 2 (Completed) -->
+<path d="M 210 180 C 270 140, 270 140, 330 180" fill="none" filter="url(#glowGreen)" stroke="url(#gradCompleted)" stroke-width="2.5"></path>
+<!-- Conduit 2 -> 3 (Active flow with pulsing dashed particles) -->
+<path class="animate-[pulse_1.5s_infinite]" d="M 460 180 C 520 220, 520 220, 580 180" fill="none" filter="url(#glowCyan)" stroke="url(#gradActive)" stroke-dasharray="6,4" stroke-width="3"></path>
+<!-- Conduit 3 -> 4 (Queued / Idle) -->
+<path d="M 710 180 C 770 140, 770 140, 830 180" fill="none" stroke="url(#gradQueued)" stroke-dasharray="4,6" stroke-width="2"></path>
+</svg>
+<!-- Floating Data Packet Badges along Conduits -->
+<div class="absolute left-[24%] top-16 z-20 hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-high/90 backdrop-blur-md shadow-lg -translate-x-1/2">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-fixed-dim"></span>
+<span class="font-label-telemetry text-label-telemetry text-tertiary font-medium">{tokens: 1420, lex_valid: true}</span>
+</div>
+<div class="absolute left-[49%] bottom-14 z-20 hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-highest/90 backdrop-blur-md shadow-[0_0_15px_rgba(0,240,255,0.25)] -translate-x-1/2 animate-bounce">
+<span class="w-2 h-2 rounded-full bg-primary-container animate-ping"></span>
+<span class="font-label-telemetry text-label-telemetry text-primary font-bold">{sentiment: 0.88, volatility: 42.1%}</span>
+</div>
+<div class="absolute left-[74%] top-16 z-20 hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-low/70 backdrop-blur-sm -translate-x-1/2">
+<span class="w-1.5 h-1.5 rounded-full bg-outline-variant"></span>
+<span class="font-label-telemetry text-label-telemetry text-outline">payload: waiting_delta_hedger</span>
+</div>
+<!-- Agent Pod Grid (4 Nodes) -->
+<div class="w-full grid grid-cols-1 md:grid-cols-4 gap-space-md relative z-10">
+<!-- POD 1: Completed -->
+<div class="rounded-xl bg-surface-container-low/80 backdrop-blur-xl p-space-md shadow-xl flex flex-col justify-between h-72 transition-transform duration-300 hover:-translate-y-1 relative overflow-hidden group">
+<div class="absolute top-0 left-0 right-0 h-1 bg-tertiary-fixed-dim shadow-[0_0_12px_rgba(78,222,163,0.8)]"></div>
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-tertiary-fixed-dim shadow-inner">
+<span class="material-symbols-outlined text-[18px]">library_books</span>
+</div>
+<div class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-high">
+<span class="material-symbols-outlined text-[12px] text-tertiary-fixed-dim">check_circle</span>
+<span class="font-label-telemetry text-label-telemetry text-tertiary font-bold uppercase">COMPLETED</span>
+</div>
+</div>
+<span class="font-headline-sm text-headline-sm text-primary tracking-tight font-semibold mt-2">Fin-Lexicon</span>
+<span class="font-label-telemetry text-label-telemetry text-outline-variant truncate">godaddy://fin-lexicon.agent</span>
+</div>
+<!-- Pod Inner Data Deck -->
+<div class="rounded-lg bg-surface-container-lowest/80 p-2.5 flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">EXEC LATENCY</span>
+<span class="font-label-code text-label-code text-tertiary">42ms</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">PAYLOAD EMITTED</span>
+<span class="font-label-code text-label-code text-on-surface font-semibold">12.4 KB</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">ANS SIGNATURE</span>
+<span class="font-label-telemetry text-label-telemetry text-outline">0xfa41…8812</span>
+</div>
+</div>
+<div class="flex items-center justify-between text-outline text-body-sm font-body-sm pt-2">
+<span class="font-label-caps text-label-caps uppercase text-tertiary-fixed">Node verified</span>
+<span class="material-symbols-outlined text-[16px] text-tertiary">verified_user</span>
+</div>
+</div>
+<!-- POD 2: Completed -->
+<div class="rounded-xl bg-surface-container-low/80 backdrop-blur-xl p-space-md shadow-xl flex flex-col justify-between h-72 transition-transform duration-300 hover:-translate-y-1 relative overflow-hidden group">
+<div class="absolute top-0 left-0 right-0 h-1 bg-tertiary-fixed-dim shadow-[0_0_12px_rgba(78,222,163,0.8)]"></div>
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-tertiary-fixed-dim shadow-inner">
+<span class="material-symbols-outlined text-[18px]">query_stats</span>
+</div>
+<div class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-high">
+<span class="material-symbols-outlined text-[12px] text-tertiary-fixed-dim">check_circle</span>
+<span class="font-label-telemetry text-label-telemetry text-tertiary font-bold uppercase">COMPLETED</span>
+</div>
+</div>
+<span class="font-headline-sm text-headline-sm text-primary tracking-tight font-semibold mt-2">Sentiment Pulse</span>
+<span class="font-label-telemetry text-label-telemetry text-outline-variant truncate">godaddy://sentiment-pulse.agent</span>
+</div>
+<!-- Pod Inner Data Deck -->
+<div class="rounded-lg bg-surface-container-lowest/80 p-2.5 flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">EXEC LATENCY</span>
+<span class="font-label-code text-label-code text-tertiary">58ms</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">CONFIDENCE</span>
+<span class="font-label-code text-label-code text-tertiary-fixed font-bold">91% Bullish</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">SAMPLE CORPUS</span>
+<span class="font-label-code text-label-code text-on-surface">14,200 feeds</span>
+</div>
+</div>
+<div class="flex items-center justify-between text-outline text-body-sm font-body-sm pt-2">
+<span class="font-label-caps text-label-caps uppercase text-tertiary-fixed">Consensus passed</span>
+<span class="material-symbols-outlined text-[16px] text-tertiary">check</span>
+</div>
+</div>
+<!-- POD 3: Active Processing (Hero Accent) -->
+<div class="rounded-xl bg-surface-container-high/90 backdrop-blur-2xl p-space-md shadow-[0_0_40px_rgba(0,240,255,0.2)] flex flex-col justify-between h-72 scale-[1.03] relative overflow-hidden transition-all duration-300">
+<div class="absolute top-0 left-0 right-0 h-1.5 bg-primary-container shadow-[0_0_16px_rgba(0,240,255,1)] animate-pulse"></div>
+<div class="absolute -right-12 -top-12 w-28 h-28 bg-primary-container/20 rounded-full blur-2xl pointer-events-none"></div>
+<div class="flex flex-col gap-space-xs relative z-10">
+<div class="flex items-center justify-between">
+<div class="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary-container shadow-[0_0_10px_rgba(0,240,255,0.4)]">
+<span class="material-symbols-outlined text-[18px] animate-spin">cyclone</span>
+</div>
+<div class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary-container/20 shadow-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container animate-ping"></span>
+<span class="font-label-telemetry text-label-telemetry text-primary font-bold uppercase tracking-wider">PROCESSING</span>
+</div>
+</div>
+<span class="font-headline-sm text-headline-sm text-primary tracking-tight font-bold mt-2">Black-Scholes Hedger</span>
+<span class="font-label-telemetry text-label-telemetry text-primary-fixed-dim truncate">godaddy://black-scholes.agent</span>
+</div>
+<!-- Active Telemetry Metric Box -->
+<div class="rounded-lg bg-surface-container-lowest/95 p-2.5 flex flex-col gap-2 relative z-10 shadow-inner">
+<div class="flex items-center justify-between">
+<span class="font-label-telemetry text-label-telemetry text-primary uppercase">COMPUTING DELTA / GAMMA</span>
+<span class="font-label-code text-label-code text-primary-container font-bold">Δ -0.42 / Γ 0.08</span>
+</div>
+<!-- Progress mini bar -->
+<div class="w-full bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary-container h-full rounded-full w-[78%] animate-[pulse_2s_infinite]"></div>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-label-telemetry text-label-telemetry text-outline-variant uppercase">MATH ACCELERATOR</span>
+<span class="font-label-code text-label-code text-on-surface">AVX-512 VPOW</span>
+</div>
+</div>
+<div class="flex items-center justify-between text-primary-fixed-dim font-body-sm pt-2 relative z-10">
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-primary">Solving Vol Surface</span>
+<span class="font-label-telemetry text-label-telemetry text-primary-container animate-pulse">78% FINISHED</span>
+</div>
+</div>
+<!-- POD 4: Queued / Pending -->
+<div class="rounded-xl bg-surface-container-lowest/60 backdrop-blur-md p-space-md shadow-lg flex flex-col justify-between h-72 opacity-60 hover:opacity-80 transition-opacity duration-300 relative overflow-hidden">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<div class="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-outline shadow-inner">
+<span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+</div>
+<div class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-low">
+<span class="w-1.5 h-1.5 rounded-full bg-outline-variant"></span>
+<span class="font-label-telemetry text-label-telemetry text-outline font-semibold uppercase">QUEUED</span>
+</div>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface-variant tracking-tight font-semibold mt-2">Order Settler</span>
+<span class="font-label-telemetry text-label-telemetry text-outline truncate">godaddy://order-settler.agent</span>
+</div>
+<!-- Pod Inner Data Deck (Idle) -->
+<div class="rounded-lg bg-surface-container-low/50 p-2.5 flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="font-label-telemetry text-label-telemetry text-outline uppercase">EXEC LATENCY</span>
+<span class="font-label-code text-label-code text-outline-variant">--</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-label-telemetry text-label-telemetry text-outline uppercase">STATUS</span>
+<span class="font-label-code text-label-code text-outline">Awaiting Trigger</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-label-telemetry text-label-telemetry text-outline uppercase">DESTINATION</span>
+<span class="font-label-telemetry text-label-telemetry text-outline truncate">Deribit • FIX Engine</span>
+</div>
+</div>
+<div class="flex items-center justify-between text-outline text-body-sm font-body-sm pt-2">
+<span class="font-label-caps text-label-caps uppercase text-outline-variant">Pending input packet</span>
+<span class="material-symbols-outlined text-[16px] text-outline">hourglass_empty</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Realtime Agent Communication Stream Ticker -->
+<div class="w-full rounded-xl bg-surface-container-lowest/80 p-space-md flex flex-col md:flex-row items-start md:items-center justify-between gap-space-md shadow-inner">
+<div class="flex items-center gap-space-md flex-1 min-w-0">
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-high flex-shrink-0">
+<span class="material-symbols-outlined text-[14px] text-primary-fixed-dim">terminal</span>
+<span class="font-label-telemetry text-label-telemetry text-primary font-bold">A2A LOG</span>
+</div>
+<div class="font-label-code text-label-code text-on-surface-variant truncate">
+<span class="text-tertiary-fixed-dim font-bold">[21:40:12.088]</span>
+<span class="text-primary-fixed">godaddy://black-scholes.agent</span>
+<span class="text-outline-variant">→</span>
+<span class="text-on-surface">Synthesizing strike chain 5200-5800 C/P. Implied IV spread: 2.1%. Generating rebalance vectors.</span>
+</div>
+</div>
+<div class="flex items-center gap-space-md flex-shrink-0">
+<div class="flex items-center gap-1 text-outline">
+<span class="material-symbols-outlined text-[14px] text-tertiary-fixed-dim">lock</span>
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant">TLS 256-bit GCM</span>
+</div>
+<span class="text-outline-variant font-label-telemetry text-label-telemetry">•</span>
+<span class="font-label-telemetry text-label-telemetry text-outline">BANDWIDTH: 1.8 MB/s</span>
+</div>
+</div>
+</div>
+<!-- Bottom Results Reveal Panel (Expanding Dynamic Card with Glass Reflection) -->
+<div class="w-full rounded-2xl bg-surface-container-lowest/90 backdrop-blur-3xl p-space-lg shadow-2xl flex flex-col gap-space-lg relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-b from-surface-container-high/20 via-transparent to-transparent pointer-events-none"></div>
+<!-- Results Header -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md pb-space-sm relative z-10">
+<div class="flex items-center gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-primary-container shadow-lg shadow-primary-container/10">
+<span class="material-symbols-outlined text-[28px]">verified</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-sm">
+<span class="font-headline-md text-headline-md text-primary tracking-tight font-bold">Execution Synthesis &amp; Cryptographic Proof</span>
+<span class="px-2 py-0.5 rounded-full bg-tertiary-container/20 text-tertiary font-label-caps text-label-caps uppercase font-bold">ANS Attested</span>
+</div>
+<span class="font-body-md text-body-md text-on-surface-variant">Calculated and signed in real-time across 4 autonomous GoDaddy agent delegates.</span>
+</div>
+</div>
+<!-- Verdict Banner Pill -->
+<div class="flex items-center gap-3 px-4 py-2 rounded-xl bg-surface-container-high shadow-lg">
+<span class="material-symbols-outlined text-primary-container text-[20px]">balance</span>
+<div class="flex flex-col">
+<span class="font-label-telemetry text-label-telemetry text-outline uppercase tracking-wider">HEDGING VERDICT</span>
+<span class="font-headline-sm text-headline-sm text-primary tracking-tight font-semibold">Delta Neutral Strangle Rebalance Recommended</span>
+</div>
+</div>
+</div>
+<!-- Bento Grid: Details, Allocations & Proof Visuals -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg relative z-10">
+<!-- Left: Capital Allocation Breakdown Table (7 Cols) -->
+<div class="lg:col-span-7 rounded-xl bg-surface-container-low/70 backdrop-blur-xl p-space-md flex flex-col justify-between shadow-xl">
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm text-primary font-semibold tracking-tight">Proposed Capital Execution Protocol</span>
+<span class="font-label-code text-label-code text-tertiary-fixed font-bold">Total Delta Hedged: $125,000 USD</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Short gamma protective put roll mitigation to insulate downside tail volatility ahead of FOMC rate announcement.</p>
+<!-- Execution Allocations Table -->
+<div class="w-full mt-2 overflow-x-auto">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead>
+<tr class="text-outline uppercase font-label-telemetry text-label-telemetry border-b-0 bg-surface-container-high/50 rounded-lg">
+<th class="p-2.5 rounded-l-lg">Contract / Asset</th>
+<th class="p-2.5">Action</th>
+<th class="p-2.5">Notional</th>
+<th class="p-2.5">Max Slippage</th>
+<th class="p-2.5 rounded-r-lg">Execution Route</th>
+</tr>
+</thead>
+<tbody class="divide-y-0 font-label-code text-label-code">
+<tr class="hover:bg-surface-container-high/30 transition-colors">
+<td class="p-2.5 text-primary font-semibold flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+                      BTC-28MAR25-62000-P
+                    </td>
+<td class="p-2.5 text-tertiary font-bold">BUY (ROLL)</td>
+<td class="p-2.5 text-on-surface">$75,000.00</td>
+<td class="p-2.5 text-on-surface-variant">0.12%</td>
+<td class="p-2.5 text-outline">Deribit FIX 4.4</td>
+</tr>
+<tr class="hover:bg-surface-container-high/30 transition-colors">
+<td class="p-2.5 text-primary font-semibold flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+                      BTC-28MAR25-68000-C
+                    </td>
+<td class="p-2.5 text-error font-bold">SELL (TRIM)</td>
+<td class="p-2.5 text-on-surface">$50,000.00</td>
+<td class="p-2.5 text-on-surface-variant">0.09%</td>
+<td class="p-2.5 text-outline">Paradigm Block</td>
+</tr>
+<tr class="hover:bg-surface-container-high/30 transition-colors">
+<td class="p-2.5 text-primary-fixed-dim font-semibold flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-tertiary-fixed"></span>
+                      USDC Delta Collateral
+                    </td>
+<td class="p-2.5 text-on-surface">RE-MARGIN</td>
+<td class="p-2.5 text-on-surface">$12,400.00</td>
+<td class="p-2.5 text-on-surface-variant">&lt; 0.01%</td>
+<td class="p-2.5 text-outline">Vault Internal</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Bottom Telemetry Metric Strip -->
+<div class="mt-4 pt-3 flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-2">
+<span class="font-label-telemetry text-label-telemetry text-outline uppercase">EXPECTED NET SHARPE DELTA:</span>
+<span class="font-label-code text-label-code text-tertiary-fixed font-bold">+0.44</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-telemetry text-label-telemetry text-outline uppercase">PORTFOLIO VAR 99%:</span>
+<span class="font-label-code text-label-code text-primary font-bold">-2.1% (-$2,625)</span>
+</div>
+</div>
+</div>
+<!-- Right: Cryptographic Receipt + Node Consensus (5 Cols) -->
+<div class="lg:col-span-5 rounded-xl bg-surface-container-low/70 backdrop-blur-xl p-space-md flex flex-col justify-between shadow-xl gap-space-md">
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm text-primary font-semibold tracking-tight">GoDaddy ANS Cryptographic Receipt</span>
+<span class="material-symbols-outlined text-primary-fixed-dim text-[18px]">verified_user</span>
+</div>
+<!-- Hash Card -->
+<div class="rounded-lg bg-surface-container-lowest/90 p-space-sm flex flex-col gap-1.5 shadow-inner">
+<div class="flex items-center justify-between">
+<span class="font-label-telemetry text-label-telemetry text-outline uppercase">RECEIPT MERKLE ROOT</span>
+<span class="font-label-telemetry text-label-telemetry text-tertiary uppercase">4/4 Nodes Signed</span>
+</div>
+<div class="flex items-center justify-between gap-2">
+<span class="font-label-code text-label-code text-primary font-bold tracking-wider truncate">0x7c9a8df43391b1002ee84fa89104cb1a3f81</span>
+<button class="p-1 rounded bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-primary transition-colors cursor-pointer flex-shrink-0" title="Copy Hash">
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+</button>
+</div>
+</div>
+<!-- Signed Consensus Nodes Mini-List -->
+<div class="flex flex-col gap-1.5 mt-1">
+<span class="font-label-telemetry text-label-telemetry text-outline uppercase tracking-wider">Validated ANS Consensus Signers</span>
+<div class="grid grid-cols-2 gap-2">
+<div class="p-2 rounded bg-surface-container-lowest/70 flex items-center justify-between">
+<div class="flex flex-col min-w-0">
+<span class="font-label-telemetry text-label-telemetry text-on-surface truncate">validator-us-east.ans</span>
+<span class="font-label-telemetry text-label-telemetry text-outline">Weight: 25.0%</span>
+</div>
+<span class="material-symbols-outlined text-tertiary-fixed-dim text-[16px]">check_circle</span>
+</div>
+<div class="p-2 rounded bg-surface-container-lowest/70 flex items-center justify-between">
+<div class="flex flex-col min-w-0">
+<span class="font-label-telemetry text-label-telemetry text-on-surface truncate">validator-eu-fra.ans</span>
+<span class="font-label-telemetry text-label-telemetry text-outline">Weight: 25.0%</span>
+</div>
+<span class="material-symbols-outlined text-tertiary-fixed-dim text-[16px]">check_circle</span>
+</div>
+<div class="p-2 rounded bg-surface-container-lowest/70 flex items-center justify-between">
+<div class="flex flex-col min-w-0">
+<span class="font-label-telemetry text-label-telemetry text-on-surface truncate">validator-ap-tyo.ans</span>
+<span class="font-label-telemetry text-label-telemetry text-outline">Weight: 25.0%</span>
+</div>
+<span class="material-symbols-outlined text-tertiary-fixed-dim text-[16px]">check_circle</span>
+</div>
+<div class="p-2 rounded bg-surface-container-lowest/70 flex items-center justify-between">
+<div class="flex flex-col min-w-0">
+<span class="font-label-telemetry text-label-telemetry text-on-surface truncate">godaddy-root-01.ans</span>
+<span class="font-label-telemetry text-label-telemetry text-outline">Weight: 25.0%</span>
+</div>
+<span class="material-symbols-outlined text-tertiary-fixed-dim text-[16px]">check_circle</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Micro Gas & Nonce Telemetry -->
+<div class="flex items-center justify-between pt-2 border-b-0 text-outline">
+<span class="font-label-telemetry text-label-telemetry">COMPUTATIONAL GAS: 48,102 UNITS</span>
+<span class="font-label-telemetry text-label-telemetry">NONCE: #984210</span>
+</div>
+</div>
+</div>
+<!-- Action Bar Deck -->
+<div class="w-full flex flex-col sm:flex-row items-center justify-between gap-space-md pt-space-sm relative z-10">
+<div class="flex items-center gap-space-sm text-outline-variant">
+<span class="material-symbols-outlined text-[18px] text-tertiary">shield</span>
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant">Immutable Attestation anchored to GoDaddy ANS Ledger</span>
+</div>
+<div class="flex flex-wrap items-center gap-space-sm w-full sm:w-auto justify-end">
+<button class="px-4 py-2 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface hover:text-primary font-body-md text-body-md transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">download</span>
+<span>Download Signed Proof (JSON-LD)</span>
+</button>
+<button class="px-4 py-2 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface hover:text-primary font-body-md text-body-md transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">replay</span>
+<span>Re-run Pipeline</span>
+</button>
+<button class="px-5 py-2 rounded-xl bg-primary-container hover:bg-primary-fixed text-on-primary font-body-md text-body-md font-semibold transition-all shadow-lg shadow-primary-container/20 active:scale-95 cursor-pointer flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">send</span>
+<span>Broadcast Order to Exchange</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Interactive Inline Script for Live Timer and Interactive Abort Feedback -->
+<script>
+    (function() {
+      let elapsedMs = 142;
+      const timerElement = document.getElementById('live-timer');
+      const abortBtn = document.getElementById('abort-btn');
+
+      if (timerElement) {
+        const interval = setInterval(() => {
+          elapsedMs += 7;
+          timerElement.textContent = elapsedMs + 'ms elapsed';
+          if (elapsedMs > 185) {
+            clearInterval(interval);
+            timerElement.textContent = '186ms (completed)';
+          }
+        }, 70);
+      }
+
+      if (abortBtn) {
+        abortBtn.addEventListener('click', () => {
+          if (confirm('Are you sure you want to trigger emergency abort for Job #ANS-8849-EXEC?')) {
+            abortBtn.innerHTML = '<span class="material-symbols-outlined text-[16px]">check</span> Aborting...';
+            abortBtn.classList.add('opacity-50');
+            abortBtn.disabled = true;
+          }
+        });
+      }
+    })();
+  </script>
+</div></main><footer class="w-full bg-surface-container-lowest/90 backdrop-blur-xl py-2 px-gutter z-40"><div class="w-full flex flex-col md:flex-row items-center justify-between gap-space-xs text-center"><div class="flex items-center gap-space-sm"><span class="w-1.5 h-1.5 rounded-full bg-primary-fixed-dim shadow-[0_0_8px_rgba(0,219,233,0.8)]"></span><span class="font-label-telemetry text-label-telemetry text-on-surface-variant tracking-wider uppercase">GoDaddy Agent Name Service (ANS) v2.4 Active · Cryptographic Agent Signatures Validated · Multi-Agent Orchestrator Ready</span></div><div class="flex items-center gap-space-md"><span class="font-label-telemetry text-label-telemetry text-outline tracking-wider">LATENCY: 12ms</span><span class="font-label-telemetry text-label-telemetry text-outline tracking-wider">CONSENSUS: 99.98%</span></div></div></footer></body></html>

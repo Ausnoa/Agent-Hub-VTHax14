@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><title>Agent Hub — AI Agent Composer</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;family=Playfair+Display:ital,wght@0,400;0,600;1,400&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-surface":"#e5e1e4","surface-tint":"#00dbe9","on-tertiary-fixed":"#002113","primary":"#dbfcff","surface-container-high":"#2a2a2c","background":"#131315","on-secondary-fixed-variant":"#5516be","on-background":"#e5e1e4","surface":"#131315","outline-variant":"#3b494b","on-secondary-container":"#c4abff","on-primary":"#00363a","on-tertiary":"#003824","primary-fixed":"#7df4ff","error":"#ffb4ab","surface-container-low":"#1c1b1e","on-secondary":"#3c0091","tertiary-fixed-dim":"#4edea3","surface-bright":"#39393b","outline":"#849495","secondary-container":"#571bc1","primary-fixed-dim":"#00dbe9","on-error":"#690005","secondary-fixed":"#e9ddff","on-primary-fixed-variant":"#004f54","surface-variant":"#353437","tertiary":"#d8ffe7","secondary":"#d0bcff","on-primary-container":"#006970","surface-container":"#201f22","tertiary-fixed":"#6ffbbe","inverse-surface":"#e5e1e4","inverse-on-surface":"#313032","on-secondary-fixed":"#23005c","secondary-fixed-dim":"#d0bcff","surface-dim":"#131315","on-surface-variant":"#b9cacb","on-error-container":"#ffdad6","on-primary-fixed":"#002022","on-tertiary-fixed-variant":"#005236","primary-container":"#00f0ff","tertiary-container":"#65f2b5","surface-container-highest":"#353437","on-tertiary-container":"#006d4a","error-container":"#93000a","inverse-primary":"#006970","surface-container-lowest":"#0e0e10"},borderRadius:{DEFAULT:"0.25rem",lg:"0.5rem",xl:"0.75rem",full:"9999px"},spacing:{"space-sm":"0.5rem","space-xs":"0.25rem","space-xl":"2.5rem","margin-sm":"1rem","space-lg":"1.5rem","space-md":"1rem",gutter:"1.5rem","gutter-sm":"1rem",margin:"2rem"},fontFamily:{"headline-lg":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"],"label-caps":["Plus Jakarta Sans"],"body-sm":["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"display-hero":["Playfair Display"],"display-hero-mobile":["Playfair Display"],"headline-lg-mobile":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"],"label-telemetry":["JetBrains Mono"],"body-lg":["Plus Jakarta Sans"],"label-code":["JetBrains Mono"]},fontSize:{"headline-lg":["32px",{lineHeight:"40px",letterSpacing:"-0.02em",fontWeight:"600"}],"headline-md":["22px",{lineHeight:"30px",letterSpacing:"-0.01em",fontWeight:"600"}],"label-caps":["11px",{lineHeight:"14px",letterSpacing:"0.06em",fontWeight:"700"}],"body-sm":["12px",{lineHeight:"16px",letterSpacing:"0.01em",fontWeight:"400"}],"headline-sm":["18px",{lineHeight:"24px",letterSpacing:"-0.005em",fontWeight:"600"}],"display-hero":["56px",{lineHeight:"64px",letterSpacing:"-0.02em",fontWeight:"400"}],"display-hero-mobile":["36px",{lineHeight:"44px",letterSpacing:"-0.01em",fontWeight:"400"}],"headline-lg-mobile":["26px",{lineHeight:"34px",letterSpacing:"-0.015em",fontWeight:"600"}],"body-md":["14px",{lineHeight:"20px",letterSpacing:"0em",fontWeight:"400"}],"label-telemetry":["10px",{lineHeight:"12px",letterSpacing:"0.08em",fontWeight:"600"}],"body-lg":["16px",{lineHeight:"24px",letterSpacing:"0em",fontWeight:"400"}],"label-code":["12px",{lineHeight:"16px",letterSpacing:"0.02em",fontWeight:"500"}]}}}}</script></head><body class="bg-background font-body-md text-on-surface min-h-screen flex flex-col selection:bg-primary-container selection:text-on-primary-container"><header class="fixed top-0 w-full z-50 bg-surface-container-lowest/80 backdrop-blur-2xl shadow-[0_4px_30px_rgba(0,0,0,0.5)]"><div class="h-16 w-full px-gutter flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md flex-shrink-0"><img alt="Agent Hub Core Emblem" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1X4VwgW6Jy-B_9Zg76JoiWd_Dc7tnrd4R11454v98RVxgZXC8EkLoXOvUscLdUBCNPOMBwfP5gmfTT-yGPyJAwtLofqNsuYAKcG-idxEnxahkm1F5dBP48uAohuCqzWx1xTj1Uwn_CR1EuH4DrM1nBp3LicQ1cAMt1jTVMQ20WpwW9P5ZAmoj0orMtl_mDEgAiQIAomn1ecJxq04xq8_p8-iBj4Uq0BcJV4I5LZXlbOxw"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-primary tracking-tight font-bold">AGENT HUB</span><span class="hidden lg:inline-flex font-label-telemetry text-label-telemetry text-on-surface-variant">v2.4 COMPOSER ENGINE</span></div><div class="hidden xl:flex items-center gap-space-xs px-2.5 py-0.5 rounded-full bg-surface-container-low shadow-[0_0_12px_rgba(111,251,190,0.08)]"><span class="w-1.5 h-1.5 rounded-full bg-tertiary-fixed animate-pulse"></span><span class="font-label-caps text-label-caps text-tertiary uppercase tracking-widest">ANS VERIFIED A2A NETWORK</span></div></div><nav class="hidden md:flex items-center gap-space-xs p-1 rounded-xl bg-surface-container-lowest/60 backdrop-blur-md" data-active-classes="bg-surface-container-high text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]"><a class="px-3.5 py-1.5 rounded-lg font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all duration-200" data-path="compose" href="#">Compose</a><a class="px-3.5 py-1.5 rounded-lg font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all duration-200" data-path="discovery" href="#">Discovery</a><a class="px-3.5 py-1.5 rounded-lg font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all duration-200" data-path="workflow-review" href="#">Workflow</a><a class="px-3.5 py-1.5 rounded-lg font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all duration-200" data-path="generated-agent" href="#">Interface</a><a class="px-3.5 py-1.5 rounded-lg font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all duration-200" data-path="live-execution" href="#">Execution</a><a aria-current="page" class="px-3.5 py-1.5 rounded-lg font-body-md transition-all duration-200 bg-surface-container-high text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]" data-path="my-agents" href="#">My Agents</a></nav><div class="flex items-center gap-space-md flex-shrink-0"><div class="hidden 2xl:flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-low"><span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim animate-ping"></span><span class="font-label-telemetry text-label-telemetry text-tertiary font-semibold tracking-wider">GoDaddy ANS: Synchronized · 1,420 Verified Nodes</span></div><div class="hidden sm:flex items-center gap-space-xs px-3 py-1 rounded-lg bg-surface-container-low/80"><span class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">GAS</span><span class="font-label-telemetry text-label-telemetry text-primary-fixed-dim font-bold">18.4 Gwei</span><span class="text-outline-variant font-label-telemetry text-label-telemetry">•</span><span class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">TOKENS</span><span class="font-label-code text-label-code text-primary font-semibold">4.2M</span></div><div class="flex items-center gap-space-sm pl-2"><img alt="Profile" class="w-8 h-8 rounded-full object-cover shadow-[0_0_0_1px_rgba(219,252,255,0.2)] hover:shadow-[0_0_0_2px_rgba(0,219,233,0.6)] transition-all cursor-pointer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpDd0CqoPS7VC_9LT-tNf62GIrQTpF3TuynCA7329bxIvqmgWQu4ArCHrdggMCleIEw_1LNpoeIzuGwdfC5i4q-ySB9YcP7asXV1dbNMKb8krvRDnijb5geLors9XrS2ONQEUWsrqtlfe1oXm3lqH8yOSmRdWZtJT8s9Zfd2GThCX1eWY98A5pCO25L3nHF1GzJ3B_pbIpOSbRd79LdleKDUErfKUUSctC6qISJaV2"/></div></div></div></header><main class="w-full pt-16 bg-background flex-1"><div class="flex flex-col w-full">
+<div class="relative w-full overflow-hidden px-gutter py-space-lg flex flex-col gap-space-lg">
+<div class="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-primary-container/10 blur-[130px] pointer-events-none"></div>
+<div class="absolute top-1/3 -right-24 w-80 h-80 rounded-full bg-secondary-container/15 blur-[120px] pointer-events-none"></div>
+<section class="relative z-10 flex flex-col xl:flex-row xl:items-end justify-between gap-space-md">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(0,240,255,0.8)]"></span>
+<span class="font-label-telemetry text-label-telemetry text-primary-fixed-dim uppercase tracking-widest">A2A DEPLOYMENT REGISTRY</span>
+<span class="text-outline-variant font-label-telemetry text-label-telemetry">•</span>
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant">REGION: GLOBAL-M2</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-primary tracking-tight font-bold">My Agent Fleet</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">
+          Supervise, monitor telemetry, and invoke cryptographic GoDaddy ANS verified multi-agent ensembles.
+        </p>
+</div>
+<div class="flex items-center gap-space-sm flex-wrap">
+<button class="px-4 py-2.5 rounded-lg bg-surface-container-high text-on-surface font-body-md text-body-md hover:bg-surface-bright transition-all duration-200 flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-primary-fixed-dim text-lg">sync</span>
+<span class="font-medium">Sync ANS Heartbeats</span>
+</button>
+<button class="px-5 py-2.5 rounded-lg bg-gradient-to-b from-primary-container/20 to-primary-container/5 hover:from-primary-container/30 hover:to-primary-container/10 text-primary font-headline-sm text-headline-sm font-semibold flex items-center gap-2 shadow-[0_4px_24px_rgba(0,240,255,0.25)] transition-all duration-200">
+<span class="material-symbols-outlined text-xl">add_circle</span>
+<span>Compose New Agent</span>
+</button>
+</div>
+</section>
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+<div class="relative overflow-hidden rounded-xl bg-surface-container-lowest/80 backdrop-blur-xl p-space-md shadow-md flex flex-col justify-between group hover:shadow-xl transition-all duration-300">
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase tracking-wider">Fleet Nodes</span>
+<span class="material-symbols-outlined text-primary-fixed-dim text-lg">hub</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-primary font-bold tracking-tight">6</span>
+<span class="font-label-caps text-label-caps text-tertiary font-semibold uppercase">Active Ensembles</span>
+</div>
+<div class="mt-3 flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-fixed animate-pulse"></span>
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant">19 Sub-agents interconnected</span>
+</div>
+</div>
+<div class="relative overflow-hidden rounded-xl bg-surface-container-lowest/80 backdrop-blur-xl p-space-md shadow-md flex flex-col justify-between group hover:shadow-xl transition-all duration-300">
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase tracking-wider">30d Executions</span>
+<span class="material-symbols-outlined text-secondary text-lg">bolt</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-on-surface font-bold tracking-tight">42.8k</span>
+<span class="font-label-telemetry text-label-telemetry text-tertiary-fixed-dim font-bold">+18.4%</span>
+</div>
+<div class="mt-3 flex items-center gap-1.5">
+<div class="h-1 flex-1 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-3/4 rounded-full"></div>
+</div>
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant">42,819 / 50k cap</span>
+</div>
+</div>
+<div class="relative overflow-hidden rounded-xl bg-surface-container-lowest/80 backdrop-blur-xl p-space-md shadow-md flex flex-col justify-between group hover:shadow-xl transition-all duration-300">
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase tracking-wider">ANS Network Uptime</span>
+<span class="material-symbols-outlined text-tertiary-fixed text-lg">verified_user</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-tertiary font-bold tracking-tight">99.98%</span>
+<span class="font-label-caps text-label-caps text-tertiary-fixed font-semibold uppercase">SLA MET</span>
+</div>
+<div class="mt-3 flex items-center gap-2">
+<svg class="w-24 h-4 text-tertiary-fixed-dim" fill="none" viewbox="0 0 100 20">
+<path d="M0 10 L15 10 L22 3 L30 17 L38 10 L60 10 L68 5 L75 14 L82 10 L100 10" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant">0 drops / 720h</span>
+</div>
+</div>
+<div class="relative overflow-hidden rounded-xl bg-surface-container-lowest/80 backdrop-blur-xl p-space-md shadow-md flex flex-col justify-between group hover:shadow-xl transition-all duration-300">
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase tracking-wider">Registry Presence</span>
+<span class="material-symbols-outlined text-primary text-lg">public</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-primary font-bold tracking-tight">4</span>
+<span class="font-label-caps text-label-caps text-primary-fixed-dim font-semibold uppercase">On Global ANS</span>
+</div>
+<div class="mt-3 flex items-center gap-2">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high font-label-telemetry text-label-telemetry text-primary-fixed">godaddy://*.ans</span>
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant">2 Private</span>
+</div>
+</div>
+</section>
+<section class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-space-md p-space-md rounded-xl bg-surface-container-low/70 backdrop-blur-xl shadow-inner">
+<div class="flex-1 relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-outline text-lg pointer-events-none">search</span>
+<input class="w-full pl-10 pr-4 py-2 rounded-lg bg-surface-container-lowest/90 text-on-surface placeholder:text-outline font-body-md text-body-md focus:outline-none focus:ring-1 focus:ring-primary-container transition-all" id="agent-search" placeholder="Search by agent name, cryptographic ANS URI, capability tag, or hash..." type="text"/>
+</div>
+<div class="flex items-center gap-space-xs overflow-x-auto pb-1 lg:pb-0" id="filter-container">
+<button class="filter-chip active-filter px-3.5 py-1.5 rounded-full bg-primary-container/20 text-primary font-label-caps text-label-caps uppercase tracking-wider transition-all" data-category="all">
+          All (6)
+        </button>
+<button class="filter-chip px-3.5 py-1.5 rounded-full bg-surface-container-high hover:bg-surface-bright text-on-surface-variant hover:text-on-surface font-label-caps text-label-caps uppercase tracking-wider transition-all" data-category="finance">
+          Finance
+        </button>
+<button class="filter-chip px-3.5 py-1.5 rounded-full bg-surface-container-high hover:bg-surface-bright text-on-surface-variant hover:text-on-surface font-label-caps text-label-caps uppercase tracking-wider transition-all" data-category="devops">
+          DevOps
+        </button>
+<button class="filter-chip px-3.5 py-1.5 rounded-full bg-surface-container-high hover:bg-surface-bright text-on-surface-variant hover:text-on-surface font-label-caps text-label-caps uppercase tracking-wider transition-all" data-category="research">
+          Research
+        </button>
+<button class="filter-chip px-3.5 py-1.5 rounded-full bg-surface-container-high hover:bg-surface-bright text-on-surface-variant hover:text-on-surface font-label-caps text-label-caps uppercase tracking-wider transition-all" data-category="ans-certified">
+          Published to ANS
+        </button>
+</div>
+</section>
+<main class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-space-lg" id="agents-grid">
+<article class="agent-card group relative rounded-xl bg-surface-container-lowest/80 backdrop-blur-2xl p-space-lg shadow-xl hover:shadow-[0_12px_40px_rgba(0,240,255,0.12)] transition-all duration-300 flex flex-col justify-between" data-category="finance ans-certified">
+<div class="flex flex-col gap-space-md">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-primary-container shadow-inner">
+<span class="material-symbols-outlined text-2xl">candlestick_chart</span>
+</div>
+<div class="flex flex-col items-end gap-1">
+<div class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-tertiary-container/10">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-fixed animate-ping"></span>
+<span class="font-label-telemetry text-label-telemetry text-tertiary font-bold tracking-wider uppercase">ACTIVE • 4 NODES</span>
+</div>
+<span class="font-label-telemetry text-label-telemetry text-outline">Executed 2m ago</span>
+</div>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h2 class="font-headline-md text-headline-md text-primary font-bold tracking-tight group-hover:text-primary-container transition-colors">Market Sentinel Alpha</h2>
+</div>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="font-label-code text-label-code text-primary-fixed-dim font-medium tracking-tight">godaddy://sentinel-1.agent.ans</span>
+<button class="text-outline hover:text-primary transition-colors copy-btn" data-uri="godaddy://sentinel-1.agent.ans" title="Copy URI">
+<span class="material-symbols-outlined text-sm">content_copy</span>
+</button>
+</div>
+</div>
+<div class="relative h-28 rounded-lg overflow-hidden bg-surface-container-low/60 p-space-xs flex items-center justify-center">
+<img class="w-full h-full object-cover rounded opacity-45 mix-blend-luminosity group-hover:opacity-75 transition-opacity duration-300" data-alt="Abstract holographic financial trading and hedging network topology diagram with cyan optical nodes and mathematical vectors against obsidian dark matrix" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgiyLzxOvXmoknAhnpBgTUfz6ea0w5rgnkFGyEqKilHWH9lcaN5ws08hVgyb6nehcm5Jc9pRMLTKJBGvstNs4wkeOojbEXuw4-laKr-QQAgJB66JhsmSpjJ9v6nOAKmSBYTf7ugPfAHFkB94zhRK3X2tudRrZS3dnKsF08IHi2D7r_LZYM2PGMNb6Dmg51dnO9_sMELpwjJ0LTweRqitEO5Y3IvFZf6ekhi5VEMlzt"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/90 via-transparent to-transparent flex items-end p-2 justify-between">
+<span class="font-label-telemetry text-label-telemetry text-primary-fixed-dim">DAG: [Orfeed] → [Model] → [Hedger] → [Exec]</span>
+<span class="px-2 py-0.5 rounded bg-surface-container-lowest/90 font-label-telemetry text-label-telemetry text-tertiary-fixed-dim">18.2ms avg</span>
+</div>
+</div>
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="px-2.5 py-0.5 rounded-md bg-surface-container-high font-label-caps text-label-caps text-on-surface-variant font-semibold">FINANCE</span>
+<span class="px-2.5 py-0.5 rounded-md bg-surface-container-high font-label-caps text-label-caps text-on-surface-variant font-semibold">HEDGING</span>
+<span class="px-2.5 py-0.5 rounded-md bg-surface-container-high font-label-caps text-label-caps text-on-surface-variant font-semibold">REAL-TIME</span>
+</div>
+<div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-low/50">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary-fixed text-base" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="font-label-caps text-label-caps text-tertiary font-bold tracking-wider">GoDaddy ANS Certified</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-telemetry text-label-telemetry text-outline">TRUST:</span>
+<span class="font-label-code text-label-code text-primary font-bold">99.4%</span>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm flex items-center justify-between gap-2 border-t-0">
+<div class="flex items-center gap-1">
+<button class="p-2 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface hover:text-primary transition-all text-xs font-label-caps flex items-center gap-1.5" title="Inspect Direct Acyclic Graph">
+<span class="material-symbols-outlined text-sm">account_tree</span>
+<span>View DAG</span>
+</button>
+<button class="p-2 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface hover:text-primary transition-all text-xs font-label-caps flex items-center gap-1.5" title="Execution Telemetry Logs">
+<span class="material-symbols-outlined text-sm">terminal</span>
+<span>Logs</span>
+</button>
+</div>
+<button class="px-3.5 py-2 rounded-lg bg-primary-container text-on-primary font-headline-sm text-headline-sm font-semibold flex items-center gap-1.5 hover:shadow-[0_0_16px_rgba(0,240,255,0.4)] transition-all">
+<span class="material-symbols-outlined text-base">play_arrow</span>
+<span>Launch Interface</span>
+</button>
+</div>
+</article>
+<article class="agent-card group relative rounded-xl bg-surface-container-lowest/80 backdrop-blur-2xl p-space-lg shadow-xl hover:shadow-[0_12px_40px_rgba(196,171,255,0.12)] transition-all duration-300 flex flex-col justify-between" data-category="research">
+<div class="flex flex-col gap-space-md">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-secondary shadow-inner">
+<span class="material-symbols-outlined text-2xl">campaign</span>
+</div>
+<div class="flex flex-col items-end gap-1">
+<div class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-secondary-container/20">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary-fixed animate-ping"></span>
+<span class="font-label-telemetry text-label-telemetry text-secondary font-bold tracking-wider uppercase">ACTIVE • 3 NODES</span>
+</div>
+<span class="font-label-telemetry text-label-telemetry text-outline">Executed 14m ago</span>
+</div>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h2 class="font-headline-md text-headline-md text-primary font-bold tracking-tight group-hover:text-secondary transition-colors">Omnichannel PR Dispatcher</h2>
+</div>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="font-label-code text-label-code text-secondary font-medium tracking-tight">godaddy://pr-orchestrator.agent.ans</span>
+<button class="text-outline hover:text-secondary transition-colors copy-btn" data-uri="godaddy://pr-orchestrator.agent.ans" title="Copy URI">
+<span class="material-symbols-outlined text-sm">content_copy</span>
+</button>
+</div>
+</div>
+<div class="relative h-28 rounded-lg overflow-hidden bg-surface-container-low/60 p-space-xs flex items-center justify-center">
+<img class="w-full h-full object-cover rounded opacity-45 mix-blend-luminosity group-hover:opacity-75 transition-opacity duration-300" data-alt="Multi-channel communications broadcasting visual showing purple and cyan glowing message packets routed through optical switching nodes in deep space visual aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUWSQM5RwHJUYCH0ggqh_W-A2wDFX2XogzG0gQWeeaC2pXgjOLr7y_OETZ9_FjK_TPpX49PunbDbqkdOdqI1so7APuzDKcI_BL73UPPGYJejkVFx27Bx7edesJjYBCWuxwbRxwteM2tVz8TxIbGoMhd9AtIcxrvH6631TbMzWBrOWWXO15PEtJzSDNCDUz8uQEGZvga0zSOorLhpTGF7EbS4_iHXGeOG3ZaIiNOFCu"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/90 via-transparent to-transparent flex items-end p-2 justify-between">
+<span class="font-label-telemetry text-label-telemetry text-secondary">DAG: [Scraper] → [LLM Synthesis] → [Press Wire]</span>
+<span class="px-2 py-0.5 rounded bg-surface-container-lowest/90 font-label-telemetry text-label-telemetry text-secondary-fixed">412 runs</span>
+</div>
+</div>
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="px-2.5 py-0.5 rounded-md bg-surface-container-high font-label-caps text-label-caps text-on-surface-variant font-semibold">COMMUNICATIONS</span>
+<span class="px-2.5 py-0.5 rounded-md bg-surface-container-high font-label-caps text-label-caps text-on-surface-variant font-semibold">MULTI-AGENT</span>
+</div>
+<div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-low/50">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-base">lock</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant font-bold tracking-wider">Private Fleet (Internal)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-telemetry text-label-telemetry text-outline">SUCCESS:</span>
+<span class="font-label-code text-label-code text-tertiary font-bold">100%</span>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm flex items-center justify-between gap-2">
+<button class="px-3.5 py-2 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface transition-all text-xs font-label-caps flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm">tune</span>
+<span>Edit Pipeline</span>
+</button>
+<button class="px-3.5 py-2 rounded-lg bg-secondary text-on-secondary font-headline-sm text-headline-sm font-semibold flex items-center gap-1.5 hover:shadow-[0_0_16px_rgba(208,188,255,0.3)] transition-all">
+<span class="material-symbols-outlined text-base">play_arrow</span>
+<span>Launch Interface</span>
+</button>
+</div>
+</article>
+<article class="agent-card group relative rounded-xl bg-surface-container-lowest/80 backdrop-blur-2xl p-space-lg shadow-xl hover:shadow-[0_12px_40px_rgba(111,251,190,0.1)] transition-all duration-300 flex flex-col justify-between" data-category="devops ans-certified">
+<div class="flex flex-col gap-space-md">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-tertiary-fixed-dim shadow-inner">
+<span class="material-symbols-outlined text-2xl">security</span>
+</div>
+<div class="flex flex-col items-end gap-1">
+<div class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-surface-container-high">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant font-bold tracking-wider uppercase">STANDBY • 5 NODES</span>
+</div>
+<span class="font-label-telemetry text-label-telemetry text-outline">Executed 1h ago</span>
+</div>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h2 class="font-headline-md text-headline-md text-primary font-bold tracking-tight group-hover:text-tertiary-fixed-dim transition-colors">Automated Smart Contract Auditor</h2>
+</div>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="font-label-code text-label-code text-primary-fixed-dim font-medium tracking-tight">godaddy://audit-swarm.agent.ans</span>
+<button class="text-outline hover:text-primary transition-colors copy-btn" data-uri="godaddy://audit-swarm.agent.ans" title="Copy URI">
+<span class="material-symbols-outlined text-sm">content_copy</span>
+</button>
+</div>
+</div>
+<div class="relative h-28 rounded-lg overflow-hidden bg-surface-container-low/60 p-space-xs flex items-center justify-center">
+<img class="w-full h-full object-cover rounded opacity-45 mix-blend-luminosity group-hover:opacity-75 transition-opacity duration-300" data-alt="Complex smart contract bytecode security visualization with neon green vulnerability flags, cryptographic hash chains, and dark optical crystal background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9WOFoWAJp9mpyC5Jb7oQ7PApeJQvPLzn7XE5hVng8tKOKgl_23-OzW6VGXZniKAv9YF1G0RkESQzy_kNwwzWLtwlAg88uhWIy6in8cY9YAMTk6579G5CB4epI6YPN04pFtXv6LydlTlOOCVG0MPTLEUK8gKM7xYOCqI0bC0utADNgy7sRnSp_LTnJ5N_h2nwTvMn2e9VuNdm9p4YuI_9D5Rfq-chmyjD5gw7jDE3K"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/90 via-transparent to-transparent flex items-end p-2 justify-between">
+<span class="font-label-telemetry text-label-telemetry text-tertiary-fixed">DAG: [Slither AST] → [Mythril] → [Formal Verifier]</span>
+<span class="px-2 py-0.5 rounded bg-surface-container-lowest/90 font-label-telemetry text-label-telemetry text-on-surface-variant">0 Vulnerabilities</span>
+</div>
+</div>
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="px-2.5 py-0.5 rounded-md bg-surface-container-high font-label-caps text-label-caps text-on-surface-variant font-semibold">SECURITY</span>
+<span class="px-2.5 py-0.5 rounded-md bg-surface-container-high font-label-caps text-label-caps text-on-surface-variant font-semibold">STATIC ANALYSIS</span>
+</div>
+<div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-low/50">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary-fixed text-base" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="font-label-caps text-label-caps text-tertiary font-bold tracking-wider">GoDaddy ANS Certified</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-telemetry text-label-telemetry text-outline">TRUST:</span>
+<span class="font-label-code text-label-code text-primary font-bold">99.9%</span>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm flex items-center justify-between gap-2">
+<div class="flex items-center gap-1">
+<button class="p-2 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface transition-all text-xs font-label-caps flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm">account_tree</span>
+<span>View DAG</span>
+</button>
+<button class="p-2 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface transition-all text-xs font-label-caps flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm">terminal</span>
+<span>Logs</span>
+</button>
+</div>
+<button class="px-3.5 py-2 rounded-lg bg-surface-container-high hover:bg-surface-bright text-primary font-headline-sm text-headline-sm font-semibold flex items-center gap-1.5 transition-all">
+<span class="material-symbols-outlined text-base">bolt</span>
+<span>Wake Agent</span>
+</button>
+</div>
+</article>
+<article class="agent-card group relative rounded-xl bg-surface-container-lowest/80 backdrop-blur-2xl p-space-lg shadow-xl hover:shadow-[0_12px_40px_rgba(0,240,255,0.12)] transition-all duration-300 flex flex-col justify-between" data-category="research ans-certified">
+<div class="flex flex-col gap-space-md">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-primary-fixed shadow-inner">
+<span class="material-symbols-outlined text-2xl">query_stats</span>
+</div>
+<div class="flex flex-col items-end gap-1">
+<div class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-tertiary-container/10">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-fixed animate-ping"></span>
+<span class="font-label-telemetry text-label-telemetry text-tertiary font-bold tracking-wider uppercase">ACTIVE • 3 NODES</span>
+</div>
+<span class="font-label-telemetry text-label-telemetry text-outline">Executed 32m ago</span>
+</div>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h2 class="font-headline-md text-headline-md text-primary font-bold tracking-tight group-hover:text-primary-container transition-colors">M&amp;A Intelligence Synthesizer</h2>
+</div>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="font-label-code text-label-code text-primary-fixed-dim font-medium tracking-tight">godaddy://ma-scout.agent.ans</span>
+<button class="text-outline hover:text-primary transition-colors copy-btn" data-uri="godaddy://ma-scout.agent.ans" title="Copy URI">
+<span class="material-symbols-outlined text-sm">content_copy</span>
+</button>
+</div>
+</div>
+<div class="relative h-28 rounded-lg overflow-hidden bg-surface-container-low/60 p-space-xs flex items-center justify-center">
+<img class="w-full h-full object-cover rounded opacity-45 mix-blend-luminosity group-hover:opacity-75 transition-opacity duration-300" data-alt="Global regulatory SEC Edgar filing intelligence data stream with glowing corporate acquisition network nodes and financial vector overlays" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOxaYCGIjCrMu3JxIMB1J8jHCy28w-Bq8GnSdYATAbw_oeJYbIDGZM_jZYh4E6LX9hMKWGcVkydxUQL_0KW4DB1dP9cAlPWb36ON7P3h5YJ202ikXyTfXm8jNb2rjhHbuMCwNjZKWQTYS4sRDKE_NJD8ylzbWkeFS49-jrOKL8nSqc0kKykTODurpA5mfPD4zS84q14btGwoayWLoqvDBECDwhq33rIi3m8PMB1IjU"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/90 via-transparent to-transparent flex items-end p-2 justify-between">
+<span class="font-label-telemetry text-label-telemetry text-primary-fixed">DAG: [SEC 10-K Stream] → [NLP Sentiment] → [Valuation]</span>
+<span class="px-2 py-0.5 rounded bg-surface-container-lowest/90 font-label-telemetry text-label-telemetry text-tertiary-fixed">Real-time Feed</span>
+</div>
+</div>
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="px-2.5 py-0.5 rounded-md bg-surface-container-high font-label-caps text-label-caps text-on-surface-variant font-semibold">RESEARCH</span>
+<span class="px-2.5 py-0.5 rounded-md bg-surface-container-high font-label-caps text-label-caps text-on-surface-variant font-semibold">SEC EDGAR</span>
+<span class="px-2.5 py-0.5 rounded-md bg-surface-container-high font-label-caps text-label-caps text-on-surface-variant font-semibold">FINANCE</span>
+</div>
+<div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-low/50">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary-fixed text-base" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="font-label-caps text-label-caps text-tertiary font-bold tracking-wider">GoDaddy ANS Certified</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-telemetry text-label-telemetry text-outline">TRUST:</span>
+<span class="font-label-code text-label-code text-primary font-bold">98.7%</span>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm flex items-center justify-between gap-2">
+<div class="flex items-center gap-1">
+<button class="p-2 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface transition-all text-xs font-label-caps flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm">account_tree</span>
+<span>View DAG</span>
+</button>
+<button class="p-2 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface transition-all text-xs font-label-caps flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm">terminal</span>
+<span>Logs</span>
+</button>
+</div>
+<button class="px-3.5 py-2 rounded-lg bg-primary-container text-on-primary font-headline-sm text-headline-sm font-semibold flex items-center gap-1.5 hover:shadow-[0_0_16px_rgba(0,240,255,0.4)] transition-all">
+<span class="material-symbols-outlined text-base">play_arrow</span>
+<span>Launch Interface</span>
+</button>
+</div>
+</article>
+<article class="agent-card group relative rounded-xl bg-surface-container-lowest/80 backdrop-blur-2xl p-space-lg shadow-xl hover:shadow-[0_12px_40px_rgba(255,180,171,0.08)] transition-all duration-300 flex flex-col justify-between" data-category="devops">
+<div class="flex flex-col gap-space-md">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-outline shadow-inner">
+<span class="material-symbols-outlined text-2xl">developer_board</span>
+</div>
+<div class="flex flex-col items-end gap-1">
+<div class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-surface-container-high">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant font-bold tracking-wider uppercase">IDLE</span>
+</div>
+<span class="font-label-telemetry text-label-telemetry text-outline">Executed 1d ago</span>
+</div>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h2 class="font-headline-md text-headline-md text-primary font-bold tracking-tight group-hover:text-on-surface transition-colors">Kubernetes Self-Healing Pod</h2>
+</div>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="font-label-code text-label-code text-on-surface-variant font-medium tracking-tight">godaddy://k8s-sentinel.agent.ans</span>
+<button class="text-outline hover:text-primary transition-colors copy-btn" data-uri="godaddy://k8s-sentinel.agent.ans" title="Copy URI">
+<span class="material-symbols-outlined text-sm">content_copy</span>
+</button>
+</div>
+</div>
+<div class="relative h-28 rounded-lg overflow-hidden bg-surface-container-low/60 p-space-xs flex items-center justify-center">
+<img class="w-full h-full object-cover rounded opacity-45 mix-blend-luminosity group-hover:opacity-75 transition-opacity duration-300" data-alt="Kubernetes cloud server cluster telemetry with crystalline cluster health nodes, blue mesh architecture, and containerized diagnostic visualizers" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnIri04EwhM0zAvKzvx5zxWgPp3AvV2mFtbUw3owKHmOR-xZ1admvdDKYn4iPgIEG5O06caqeAb3UvLWaMKFQ8P4jkfvAOFB328QUyUIes0zjX3OmzJtL1DaxbKNybL7wfcvgfe44xycg5nCSn08tFBQCuGZanNW4ucgf5ZY3LCpONQAdDmewbNEXziBS4jwdJqb0v2AziSp_VW3cgC-C2o_O11HTLTi18oBY65wFm"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/90 via-transparent to-transparent flex items-end p-2 justify-between">
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant">DAG: [Prometheus] → [Auto-Remediation] → [K8s API]</span>
+<span class="px-2 py-0.5 rounded bg-surface-container-lowest/90 font-label-telemetry text-label-telemetry text-outline">Standby Mode</span>
+</div>
+</div>
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="px-2.5 py-0.5 rounded-md bg-surface-container-high font-label-caps text-label-caps text-on-surface-variant font-semibold">DEVOPS</span>
+<span class="px-2.5 py-0.5 rounded-md bg-surface-container-high font-label-caps text-label-caps text-on-surface-variant font-semibold">CLOUD</span>
+</div>
+<div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-low/50">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-base">lock</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant font-bold tracking-wider">Private Cluster Fleet</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-telemetry text-label-telemetry text-outline">RESTARTS:</span>
+<span class="font-label-code text-label-code text-on-surface font-bold">0 Clean</span>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm flex items-center justify-between gap-2">
+<button class="px-3.5 py-2 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface transition-all text-xs font-label-caps flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm">tune</span>
+<span>Configure Triggers</span>
+</button>
+<button class="px-3.5 py-2 rounded-lg bg-surface-container-high hover:bg-surface-bright text-primary font-headline-sm text-headline-sm font-semibold flex items-center gap-1.5 transition-all">
+<span class="material-symbols-outlined text-base">power_settings_new</span>
+<span>Arm Daemon</span>
+</button>
+</div>
+</article>
+<article class="agent-card group relative rounded-xl bg-surface-container-lowest/80 backdrop-blur-2xl p-space-lg shadow-xl hover:shadow-[0_12px_40px_rgba(0,240,255,0.12)] transition-all duration-300 flex flex-col justify-between" data-category="ans-certified">
+<div class="flex flex-col gap-space-md">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-primary-container shadow-inner">
+<span class="material-symbols-outlined text-2xl">support_agent</span>
+</div>
+<div class="flex flex-col items-end gap-1">
+<div class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-tertiary-container/10">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-fixed animate-ping"></span>
+<span class="font-label-telemetry text-label-telemetry text-tertiary font-bold tracking-wider uppercase">ACTIVE • 4 NODES</span>
+</div>
+<span class="font-label-telemetry text-label-telemetry text-outline">Executed 4m ago</span>
+</div>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h2 class="font-headline-md text-headline-md text-primary font-bold tracking-tight group-hover:text-primary-container transition-colors">Customer Success Concierge</h2>
+</div>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="font-label-code text-label-code text-primary-fixed-dim font-medium tracking-tight">godaddy://cs-concierge.agent.ans</span>
+<button class="text-outline hover:text-primary transition-colors copy-btn" data-uri="godaddy://cs-concierge.agent.ans" title="Copy URI">
+<span class="material-symbols-outlined text-sm">content_copy</span>
+</button>
+</div>
+</div>
+<div class="relative h-28 rounded-lg overflow-hidden bg-surface-container-low/60 p-space-xs flex items-center justify-center">
+<img class="w-full h-full object-cover rounded opacity-45 mix-blend-luminosity group-hover:opacity-75 transition-opacity duration-300" data-alt="Neural audio waveform synthesis and real-time conversational streaming graph interface glowing with iridescent teal frequencies in deep space dark room" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_FA-JSyZ0GU6ld4A7ust1PlZh0NkqJ_cMJ693Toz-3UNePuvq317uIkJrwK321zWmZ_b8PTFzqHhvyiMz_PLketDOfu1g3LFzoM7VE_lEZ4KSOkDAn7onUR6d1vRaE2gXLym8spXqIAR1zN77hjg0VLO7YiCq9tua2dHVj8Yx_TqOOLqU7CDDzaDkMtt5wFdcwQ7bgkEIbOEAytyfiWhrjUK_Cdm9qLMe4SiePJv-"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/90 via-transparent to-transparent flex items-end p-2 justify-between">
+<span class="font-label-telemetry text-label-telemetry text-primary-fixed-dim">DAG: [Whisper STT] → [Knowledge RAG] → [ElevenLabs]</span>
+<span class="px-2 py-0.5 rounded bg-surface-container-lowest/90 font-label-telemetry text-label-telemetry text-tertiary-fixed">99.1% CSAT</span>
+</div>
+</div>
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="px-2.5 py-0.5 rounded-md bg-surface-container-high font-label-caps text-label-caps text-on-surface-variant font-semibold">SUPPORT</span>
+<span class="px-2.5 py-0.5 rounded-md bg-surface-container-high font-label-caps text-label-caps text-on-surface-variant font-semibold">VOICE+CHAT</span>
+</div>
+<div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-low/50">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary-fixed text-base" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="font-label-caps text-label-caps text-tertiary font-bold tracking-wider">GoDaddy ANS Certified</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-telemetry text-label-telemetry text-outline">TRUST:</span>
+<span class="font-label-code text-label-code text-primary font-bold">99.6%</span>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm flex items-center justify-between gap-2">
+<div class="flex items-center gap-1">
+<button class="p-2 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface transition-all text-xs font-label-caps flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm">account_tree</span>
+<span>View DAG</span>
+</button>
+<button class="p-2 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface transition-all text-xs font-label-caps flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm">terminal</span>
+<span>Logs</span>
+</button>
+</div>
+<button class="px-3.5 py-2 rounded-lg bg-primary-container text-on-primary font-headline-sm text-headline-sm font-semibold flex items-center gap-1.5 hover:shadow-[0_0_16px_rgba(0,240,255,0.4)] transition-all">
+<span class="material-symbols-outlined text-base">play_arrow</span>
+<span>Launch Interface</span>
+</button>
+</div>
+</article>
+</main>
+<footer class="relative overflow-hidden rounded-2xl bg-surface-container-lowest/90 backdrop-blur-2xl p-space-lg shadow-2xl mt-space-md">
+<div class="flex flex-col lg:flex-row items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-14 h-14 rounded-2xl bg-primary-container/10 flex items-center justify-center text-primary-fixed shadow-[0_0_24px_rgba(0,240,255,0.2)] flex-shrink-0">
+<span class="material-symbols-outlined text-3xl">workspace_premium</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm text-primary font-bold">ANS Registry Reputation Tier:</span>
+<span class="px-3 py-0.5 rounded-full bg-gradient-to-r from-primary-container/30 to-secondary-container/30 text-primary-fixed font-headline-sm text-headline-sm font-bold shadow-[0_0_12px_rgba(0,240,255,0.3)]">Diamond Tier</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+              Zero cryptographic discrepancies across 14,000+ Agent-to-Agent (A2A) bilateral interactions • ANS Consensus Staking: 4,000 GoDaddy Verified Bonds.
+            </p>
+</div>
+</div>
+<div class="flex items-center gap-space-sm flex-wrap lg:flex-nowrap">
+<div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-container-high/60">
+<span class="material-symbols-outlined text-tertiary-fixed text-lg">verified</span>
+<span class="font-label-telemetry text-label-telemetry text-tertiary">Cryptographic Nonce Valid</span>
+</div>
+<button class="px-4 py-2 rounded-lg bg-surface-container-high hover:bg-surface-bright text-primary font-headline-sm text-headline-sm font-medium transition-all flex items-center gap-2">
+<span>View Public ANS Card</span>
+<span class="material-symbols-outlined text-base">open_in_new</span>
+</button>
+</div>
+</div>
+</footer>
+</div>
+</div>
+<script>
+  (function() {
+    const searchInput = document.getElementById('agent-search');
+    const filterButtons = document.querySelectorAll('.filter-chip');
+    const cards = document.querySelectorAll('.agent-card');
+    let currentFilter = 'all';
+
+    function applyFilterAndSearch() {
+      const query = (searchInput.value || '').toLowerCase().trim();
+
+      cards.forEach(card => {
+        const textContent = card.innerText.toLowerCase();
+        const categories = (card.getAttribute('data-category') || '').split(' ');
+        
+        const matchesCategory = (currentFilter === 'all') || categories.includes(currentFilter);
+        const matchesQuery = !query || textContent.includes(query);
+
+        if (matchesCategory && matchesQuery) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    }
+
+    if (searchInput) {
+      searchInput.addEventListener('input', applyFilterAndSearch);
+    }
+
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterButtons.forEach(b => {
+          b.classList.remove('bg-primary-container/20', 'text-primary');
+          b.classList.add('bg-surface-container-high', 'text-on-surface-variant');
+        });
+
+        btn.classList.remove('bg-surface-container-high', 'text-on-surface-variant');
+        btn.classList.add('bg-primary-container/20', 'text-primary');
+
+        currentFilter = btn.getAttribute('data-category');
+        applyFilterAndSearch();
+      });
+    });
+
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const uri = btn.getAttribute('data-uri');
+        if (uri && navigator.clipboard) {
+          navigator.clipboard.writeText(uri).then(() => {
+            const icon = btn.querySelector('.material-symbols-outlined');
+            if (icon) {
+              const prev = icon.textContent;
+              icon.textContent = 'check';
+              icon.classList.add('text-tertiary-fixed');
+              setTimeout(() => {
+                icon.textContent = prev;
+                icon.classList.remove('text-tertiary-fixed');
+              }, 1800);
+            }
+          });
+        }
+      });
+    });
+  })();
+</script></main><footer class="w-full bg-surface-container-lowest/90 backdrop-blur-xl py-2 px-gutter z-40"><div class="w-full flex flex-col md:flex-row items-center justify-between gap-space-xs text-center"><div class="flex items-center gap-space-sm"><span class="w-1.5 h-1.5 rounded-full bg-primary-fixed-dim shadow-[0_0_8px_rgba(0,219,233,0.8)]"></span><span class="font-label-telemetry text-label-telemetry text-on-surface-variant tracking-wider uppercase">GoDaddy Agent Name Service (ANS) v2.4 Active · Cryptographic Agent Signatures Validated · Multi-Agent Orchestrator Ready</span></div><div class="flex items-center gap-space-md"><span class="font-label-telemetry text-label-telemetry text-outline tracking-wider">LATENCY: 12ms</span><span class="font-label-telemetry text-label-telemetry text-outline tracking-wider">CONSENSUS: 99.98%</span></div></div></footer></body></html>

@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><title>Agent Hub — AI Agent Composer</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;family=Playfair+Display:ital,wght@0,400;0,600;1,400&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-surface":"#e5e1e4","surface-tint":"#00dbe9","on-tertiary-fixed":"#002113","primary":"#dbfcff","surface-container-high":"#2a2a2c","background":"#131315","on-secondary-fixed-variant":"#5516be","on-background":"#e5e1e4","surface":"#131315","outline-variant":"#3b494b","on-secondary-container":"#c4abff","on-primary":"#00363a","on-tertiary":"#003824","primary-fixed":"#7df4ff","error":"#ffb4ab","surface-container-low":"#1c1b1e","on-secondary":"#3c0091","tertiary-fixed-dim":"#4edea3","surface-bright":"#39393b","outline":"#849495","secondary-container":"#571bc1","primary-fixed-dim":"#00dbe9","on-error":"#690005","secondary-fixed":"#e9ddff","on-primary-fixed-variant":"#004f54","surface-variant":"#353437","tertiary":"#d8ffe7","secondary":"#d0bcff","on-primary-container":"#006970","surface-container":"#201f22","tertiary-fixed":"#6ffbbe","inverse-surface":"#e5e1e4","inverse-on-surface":"#313032","on-secondary-fixed":"#23005c","secondary-fixed-dim":"#d0bcff","surface-dim":"#131315","on-surface-variant":"#b9cacb","on-error-container":"#ffdad6","on-primary-fixed":"#002022","on-tertiary-fixed-variant":"#005236","primary-container":"#00f0ff","tertiary-container":"#65f2b5","surface-container-highest":"#353437","on-tertiary-container":"#006d4a","error-container":"#93000a","inverse-primary":"#006970","surface-container-lowest":"#0e0e10"},borderRadius:{DEFAULT:"0.25rem",lg:"0.5rem",xl:"0.75rem",full:"9999px"},spacing:{"space-sm":"0.5rem","space-xs":"0.25rem","space-xl":"2.5rem","margin-sm":"1rem","space-lg":"1.5rem","space-md":"1rem",gutter:"1.5rem","gutter-sm":"1rem",margin:"2rem"},fontFamily:{"headline-lg":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"],"label-caps":["Plus Jakarta Sans"],"body-sm":["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"display-hero":["Playfair Display"],"display-hero-mobile":["Playfair Display"],"headline-lg-mobile":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"],"label-telemetry":["JetBrains Mono"],"body-lg":["Plus Jakarta Sans"],"label-code":["JetBrains Mono"]},fontSize:{"headline-lg":["32px",{lineHeight:"40px",letterSpacing:"-0.02em",fontWeight:"600"}],"headline-md":["22px",{lineHeight:"30px",letterSpacing:"-0.01em",fontWeight:"600"}],"label-caps":["11px",{lineHeight:"14px",letterSpacing:"0.06em",fontWeight:"700"}],"body-sm":["12px",{lineHeight:"16px",letterSpacing:"0.01em",fontWeight:"400"}],"headline-sm":["18px",{lineHeight:"24px",letterSpacing:"-0.005em",fontWeight:"600"}],"display-hero":["56px",{lineHeight:"64px",letterSpacing:"-0.02em",fontWeight:"400"}],"display-hero-mobile":["36px",{lineHeight:"44px",letterSpacing:"-0.01em",fontWeight:"400"}],"headline-lg-mobile":["26px",{lineHeight:"34px",letterSpacing:"-0.015em",fontWeight:"600"}],"body-md":["14px",{lineHeight:"20px",letterSpacing:"0em",fontWeight:"400"}],"label-telemetry":["10px",{lineHeight:"12px",letterSpacing:"0.08em",fontWeight:"600"}],"body-lg":["16px",{lineHeight:"24px",letterSpacing:"0em",fontWeight:"400"}],"label-code":["12px",{lineHeight:"16px",letterSpacing:"0.02em",fontWeight:"500"}]}}}}</script></head><body class="bg-background font-body-md text-on-surface min-h-screen flex flex-col selection:bg-primary-container selection:text-on-primary-container"><header class="fixed top-0 w-full z-50 bg-surface-container-lowest/80 backdrop-blur-2xl shadow-[0_4px_30px_rgba(0,0,0,0.5)]"><div class="h-16 w-full px-gutter flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md flex-shrink-0"><img alt="Agent Hub Core Emblem" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1X4VwgW6Jy-B_9Zg76JoiWd_Dc7tnrd4R11454v98RVxgZXC8EkLoXOvUscLdUBCNPOMBwfP5gmfTT-yGPyJAwtLofqNsuYAKcG-idxEnxahkm1F5dBP48uAohuCqzWx1xTj1Uwn_CR1EuH4DrM1nBp3LicQ1cAMt1jTVMQ20WpwW9P5ZAmoj0orMtl_mDEgAiQIAomn1ecJxq04xq8_p8-iBj4Uq0BcJV4I5LZXlbOxw"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-primary tracking-tight font-bold">AGENT HUB</span><span class="hidden lg:inline-flex font-label-telemetry text-label-telemetry text-on-surface-variant">v2.4 COMPOSER ENGINE</span></div><div class="hidden xl:flex items-center gap-space-xs px-2.5 py-0.5 rounded-full bg-surface-container-low shadow-[0_0_12px_rgba(111,251,190,0.08)]"><span class="w-1.5 h-1.5 rounded-full bg-tertiary-fixed animate-pulse"></span><span class="font-label-caps text-label-caps text-tertiary uppercase tracking-widest">ANS VERIFIED A2A NETWORK</span></div></div><nav class="hidden md:flex items-center gap-space-xs p-1 rounded-xl bg-surface-container-lowest/60 backdrop-blur-md" data-active-classes="bg-surface-container-high text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]"><a aria-current="page" class="px-3.5 py-1.5 rounded-lg font-body-md transition-all duration-200 bg-surface-container-high text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]" data-path="compose" href="#">Compose</a><a class="px-3.5 py-1.5 rounded-lg font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all duration-200" data-path="discovery" href="#">Discovery</a><a class="px-3.5 py-1.5 rounded-lg font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all duration-200" data-path="workflow-review" href="#">Workflow</a><a class="px-3.5 py-1.5 rounded-lg font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all duration-200" data-path="generated-agent" href="#">Interface</a><a class="px-3.5 py-1.5 rounded-lg font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all duration-200" data-path="live-execution" href="#">Execution</a><a class="px-3.5 py-1.5 rounded-lg font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all duration-200" data-path="my-agents" href="#">My Agents</a></nav><div class="flex items-center gap-space-md flex-shrink-0"><div class="hidden 2xl:flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-low"><span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim animate-ping"></span><span class="font-label-telemetry text-label-telemetry text-tertiary font-semibold tracking-wider">GoDaddy ANS: Synchronized · 1,420 Verified Nodes</span></div><div class="hidden sm:flex items-center gap-space-xs px-3 py-1 rounded-lg bg-surface-container-low/80"><span class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">GAS</span><span class="font-label-telemetry text-label-telemetry text-primary-fixed-dim font-bold">18.4 Gwei</span><span class="text-outline-variant font-label-telemetry text-label-telemetry">•</span><span class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">TOKENS</span><span class="font-label-code text-label-code text-primary font-semibold">4.2M</span></div><div class="flex items-center gap-space-sm pl-2"><img alt="Profile" class="w-8 h-8 rounded-full object-cover shadow-[0_0_0_1px_rgba(219,252,255,0.2)] hover:shadow-[0_0_0_2px_rgba(0,219,233,0.6)] transition-all cursor-pointer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpDd0CqoPS7VC_9LT-tNf62GIrQTpF3TuynCA7329bxIvqmgWQu4ArCHrdggMCleIEw_1LNpoeIzuGwdfC5i4q-ySB9YcP7asXV1dbNMKb8krvRDnijb5geLors9XrS2ONQEUWsrqtlfe1oXm3lqH8yOSmRdWZtJT8s9Zfd2GThCX1eWY98A5pCO25L3nHF1GzJ3B_pbIpOSbRd79LdleKDUErfKUUSctC6qISJaV2"/></div></div></div></header><main class="w-full pt-16 bg-background flex-1"><div class="flex flex-col w-full">
+<!-- Ambient Atmospheric Backdrops -->
+<div class="relative w-full overflow-hidden px-margin-sm md:px-margin py-8">
+<div class="absolute top-[-15%] left-1/4 w-[600px] h-[350px] rounded-full bg-primary-container/10 blur-[130px] pointer-events-none -z-10"></div>
+<div class="absolute top-[20%] right-[-5%] w-[450px] h-[450px] rounded-full bg-secondary-container/20 blur-[160px] pointer-events-none -z-10"></div>
+<div class="absolute bottom-[-10%] left-[-10%] w-[500px] h-[300px] rounded-full bg-tertiary-container/10 blur-[140px] pointer-events-none -z-10"></div>
+<!-- Header Section -->
+<div class="max-w-6xl mx-auto flex flex-col items-center text-center space-y-4 mb-10">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-high/60 backdrop-blur-md shadow-sm">
+<span class="w-2 h-2 rounded-full bg-primary-fixed animate-pulse"></span>
+<span class="font-label-telemetry text-label-telemetry text-primary uppercase tracking-widest">GoDaddy ANS Protocol v2.4 • Dynamic Synthesis</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg md:text-[44px] md:leading-[52px] text-primary font-bold tracking-tight max-w-4xl">
+        Orchestrate Autonomous Intelligence
+      </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl leading-relaxed">
+        Describe high-level operational goals. Agent Hub resolves capabilities and queries GoDaddy ANS for certified A2A nodes.
+      </p>
+</div>
+<!-- Main Composer Module -->
+<div class="max-w-5xl mx-auto space-y-6">
+<!-- Glass Composer Card -->
+<div class="relative rounded-2xl bg-surface-container-low/70 backdrop-blur-2xl p-6 sm:p-8 shadow-2xl transition-all duration-300">
+<div class="absolute inset-0 rounded-2xl bg-gradient-to-b from-primary/10 via-transparent to-transparent pointer-events-none"></div>
+<!-- Presets Row -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-fixed-dim text-lg">auto_awesome</span>
+<span class="font-label-caps text-label-caps text-on-surface uppercase tracking-wider">Operational Directives</span>
+</div>
+<div class="flex flex-wrap items-center gap-2" id="preset-container">
+<button class="preset-btn px-3 py-1 rounded-full bg-surface-container-high text-on-surface-variant hover:text-primary hover:bg-surface-bright font-label-code text-label-code transition-all shadow-sm" data-preset="Crypto Market Sentinel" type="button">
+              Crypto Market Sentinel
+            </button>
+<button class="preset-btn px-3 py-1 rounded-full bg-surface-container-high text-on-surface-variant hover:text-primary hover:bg-surface-bright font-label-code text-label-code transition-all shadow-sm" data-preset="Autonomous M&amp;A Researcher" type="button">
+              Autonomous M&amp;A Researcher
+            </button>
+<button class="preset-btn px-3 py-1 rounded-full bg-surface-container-high text-on-surface-variant hover:text-primary hover:bg-surface-bright font-label-code text-label-code transition-all shadow-sm" data-preset="Codebase Audit &amp; Auto-Remediator" type="button">
+              Codebase Audit &amp; Auto-Remediator
+            </button>
+<button class="preset-btn px-3 py-1 rounded-full bg-surface-container-high text-on-surface-variant hover:text-primary hover:bg-surface-bright font-label-code text-label-code transition-all shadow-sm" data-preset="Enterprise Omnichannel PR Agent" type="button">
+              Enterprise Omnichannel PR Agent
+            </button>
+</div>
+</div>
+<!-- Interactive Textarea Area -->
+<div class="relative rounded-xl bg-surface-container-lowest/80 p-4 shadow-inner">
+<textarea class="w-full bg-transparent font-body-lg text-body-lg text-on-surface placeholder:text-outline focus:outline-none resize-none leading-relaxed selection:bg-primary-container selection:text-on-primary-container" id="composer-input" placeholder="e.g., Continuous surveillance of DeFi liquidity pools on Ethereum &amp; Solana. Automatically flag malicious mints, execute automated hedge via dYdX, and file instant cryptographic proof to our GoDaddy ANS audit ledger." rows="5"></textarea>
+<!-- Floating Badges / Real-Time Telemetry Bar inside input -->
+<div class="flex flex-wrap items-center justify-between gap-3 pt-3 mt-2 bg-gradient-to-r from-transparent via-surface-container-low/40 to-transparent">
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-high text-tertiary shadow-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-fixed-dim animate-ping"></span>
+<span class="font-label-telemetry text-label-telemetry uppercase tracking-wider" id="capability-counter">3 capabilities detected in real-time</span>
+</div>
+<span class="font-label-telemetry text-label-telemetry text-outline hidden sm:inline">EST. COMPLEXITY: L3 (MULTI-STEP DISPATCH)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-telemetry text-label-telemetry text-outline" id="char-counter">184 / 2,048</span>
+<button class="p-1 rounded text-outline hover:text-primary transition-colors" id="clear-btn" title="Clear Prompt" type="button">
+<span class="material-symbols-outlined text-sm">backspace</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Real-time Capability Decomposition Tags -->
+<div class="mt-5 space-y-2">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-outline uppercase tracking-wider">Detected Capabilities &amp; Semantic Tags</span>
+<span class="font-label-telemetry text-label-telemetry text-primary-fixed-dim">Auto-mapped via ANS Ontology</span>
+</div>
+<div class="flex flex-wrap gap-2.5" id="tags-wrapper">
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container-high/80 text-on-surface shadow-sm">
+<span class="material-symbols-outlined text-sm text-primary-fixed-dim">travel_explore</span>
+<span class="font-body-sm text-body-sm font-medium">Web Scraping</span>
+<span class="font-label-telemetry text-label-telemetry text-tertiary-fixed-dim">98% match</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container-high/80 text-on-surface shadow-sm">
+<span class="material-symbols-outlined text-sm text-secondary">psychology</span>
+<span class="font-body-sm text-body-sm font-medium">Sentiment Analysis</span>
+<span class="font-label-telemetry text-label-telemetry text-tertiary-fixed-dim">94% match</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container-high/80 text-on-surface shadow-sm">
+<span class="material-symbols-outlined text-sm text-error">shield</span>
+<span class="font-body-sm text-body-sm font-medium">Risk Assessment</span>
+<span class="font-label-telemetry text-label-telemetry text-tertiary-fixed-dim">91% match</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container-high/80 text-on-surface shadow-sm">
+<span class="material-symbols-outlined text-sm text-tertiary-fixed">bolt</span>
+<span class="font-body-sm text-body-sm font-medium">Automated Execution</span>
+<span class="font-label-telemetry text-label-telemetry text-tertiary-fixed-dim">99% match</span>
+</div>
+</div>
+</div>
+<!-- Action Bar: Manual Toggle & Primary CTA -->
+<div class="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 bg-gradient-to-b from-surface-container-high/20 to-transparent">
+<!-- Manual Selection Expander Button -->
+<button class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-surface-container text-on-surface hover:bg-surface-container-high transition-all shadow-md" id="toggle-manual-btn" type="button">
+<span class="material-symbols-outlined text-primary-fixed-dim">tune</span>
+<span class="font-body-md text-body-md font-medium">Manual Agent Catalog Selection</span>
+<span class="material-symbols-outlined text-sm transition-transform duration-300" id="manual-toggle-chevron">expand_more</span>
+</button>
+<!-- Primary Specular Submit Button -->
+<button class="relative group flex items-center justify-center gap-3 px-8 py-3.5 rounded-xl bg-gradient-to-r from-primary-container via-primary-fixed to-primary text-on-primary font-headline-sm text-headline-sm font-bold shadow-[0_0_24px_rgba(0,240,255,0.4)] hover:shadow-[0_0_36px_rgba(0,240,255,0.65)] hover:scale-[1.01] active:scale-[0.99] transition-all overflow-hidden" type="button">
+<div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
+<span class="relative z-10">Decompose &amp; Discover ANS Agents</span>
+<span class="material-symbols-outlined relative z-10 text-xl group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+<!-- Collapsible Drawer: Manual ANS Catalog Selection -->
+<div class="hidden mt-6 pt-6 space-y-4" id="manual-catalog-drawer">
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Verified GoDaddy ANS Catalog</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Explicitly bind certified agents to your orchestration pipeline.</p>
+</div>
+<div class="relative w-full sm:w-64">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-outline text-lg">search</span>
+<input class="w-full pl-9 pr-3 py-2 rounded-lg bg-surface-container-lowest text-on-surface font-label-code text-label-code placeholder:text-outline focus:outline-none focus:bg-surface-container" id="catalog-search" placeholder="Search node signatures..." type="text"/>
+</div>
+</div>
+<!-- Catalog Agents Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="agent-grid">
+<!-- Node 1 -->
+<label class="agent-card flex items-start gap-3.5 p-3.5 rounded-xl bg-surface-container/60 hover:bg-surface-container-high transition-colors cursor-pointer shadow-sm">
+<input checked="" class="mt-1 w-4 h-4 rounded bg-surface-container-lowest accent-primary-fixed-dim" type="checkbox"/>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<span class="font-label-code text-label-code text-primary-fixed font-bold truncate">godaddy/dns-resolver.agent</span>
+<span class="font-label-telemetry text-label-telemetry text-tertiary-fixed bg-tertiary-container/20 px-2 py-0.5 rounded-full">ANS CERTIFIED</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Cryptographic resolution of autonomous routing endpoints and dynamic SRV records.</p>
+<div class="flex items-center gap-3 mt-2 font-label-telemetry text-label-telemetry text-outline">
+<span>LATENCY: 14ms</span>
+<span>NODE REP: 99.9%</span>
+</div>
+</div>
+</label>
+<!-- Node 2 -->
+<label class="agent-card flex items-start gap-3.5 p-3.5 rounded-xl bg-surface-container/60 hover:bg-surface-container-high transition-colors cursor-pointer shadow-sm">
+<input checked="" class="mt-1 w-4 h-4 rounded bg-surface-container-lowest accent-primary-fixed-dim" type="checkbox"/>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<span class="font-label-code text-label-code text-primary-fixed font-bold truncate">sec-edgar/analyzer.agent</span>
+<span class="font-label-telemetry text-label-telemetry text-tertiary-fixed bg-tertiary-container/20 px-2 py-0.5 rounded-full">ANS CERTIFIED</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Real-time parser for 10-K, 8-K, Form 4 disclosures with XBRL extraction pipeline.</p>
+<div class="flex items-center gap-3 mt-2 font-label-telemetry text-label-telemetry text-outline">
+<span>LATENCY: 120ms</span>
+<span>NODE REP: 98.7%</span>
+</div>
+</div>
+</label>
+<!-- Node 3 -->
+<label class="agent-card flex items-start gap-3.5 p-3.5 rounded-xl bg-surface-container/60 hover:bg-surface-container-high transition-colors cursor-pointer shadow-sm">
+<input class="mt-1 w-4 h-4 rounded bg-surface-container-lowest accent-primary-fixed-dim" type="checkbox"/>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<span class="font-label-code text-label-code text-primary-fixed font-bold truncate">anthropic/claude-coder.agent</span>
+<span class="font-label-telemetry text-label-telemetry text-tertiary-fixed bg-tertiary-container/20 px-2 py-0.5 rounded-full">ANS CERTIFIED</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">AST structural code parsing, regression unit test generator, security patch executor.</p>
+<div class="flex items-center gap-3 mt-2 font-label-telemetry text-label-telemetry text-outline">
+<span>LATENCY: 240ms</span>
+<span>NODE REP: 99.4%</span>
+</div>
+</div>
+</label>
+<!-- Node 4 -->
+<label class="agent-card flex items-start gap-3.5 p-3.5 rounded-xl bg-surface-container/60 hover:bg-surface-container-high transition-colors cursor-pointer shadow-sm">
+<input checked="" class="mt-1 w-4 h-4 rounded bg-surface-container-lowest accent-primary-fixed-dim" type="checkbox"/>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<span class="font-label-code text-label-code text-primary-fixed font-bold truncate">binance/order-executor.agent</span>
+<span class="font-label-telemetry text-label-telemetry text-tertiary-fixed bg-tertiary-container/20 px-2 py-0.5 rounded-full">ANS CERTIFIED</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Non-custodial smart execution engine with TWAP and slippage-protected batch routes.</p>
+<div class="flex items-center gap-3 mt-2 font-label-telemetry text-label-telemetry text-outline">
+<span>LATENCY: 38ms</span>
+<span>NODE REP: 99.8%</span>
+</div>
+</div>
+</label>
+</div>
+</div>
+</div>
+<!-- Quick Stats & Network Telemetry Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<!-- Stat 1 -->
+<div class="rounded-xl bg-surface-container-low/50 backdrop-blur-md p-5 flex items-center gap-4 shadow-lg hover:bg-surface-container-low transition-all">
+<div class="w-12 h-12 rounded-lg bg-surface-container-high flex items-center justify-center text-primary-fixed-dim shadow-inner">
+<span class="material-symbols-outlined text-2xl">hub</span>
+</div>
+<div>
+<div class="font-headline-md text-headline-md text-primary font-bold">4,821</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">ANS Registry Nodes</div>
+<div class="font-label-telemetry text-label-telemetry text-tertiary mt-0.5">● 100% GoDaddy Signed</div>
+</div>
+</div>
+<!-- Stat 2 -->
+<div class="rounded-xl bg-surface-container-low/50 backdrop-blur-md p-5 flex items-center gap-4 shadow-lg hover:bg-surface-container-low transition-all">
+<div class="w-12 h-12 rounded-lg bg-surface-container-high flex items-center justify-center text-tertiary-fixed-dim shadow-inner">
+<span class="material-symbols-outlined text-2xl">speed</span>
+</div>
+<div>
+<div class="font-headline-md text-headline-md text-primary font-bold">84ms</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Average A2A Latency</div>
+<div class="font-label-telemetry text-label-telemetry text-tertiary mt-0.5">● Optimized Route Matrix</div>
+</div>
+</div>
+<!-- Stat 3 -->
+<div class="rounded-xl bg-surface-container-low/50 backdrop-blur-md p-5 flex items-center gap-4 shadow-lg hover:bg-surface-container-low transition-all">
+<div class="w-12 h-12 rounded-lg bg-surface-container-high flex items-center justify-center text-secondary shadow-inner">
+<span class="material-symbols-outlined text-2xl">verified_user</span>
+</div>
+<div>
+<div class="font-headline-md text-headline-md text-primary font-bold">Zero-Knowledge</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Signature Validation</div>
+<div class="font-label-telemetry text-label-telemetry text-tertiary mt-0.5">● zk-SNARK Identity Audit</div>
+</div>
+</div>
+</div>
+<!-- Realtime Visual Node Network Map & Orchestration Blueprint -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-2">
+<!-- Visual Map Canvas -->
+<div class="lg:col-span-8 rounded-2xl bg-surface-container-lowest/80 backdrop-blur-xl p-6 shadow-xl flex flex-col justify-between">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-fixed-dim text-lg">schema</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Active Mesh Topology Simulator</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="font-label-telemetry text-label-telemetry text-outline">SIMULATING A2A ROUTING</span>
+<span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+</div>
+</div>
+<!-- Dynamic SVG Conduits & Agent Topology -->
+<div class="relative w-full h-56 rounded-xl bg-surface-container-low/60 overflow-hidden flex items-center justify-around px-4">
+<svg class="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<lineargradient id="cyanLine" x1="0%" x2="100%" y1="0%" y2="0%">
+<stop offset="0%" stop-color="#00f0ff" stop-opacity="0.2"></stop>
+<stop offset="50%" stop-color="#00f0ff" stop-opacity="0.9"></stop>
+<stop offset="100%" stop-color="#65f2b5" stop-opacity="0.2"></stop>
+</lineargradient>
+</defs>
+<path class="animate-[dash_20s_linear_infinite]" d="M 120 110 Q 250 40, 390 110 T 660 110" fill="none" stroke="url(#cyanLine)" stroke-dasharray="6 4" stroke-width="2"></path>
+<path d="M 120 110 Q 380 180, 660 110" fill="none" stroke="#571bc1" stroke-dasharray="4 4" stroke-opacity="0.4" stroke-width="1.5"></path>
+</svg>
+<!-- Node 1: Input -->
+<div class="relative z-10 flex flex-col items-center gap-2">
+<div class="w-12 h-12 rounded-xl bg-surface-container-highest flex items-center justify-center text-primary-container shadow-[0_0_16px_rgba(0,240,255,0.3)]">
+<span class="material-symbols-outlined">terminal</span>
+</div>
+<span class="font-label-code text-label-code text-on-surface">Input Spec</span>
+<span class="font-label-telemetry text-label-telemetry text-outline">USER DIRECTIVE</span>
+</div>
+<!-- Node 2: Orchestration Hub -->
+<div class="relative z-10 flex flex-col items-center gap-2">
+<div class="w-14 h-14 rounded-2xl bg-surface-container-highest flex items-center justify-center text-tertiary-fixed shadow-[0_0_20px_rgba(111,251,190,0.4)]">
+<span class="material-symbols-outlined text-2xl">neurology</span>
+</div>
+<span class="font-label-code text-label-code text-primary font-bold">Composer Core</span>
+<span class="font-label-telemetry text-label-telemetry text-tertiary-fixed-dim">DECOMPOSITION</span>
+</div>
+<!-- Node 3: ANS Resolved Swarm -->
+<div class="relative z-10 flex flex-col items-center gap-2">
+<div class="w-12 h-12 rounded-xl bg-surface-container-highest flex items-center justify-center text-secondary shadow-[0_0_16px_rgba(208,188,255,0.3)]">
+<span class="material-symbols-outlined">device_hub</span>
+</div>
+<span class="font-label-code text-label-code text-on-surface">ANS Mesh</span>
+<span class="font-label-telemetry text-label-telemetry text-outline">4 CERTIFIED A2A</span>
+</div>
+</div>
+<div class="flex items-center justify-between mt-4 pt-3 bg-gradient-to-r from-transparent via-surface-container-high/30 to-transparent">
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant">NODE HANDSHAKE ENCRYPTION: TLS 1.3 + ED25519</span>
+<span class="font-label-telemetry text-label-telemetry text-primary font-bold">READY TO DISPATCH</span>
+</div>
+</div>
+<!-- System Activity Log Sidebar -->
+<div class="lg:col-span-4 rounded-2xl bg-surface-container-lowest/80 backdrop-blur-xl p-6 shadow-xl flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-4">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Live ANS Feed</span>
+<span class="material-symbols-outlined text-outline text-lg">sensors</span>
+</div>
+<div class="space-y-3 font-label-telemetry text-label-telemetry">
+<div class="p-2.5 rounded-lg bg-surface-container/60 shadow-sm flex items-start gap-2.5">
+<span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim mt-1 flex-shrink-0"></span>
+<div class="flex-1 min-w-0">
+<div class="text-primary truncate">RESOLVED: godaddy/dns-resolver.agent</div>
+<div class="text-outline text-[9px] mt-0.5">Cryptographic cert SHA-256 verified (0x9F41...B2)</div>
+</div>
+</div>
+<div class="p-2.5 rounded-lg bg-surface-container/60 shadow-sm flex items-start gap-2.5">
+<span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim mt-1 flex-shrink-0"></span>
+<div class="flex-1 min-w-0">
+<div class="text-primary truncate">REGISTERED: binance/order-executor.agent</div>
+<div class="text-outline text-[9px] mt-0.5">Gas target 18.2 Gwei • Zero slippage tolerance</div>
+</div>
+</div>
+<div class="p-2.5 rounded-lg bg-surface-container/60 shadow-sm flex items-start gap-2.5">
+<span class="w-2 h-2 rounded-full bg-secondary mt-1 flex-shrink-0"></span>
+<div class="flex-1 min-w-0">
+<div class="text-secondary truncate">SYNCED: sec-edgar/analyzer.agent</div>
+<div class="text-outline text-[9px] mt-0.5">XBRL cache warmed • 12,400 filers active</div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-4 p-3 rounded-lg bg-surface-container-high/40 flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-outline">Network State</span>
+<span class="font-label-telemetry text-label-telemetry text-tertiary font-bold">NOMINAL</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    const textarea = document.getElementById('composer-input');
+    const charCounter = document.getElementById('char-counter');
+    const capabilityCounter = document.getElementById('capability-counter');
+    const clearBtn = document.getElementById('clear-btn');
+    const toggleManualBtn = document.getElementById('toggle-manual-btn');
+    const manualDrawer = document.getElementById('manual-catalog-drawer');
+    const manualChevron = document.getElementById('manual-toggle-chevron');
+    const presetButtons = document.querySelectorAll('.preset-btn');
+    const catalogSearch = document.getElementById('catalog-search');
+    const agentCards = document.querySelectorAll('.agent-card');
+
+    const presetPrompts = {
+      'Crypto Market Sentinel': 'Continuous surveillance of decentralized liquidity pools across Ethereum, Arbitrum, and Solana. Identify unusual slippage anomalies, front-running attacks, and trigger non-custodial hedging orders on dYdX with instant cryptographic proof logged to GoDaddy ANS.',
+      'Autonomous M&A Researcher': 'Aggregate EDGAR SEC filings, real-time earnings call transcripts, and executive sentiment indices for NASDAQ-100 candidates. Generate comparative valuation models and summarize cross-border antitrust regulatory risk.',
+      'Codebase Audit & Auto-Remediator': 'Perform recursive static code analysis across all microservice repositories. Flag OWASP Top 10 vulnerabilities, verify memory-safety constraints, synthesize unit tests, and open signed pull requests with patch diffs.',
+      'Enterprise Omnichannel PR Agent': 'Synthesize real-time brand telemetry across global news outlets and social networks. Classify emerging narrative polarity, generate executive holding statements, and coordinate cross-channel communications.'
+    };
+
+    function updateMetrics() {
+      if (!textarea) return;
+      const len = textarea.value.length;
+      if (charCounter) charCounter.textContent = len + ' / 2,048';
+      
+      const words = textarea.value.trim().split(/\s+/).filter(Boolean).length;
+      let count = 0;
+      if (words > 30) count = 5;
+      else if (words > 15) count = 4;
+      else if (words > 5) count = 3;
+      else if (words > 0) count = 1;
+
+      if (capabilityCounter) {
+        capabilityCounter.textContent = count + ' capabilities detected in real-time';
+      }
+    }
+
+    if (textarea) {
+      textarea.addEventListener('input', updateMetrics);
+      updateMetrics();
+    }
+
+    if (clearBtn && textarea) {
+      clearBtn.addEventListener('click', function() {
+        textarea.value = '';
+        updateMetrics();
+        textarea.focus();
+      });
+    }
+
+    presetButtons.forEach(btn => {
+      btn.addEventListener('click', function() {
+        const key = btn.getAttribute('data-preset');
+        if (presetPrompts[key] && textarea) {
+          textarea.value = presetPrompts[key];
+          updateMetrics();
+        }
+      });
+    });
+
+    if (toggleManualBtn && manualDrawer && manualChevron) {
+      toggleManualBtn.addEventListener('click', function() {
+        const isHidden = manualDrawer.classList.contains('hidden');
+        if (isHidden) {
+          manualDrawer.classList.remove('hidden');
+          manualChevron.classList.add('rotate-180');
+        } else {
+          manualDrawer.classList.add('hidden');
+          manualChevron.classList.remove('rotate-180');
+        }
+      });
+    }
+
+    if (catalogSearch && agentCards) {
+      catalogSearch.addEventListener('input', function(e) {
+        const query = e.target.value.toLowerCase();
+        agentCards.forEach(card => {
+          const text = card.textContent.toLowerCase();
+          if (text.includes(query)) {
+            card.style.display = 'flex';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    }
+  })();
+</script></main><footer class="w-full bg-surface-container-lowest/90 backdrop-blur-xl py-2 px-gutter z-40"><div class="w-full flex flex-col md:flex-row items-center justify-between gap-space-xs text-center"><div class="flex items-center gap-space-sm"><span class="w-1.5 h-1.5 rounded-full bg-primary-fixed-dim shadow-[0_0_8px_rgba(0,219,233,0.8)]"></span><span class="font-label-telemetry text-label-telemetry text-on-surface-variant tracking-wider uppercase">GoDaddy Agent Name Service (ANS) v2.4 Active · Cryptographic Agent Signatures Validated · Multi-Agent Orchestrator Ready</span></div><div class="flex items-center gap-space-md"><span class="font-label-telemetry text-label-telemetry text-outline tracking-wider">LATENCY: 12ms</span><span class="font-label-telemetry text-label-telemetry text-outline tracking-wider">CONSENSUS: 99.98%</span></div></div></footer></body></html>
