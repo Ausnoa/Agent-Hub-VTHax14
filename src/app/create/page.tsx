@@ -19,14 +19,14 @@ const supportedCapabilities = ["company-research", "risk-analysis", "summarizati
 const modeCopy = {
   pilot: "Real LLM planning → small indexed catalog → local A2A test agents. Execution uses supplied notes, not live research.",
   demo: "Offline demo uses a fixed three-step template and deterministic test agents. No LLM request is made.",
-  live: "Real LLM planning and indexed ANS records. Execution requires fresh records and explicitly tested adapters.",
+  live: "Continue to the general builder for arbitrary advertised skills and up to eight steps. Review compatibility before execution.",
 };
 
 export default function CreateAgentPage() {
   const router = useRouter();
   const { setProposal } = useComposerFlow();
   const [description, setDescription] = useState(example);
-  const [mode, setMode] = useState<"live" | "demo" | "pilot">("pilot");
+  const [mode, setMode] = useState<"live" | "demo" | "pilot">("live");
   const [plannerConfigured, setPlannerConfigured] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -38,6 +38,11 @@ export default function CreateAgentPage() {
   async function decompose() {
     setBusy(true); setError("");
     try {
+      if (mode === "live") {
+        sessionStorage.setItem("general-workflow-description", description);
+        router.push("/general");
+        return;
+      }
       const proposal = await api<Proposal>("proposals", { description, mode });
       setProposal(proposal);
       router.push("/discovery");
@@ -66,8 +71,8 @@ export default function CreateAgentPage() {
       <div className="prompt-footer"><span>Be specific about the outcome you want.</span><span>{description.length} / 2,000</span></div>
 
       <div className="compose-token-row">
-        <span className="hint" style={{ alignSelf: "center", marginRight: 4 }}>Supported capabilities:</span>
-        {supportedCapabilities.map((capability) => <span className="token-chip" key={capability}>{capability}</span>)}
+        <span className="hint" style={{ alignSelf: "center", marginRight: 4 }}>{mode === "live" ? "General workflows: advertised skills · text/JSON · 1–8 steps" : "Report demo capabilities:"}</span>
+        {mode !== "live" && supportedCapabilities.map((capability) => <span className="token-chip" key={capability}>{capability}</span>)}
       </div>
 
       <div className="compose-actions">
@@ -75,10 +80,10 @@ export default function CreateAgentPage() {
           label="Composition mode"
           value={mode}
           onChange={setMode}
-          options={[{ value: "pilot", label: "Pilot catalog" }, { value: "demo", label: "Offline demo" }, { value: "live", label: "ANS catalog" }]}
+          options={[{ value: "live", label: "General workflow" }, { value: "pilot", label: "Report pilot" }, { value: "demo", label: "Offline report demo" }]}
         />
         <Button variant="primary" disabled={busy || description.trim().length < 10} onClick={decompose}>
-          {busy ? "Decomposing…" : <>Decompose & Discover ANS Agents <ArrowRight size={14} /></>}
+          {busy ? "Opening…" : <>{mode === "live" ? "Continue to general builder" : "Build report demo"} <ArrowRight size={14} /></>}
         </Button>
       </div>
       <p className="hint" style={{ marginTop: 14 }}>

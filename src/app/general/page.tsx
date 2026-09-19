@@ -24,6 +24,10 @@ export default function GeneralPage() {
   const [run, setRun] = useState<GeneralRun>();
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    const pending = sessionStorage.getItem("general-workflow-description");
+    if (pending) { setDescription(pending.slice(0, 2000)); sessionStorage.removeItem("general-workflow-description"); }
+  }, []);
   useEffect(() => { api<GeneralWorkflow[]>("general").then(setSaved).catch((reason) => setError(reason.message)); }, []);
   useEffect(() => {
     if (!run || !["queued", "running"].includes(run.status)) return;
