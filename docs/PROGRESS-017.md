@@ -21,3 +21,9 @@ Requested Porkbun TXT host _acme-challenge.www with the exact returned public ch
 ## Builder implementation
 
 Three configurable templates: supplied-text summary, extraction of named fields (null when absent), and reference-grounded Q&A. Immutable saved agents persist in owned_agents via the existing SQLite workspace database. Created agents are selectable in /general, and the runtime validates and invokes their saved definitions locally; external ANS steps retain the previous resolution/card checks. Local runs do not pretend to be ANS-registered A2A calls. Hosted builder shows a clear local-storage limitation; public multi-user creation remains out of scope until accounts and durable hosted storage exist.
+
+## Verification and DNS follow-up
+
+All 42 automated tests, typecheck, and production build passed. Tests cover template validation, exact extraction fields/source values, Q&A evidence, persisted definitions, and a two-step owned-agent workflow without ANS calls. Live UI summary test succeeded with two explicit actions and an undecided launch date. Live reference Q&A correctly returned the 30-day policy and a literal supporting quote. A live summary → extraction workflow timed out at the upstream 45-second boundary on its first run; a manual retry completed successfully (run 8d9ec51b-fb7f-40d9-b819-4e320073d94f), preserving the summary actions and extracting owner Maya with launch date null. No automatic retry was added.
+
+The user published the exact challenge TXT. ANS verify-acme returned DNS-record-not-found; investigation showed validating DNS resolvers fail DNSSEC. A diagnostic lookup with checking disabled finds the exact challenge, while the parent DS has no matching published DNSKEY. User enabled Porkbun DNSSEC; awaiting signing/propagation before another verification attempt. Registration remains pending, not ACTIVE.

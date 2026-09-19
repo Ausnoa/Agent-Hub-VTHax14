@@ -69,15 +69,15 @@ export default function GeneralPage() {
         <Button disabled={busy} onClick={() => { setSteps(steps.filter((_, position) => position !== index).map((item, position) => position === 0 ? { ...item, inputFrom: "original" } : item)); setProposal(undefined); }}>Remove step</Button>
       </fieldset>)}
       <Button disabled={busy || !steps.length} onClick={() => work(async () => { setProposal(await api<GeneralWorkflow>("general/proposals", { name, steps })); })}>Validate steps & build proposal</Button>
-      {proposal && <div><h3>Review destination endpoints</h3><ol>{proposal.steps.map((step, index) => <li key={index}>{step.name} · {step.skill} · {step.inputFrom} → {step.format}<br />{step.endpoint}</li>)}</ol>
+      {proposal && <div><h3>Review execution steps</h3><ol>{proposal.steps.map((step, index) => <li key={index}>{step.name} · {step.skill} · {step.inputFrom} → {step.format}<br />{step.agentId.startsWith("owned:") ? "Local template execution · OpenAI" : step.endpoint}</li>)}</ol>
         <p>Saved only on this site. No ANS registration or identity verification.</p>
         <Button disabled={busy} onClick={() => work(async () => { const approved = await api<GeneralWorkflow>(`general/${proposal.id}/approve`, {}); setSelected(approved); setConfirmed(false); setSaved(await api<GeneralWorkflow[]>("general")); })}>Approve & save workflow</Button></div>}
     </Card>
     <Card><h2>3. Saved workflows & execution</h2>{saved.map((workflow) => <Button key={workflow.id} onClick={() => { setSelected(workflow); setConfirmed(false); setRun(undefined); }}>{workflow.name}</Button>)}
-      {selected && <div><h3>{selected.name}</h3><ol>{selected.steps.map((step, index) => <li key={index}>{step.skill} → {step.endpoint}</li>)}</ol>
+      {selected && <div><h3>{selected.name}</h3><ol>{selected.steps.map((step, index) => <li key={index}>{step.skill} → {step.agentId.startsWith("owned:") ? "Local template execution · OpenAI" : step.endpoint}</li>)}</ol>
         <label><input type="checkbox" checked={json} onChange={(event) => { setJson(event.target.checked); setConfirmed(false); }} /> Input is a JSON object</label>
         <label>Task input<textarea value={input} maxLength={20000} onChange={(event) => { setInput(event.target.value); setConfirmed(false); }} /></label>
-        <label><input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} /> I authorize sending this input and intermediate outputs to the displayed external agents, including possible side effects. Do not include secrets.</label>
+        <label><input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} /> I authorize sending this input and intermediate outputs to OpenAI for local templates and the displayed external agents, including possible side effects. Do not include secrets.</label>
         <Button disabled={busy || !confirmed || !input || run?.status === "queued" || run?.status === "running"} onClick={() => work(async () => { setRun(await api<GeneralRun>(`general/${selected.id}/invoke`, { input: { type: json ? "json" : "text", value: json ? JSON.parse(input) : input }, confirmExternalExecution: true })); setConfirmed(false); })}>Run approved workflow</Button>
       </div>}
       {run && <div aria-live="polite"><h3>Run: {run.status}</h3><p>Run ID: {run.id}</p>{run.status === "queued" && <p>Waiting for the worker. Start or restart npm run worker.</p>}{run.error && <p role="alert">{run.error}</p>}{run.outputs.map((output, index) => <div key={index}><h4>Step {index + 1}</h4><pre style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{output.type === "text" ? output.value : JSON.stringify(output.value, null, 2)}</pre></div>)}</div>}

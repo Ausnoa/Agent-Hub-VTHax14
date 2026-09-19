@@ -40,6 +40,14 @@ Once hosting, CSR organization, and the certificate path are confirmed:
 6. Run `ans-cli verify-dns <agentId>` and `ans-cli status <agentId>`. Save nonsecret evidence of ACTIVE; pending is not completion.
 7. Discover and resolve the new ID through the existing ANS adapter, inspect the card, then build and execute a one-step general workflow. Record output and run ID. Separately verify the identity certificate/badge before claiming cryptographic verification; current app identity remains not-verified.
 
-No registration has been submitted. Domain ownership, DNS publication, certificate lifecycle, public throttling, and hosted invocation remain deployment acceptance gates.
+Production registration was accepted on September 19, 2026 using Vercel's TLS-validated public server certificate (BYOC). Registration ID: `2076c6a9-5114-42c8-8d63-c76eabcea804`; name: `ans://v1.0.0.www.gloryforglorria.us`; current recorded state: `PENDING_VALIDATION`. Identity key, CSR, server certificate, and response are stored in ignored `.data/ans/glorria-1.0.0/`. Do not create another registration or overwrite this identity key when continuing.
+
+The user published the correct ACME TXT challenge. First verification failed because public validating resolvers report broken DNSSEC (parent DS without a matching published DNSKEY). The user enabled Porkbun DNSSEC; propagation and verification remain pending. Challenge expires September 20, 2026 at 21:52:29 UTC. Domain validation, final ANS records, certificate lifecycle, public throttling, and hosted invocation remain acceptance gates. Public agent routes still need this branch deployed; acceptance of registration does not prove endpoint availability.
+
+## Created template agents
+
+`/agent-preview` now offers summary, named-field extraction, and reference Q&A templates. Save an immutable named agent, test it, then choose **Use in workflow**. `/general` also lists saved agents and runs them sequentially alongside externally discovered steps. Definitions persist in the workspace SQLite database. Extraction rejects values absent from its source; Q&A requires literal reference evidence for supported answers, but this does not guarantee semantic correctness.
+
+Created agents currently execute locally through the model API and are explicitly unregistered. The single public Glorria Brief A2A agent above is the registration trial; individual saved agents do not yet have public A2A endpoints or ANS identities. The hosted builder requires future authenticated accounts and durable storage; existing localhost API restrictions remain in place.
 
 References: [ANS CLI](https://github.com/agentnameservice/ans-sdk-go/blob/main/cmd/ans-cli/README.md), [ANS registration](https://github.com/agentnameservice/ans-registry/blob/main/spec/ans-1-registration.md), [OpenAI structured outputs](https://developers.openai.com/api/docs/guides/structured-outputs).
