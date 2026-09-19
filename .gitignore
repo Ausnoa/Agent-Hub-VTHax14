@@ -4,4 +4,9 @@ node_modules/
 !.env.example
 coverage/
 artifacts/
+data/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
 .DS_Store

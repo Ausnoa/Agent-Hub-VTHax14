@@ -5,6 +5,7 @@ import { discoverAgents, normalizeAgents } from "../src/lib/ans/client.ts";
 const agent = {
   agentId: "fixture-agent",
   agentDisplayName: "Fixture research agent",
+  agentDescription: "Synthetic fixture that researches companies.",
   ansName: "ans://v1.0.0.fixture.example",
   lifecycle: { status: "ACTIVE" },
   endpoints: [{ protocol: "A2A", agentUrl: "https://fixture.example/a2a", transports: ["JSON-RPC"] }],
@@ -15,6 +16,12 @@ test("keeps only active A2A endpoints and never infers identity verification", (
   assert.equal(agents.length, 1);
   assert.equal(agents[0].endpoint, agent.endpoints[0].agentUrl);
   assert.equal(agents[0].identityStatus, "not-verified");
+});
+
+test("keeps the ANS description and uses null when it is absent", () => {
+  const [described, undescribed] = normalizeAgents({ items: [agent, { ...agent, agentDescription: undefined }] });
+  assert.equal(described.description, agent.agentDescription);
+  assert.equal(undescribed.description, null);
 });
 
 test("rejects malformed responses and unsafe endpoint schemes", () => {

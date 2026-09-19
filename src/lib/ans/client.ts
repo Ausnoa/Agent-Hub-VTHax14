@@ -1,6 +1,7 @@
 export interface DiscoveredAgent {
   ansId: string;
   name: string;
+  description: string | null;
   ansName: string;
   endpoint: string;
   metadataUrl?: string;
@@ -21,6 +22,10 @@ function requiredString(value: unknown): string {
     throw new Error("ANS returned a missing or invalid string");
   }
   return value;
+}
+
+function optionalString(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value : null;
 }
 
 function httpsUrl(value: unknown): string {
@@ -48,6 +53,7 @@ export function normalizeAgents(payload: unknown): DiscoveredAgent[] {
       return [{
         ansId: requiredString(agent.agentId),
         name: requiredString(agent.agentDisplayName),
+        description: optionalString(agent.agentDescription),
         ansName: requiredString(agent.ansName),
         endpoint: httpsUrl(endpoint.agentUrl),
         metadataUrl: endpoint.metaDataUrl ? httpsUrl(endpoint.metaDataUrl) : undefined,
