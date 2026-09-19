@@ -7,6 +7,12 @@
     "node": ">=24"
   },
   "scripts": {
+    "dev": "next dev --hostname 127.0.0.1",
+    "build": "next build --webpack",
+    "start": "next start --hostname 127.0.0.1",
+    "typecheck": "tsc --noEmit",
+    "worker": "node --env-file-if-exists=.env.local scripts/worker.ts",
+    "demo:agents": "node scripts/demo-agents.ts",
     "test": "node --test tests/*.test.ts",
     "probe:ans": "node --env-file-if-exists=.env.local scripts/probe-ans.ts"
   },
