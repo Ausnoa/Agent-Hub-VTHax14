@@ -18,7 +18,7 @@ npm run dev
 
 Open http://127.0.0.1:3000. Select Local demo, build the fixed template, inspect its agents, approve, and run the fictional Northstar notes. A2A messages pass through three separate local agent processes. The report is deterministic and based only on supplied notes, not live company research.
 
-The SQLite database is stored in `.data/composer.sqlite`, ignored by Git. The worker is separate from the web request lifecycle. Runs survive page reloads; an interrupted worker marks unfinished work failed after its lease can be reclaimed. A crashed worker's lease expires within two minutes.
+The SQLite database is stored in `.data/composer.sqlite`, ignored by Git. The worker is separate from the web request lifecycle. It also syncs the live ANS registry into a local index when it starts and every 30 minutes; check progress at http://127.0.0.1:3000/api/registry/status. Runs survive page reloads; an interrupted worker marks unfinished work failed after its lease can be reclaimed. A crashed worker's lease expires within two minutes.
 
 ## Live functionality
 

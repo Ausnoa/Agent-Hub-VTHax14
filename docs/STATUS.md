@@ -7,6 +7,7 @@
 - Three separate local fixture processes exchanging real A2A 0.3.0 JSON-RPC messages through the official client SDK.
 - SQLite persistence, atomic queue claiming, worker lease, run history, explicit retries, and interrupted-run recovery.
 - Optional structured LLM planner and conservative allowlisted live-agent selection.
+- Local ANS registry index: the worker syncs live ANS into SQLite, searchable through `POST /api/registry/search`. Proposal building does not use it yet.
 
 ## Not yet demonstrated
 

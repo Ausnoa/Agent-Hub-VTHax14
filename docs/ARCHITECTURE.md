@@ -7,6 +7,10 @@ flowchart LR
   API --> ANS["Real ANS discovery"]
   API --> DB["SQLite proposals, composites, runs"]
   Worker["Separate Node worker"] --> DB
+  Worker --> Sync["Registry sync"]
+  Sync --> ANS
+  Sync --> Index["SQLite ANS registry index"]
+  API --> Index
   Worker --> Resolve["Re-resolve live ANS identity"]
   Worker --> A2A["A2A client + validated adapter"]
   A2A --> Agents["Selected agent endpoints"]
@@ -21,6 +25,10 @@ flowchart LR
 `POST /api/agents` accepts only a proposal identifier and copies the reviewed server-side definition into an immutable version-one composite, including its form configuration. It rejects incomplete or expired proposals. Extra client-supplied endpoints do not become executable configuration.
 
 `POST /api/agents/:id/invoke` validates the input and persists a queued run. It does not rely on a web request continuing after a response. The worker claims the run, persists every attempt, and executes steps in sequence. `GET /api/runs/:id` exposes the trace; retry requeues only a failed run.
+
+## Registry index
+
+The worker copies every active A2A registration from live ANS into SQLite at startup and on an interval (`src/lib/registry/sync.ts`), pausing for the ANS rate limit and skipping malformed records. `POST /api/registry/search` searches descriptions, functions, and tags with stemming, and returns only eligible agents: listed, `ACTIVE`, unexpired, and the newest registration per host. Proposal building and the directory do not use the index yet. See `DECISION-001` through `DECISION-003`.
 
 ## Data and adapter scope
 

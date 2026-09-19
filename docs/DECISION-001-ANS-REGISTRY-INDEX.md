@@ -1,6 +1,6 @@
 # Decision 001 — Local ANS registry index
 
-Status: accepted, not yet implemented. Date: September 19, 2026.
+Status: accepted; sync, index, and search implemented. Agent card enrichment, execution-time checks against the index, and switching proposal building to the index are not. Date: September 19, 2026.
 
 ## Context
 
@@ -12,7 +12,7 @@ A search with an empty `query` (filtered to `protocols=A2A`, `statuses=ACTIVE`) 
 
 The backend maintains a local index of the ANS registry, and prompt-time discovery reads from that index instead of calling ANS.
 
-1. **Sync.** On server start, a background job pages through the filtered registry using the existing `discoverAgents` client and upserts agents, endpoints, and the `functions` (skill IDs, names, and tags) ANS reports for each endpoint. Startup does not wait for the sync to finish. The job repeats on an interval (`ANS_SYNC_INTERVAL_MINUTES`) and stays within the ANS rate limit.
+1. **Sync.** When the worker starts, a background job pages through the filtered registry using the existing `discoverAgents` client and upserts agents, endpoints, and the `functions` (skill IDs, names, and tags) ANS reports for each endpoint. Startup does not wait for the sync to finish. The job repeats on an interval (`ANS_SYNC_INTERVAL_MINUTES`) and stays within the ANS rate limit.
 2. **Agent card enrichment.** Agent cards are fetched only for agents that appear as discovery candidates, then reused for a few hours. They add skill descriptions and input/output modes that ANS functions lack. Fetching every card during the sync is impractical at registry scale.
 3. **Discovery.** `POST /api/discover` searches the local index (full-text over descriptions, ANS functions, tags, and fetched card skills) and returns candidates with when they were last seen in ANS.
 4. **Execution-time check.** Before invoking a saved workflow, the orchestrator checks each selected agent against live ANS. It stops and requires review if an agent is no longer eligible or its endpoint changed. This is the re-resolution step in `PLAN.md` Phase 5.
