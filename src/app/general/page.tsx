@@ -54,6 +54,10 @@ export default function GeneralPage() {
       {owned.map(agent => <div key={agent.id}><strong>{agent.name}</strong><p>{templateFor(agent.template).name} · Local execution · Not ANS registered</p><Button disabled={busy || steps.length >= 8} onClick={() => {setSteps([...steps, {agentId:agent.id,skill:templateFor(agent.template).skill,inputFrom:steps.length ? "previous" : "original",format:"text",instruction:""}]);setProposal(undefined);}}>Add {agent.name}</Button></div>)}
     </Card>
     <Card><h2>Connect a registered agent</h2><p>Add an ANS registration directly without waiting for the search index to refresh. Its registration and A2A card must resolve successfully.</p>
+      <p>Our pilot registrations: select one, then check its live card. A submitted registration may still be awaiting DNS or deployment.</p>
+      {[{name:"Glorria Brief",id:"2076c6a9-5114-42c8-8d63-c76eabcea804",skill:"summarize-text"},
+        {name:"Glorria Extract",id:"39f5e2f3-7b54-4153-8757-0fe0733c5393",skill:"extract-information"},
+        {name:"Glorria Answers",id:"51d689d3-146f-41d6-91dd-0966fc4d7aaa",skill:"answer-from-reference"}].map(agent => <Button key={agent.id} disabled={busy} onClick={() => { setAnsId(agent.id); setAnsSkill(agent.skill); }}>{agent.name}</Button>)}
       <label>ANS agent ID<input value={ansId} maxLength={200} onChange={event => setAnsId(event.target.value)} /></label>
       <label>Skill ID<input value={ansSkill} maxLength={200} onChange={event => setAnsSkill(event.target.value)} placeholder="extract-information or answer-from-reference" /></label>
       <Button disabled={busy || steps.length >= 8 || !ansId.trim() || !ansSkill.trim()} onClick={() => work(async () => {
