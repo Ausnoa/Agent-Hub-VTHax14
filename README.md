@@ -12,6 +12,8 @@ VTHax project, agent hub of multiagentic workflows supporting ANS security and a
 - [Durable runtime](docs/PROGRESS-004.md)
 - [Composer interface](docs/PROGRESS-005.md)
 - [Run the local demo](docs/LOCAL-DEMO.md)
+- [Current status](docs/STATUS.md)
+- [Implemented architecture](docs/ARCHITECTURE.md)
 - [Second milestone](docs/PROGRESS-002.md)
 
 Run `npm test` for offline contract checks or `npm run probe:ans -- company research` for live discovery. Requires Node.js 24 or later; see the development guide for configuration.

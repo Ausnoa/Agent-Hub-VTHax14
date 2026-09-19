@@ -2,6 +2,17 @@
 
 Based on `context.md`. Target: a working hackathon demo within 48 hours.
 
+## Implementation status — September 19, 2026
+
+- Phase 1: live ANS discovery and local A2A protocol exchange verified separately. A complete ANS-discovered company-research pipeline remains blocked on compatible hosted agents and registration setup.
+- Phase 2: contracts, SQLite persistence, sequential execution, worker queue, and retry/recovery implemented and tested locally.
+- Phase 3: structured LLM planner and conservative live selection implemented; live model execution awaits configuration. Local demo uses an explicitly labeled fixed template.
+- Phase 4: builder, review, saved-agent runner, directory, reports, and execution trace implemented and browser-tested.
+- Phase 5: local failure handling and reload recovery verified. Public deployment and identity verification remain unfinished.
+- Phase 6: local demo rehearsed; live hackathon acceptance and publishing stretch goal remain open.
+
+See `docs/STATUS.md`, `docs/LOCAL-DEMO.md`, and the numbered progress records for evidence and setup.
+
 ## Outcome
 
 A user describes an agent, reviews compatible agents genuinely discovered through ANS, saves a sequential workflow, and invokes it through a generated form. Real A2A calls pass results between independently running agents and produce a useful final report.

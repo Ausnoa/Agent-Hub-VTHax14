@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { ReportForm } from "./ui.ts";
 
 export const capabilities = ["company-research", "risk-analysis", "summarization"] as const;
 export const capabilitySchema = z.enum(capabilities);
@@ -32,7 +33,7 @@ export const proposalSchema = z.object({
   plan: planSchema, steps: z.array(selectedAgentSchema).max(3), blockers: z.array(z.string()),
 });
 export type Proposal = z.infer<typeof proposalSchema>;
-export type Composite = Proposal & { version: 1 };
+export type Composite = Proposal & { version: 1; uiSchema?: ReportForm };
 export type StepAttempt = { capability: Capability; attempt: number; status: "running" | "completed" | "failed"; startedAt: string; completedAt?: string; output?: Report; error?: string };
 export type Run = {
   id: string; agentId: string; input: z.infer<typeof inputSchema>;

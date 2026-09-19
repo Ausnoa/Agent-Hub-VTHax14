@@ -6,10 +6,12 @@ For every milestone, update a Markdown progress record with implementation, vali
 
 ## Commands
 
-Requires Node.js 24 or later. The initial integration probe uses native TypeScript execution and has no installed dependencies.
+Requires Node.js 24 or later and `npm install`. Command-line tools use native TypeScript execution; the application uses pinned dependencies recorded in `package-lock.json`.
 
-- `npm test`: offline contract checks using explicitly synthetic fixtures.
+- `npm test`: contract, persistence, API, and local HTTP protocol checks using explicitly synthetic fixtures. Ports 4311–4313 must be free.
+- `npm run typecheck` and `npm run build`: compile-time and production-build checks.
+- `npm run demo:agents`, `npm run worker`, and `npm run dev`: local development services; see `LOCAL-DEMO.md`.
 - `npm run probe:ans -- company research`: live, read-only discovery.
 - Copy `.env.example` to `.env.local` when configuration is needed. Supply the authorization header expected by your ANS environment; never paste credentials into documentation or commit them.
 
-The probe returns the first page and explicitly reports whether additional results exist. It does not invoke discovered URLs, validate agent identity, or establish semantic compatibility.
+The probe follows registry cursors for up to five pages by default and explicitly reports whether additional results exist. It does not invoke discovered URLs, validate agent identity, or establish semantic compatibility.

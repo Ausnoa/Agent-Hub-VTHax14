@@ -3,6 +3,7 @@ import { Store } from "../../../lib/persistence/store.ts";
 import { compose, validatePlan } from "../../../lib/workflows/composer.ts";
 import { discoverAgents } from "../../../lib/ans/client.ts";
 import { inputSchema, proposalSchema, type Composite, type Proposal } from "../../../lib/contracts/index.ts";
+import { reportForm } from "../../../lib/contracts/ui.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -55,7 +56,7 @@ async function handle(request: Request, context: { params: Promise<{ path: strin
       if (existing) return json(existing);
       if (Date.now() - Date.parse(proposal.createdAt) > 3_600_000) return json({ error: "Proposal expired. Build a new proposal." }, 409);
       if (proposal.blockers.length || validatePlan(proposal.plan).length || proposal.steps.length !== proposal.plan.capabilities.length) return json({ error: "Resolve the proposal's missing capabilities before saving" }, 409);
-      const composite: Composite = { ...proposal, version: 1 };
+      const composite: Composite = { ...proposal, version: 1, uiSchema: reportForm };
       store.saveDocument("agent", composite);
       return json(composite, 201);
     }

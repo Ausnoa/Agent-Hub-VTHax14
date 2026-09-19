@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import type { Composite, Proposal, Run } from "../lib/contracts/index";
 import type { DiscoveredAgent } from "../lib/ans/client";
+import { reportForm } from "../lib/contracts/ui";
+import AgentInputs from "./agent-inputs";
 
 async function api<T>(path: string, value?: unknown): Promise<T> {
   const response = await fetch(`/api/${path}`, value === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(value) });
@@ -80,7 +82,7 @@ export default function Composer() {
       <div className="sidebar-footer"><div className="avatar">AC</div><div>Local workspace<small>Hackathon edition</small></div></div>
     </aside>
     <div className="main-shell">
-      <header className="topbar"><span>Workspace <span className="slash">/</span> <strong>{tab === "discover" ? "Agent directory" : tab === "saved" ? "My agents" : "Composer"}</strong></span><span className="topbar-status"><span className="tiny-dot" /> A2A ready · local runtime</span></header>
+      <header className="topbar"><span>Workspace <span className="slash">/</span> <strong>{tab === "discover" ? "Agent directory" : tab === "saved" ? "My agents" : "Composer"}</strong></span><span className="topbar-status">A2A workflows · local workspace</span></header>
       <main>
         {error && <div role="alert" className="alert"><strong>Something needs attention</strong><p>{error}</p><button onClick={() => setError("")}>Dismiss</button></div>}
         {tab === "builder" && !proposal && !agent && <>
@@ -103,7 +105,7 @@ export default function Composer() {
         {tab === "builder" && agent && <>
           <button className="back" onClick={reset}>← Compose another agent</button><div className="page-heading"><div className="eyebrow">YOUR REUSABLE AGENT</div><h1>{agent.plan.name}</h1><p>{agent.plan.description}</p></div>
           <div className="notice">{agent.mode === "demo" ? "Local demo: deterministic agents analyze your supplied notes. No live research or verified identity is claimed." : "Live workflow: agents receive the notes you submit. Identity remains unverified."}</div>
-          <div className="run-layout"><section className="panel"><h2>Start a new briefing</h2><label htmlFor="company">Company</label><input id="company" value={company} onChange={(event) => setCompany(event.target.value)} maxLength={120} /><label htmlFor="notes">Source notes</label><textarea id="notes" rows={8} value={notes} onChange={(event) => setNotes(event.target.value)} maxLength={12000}/><p className="hint">These notes flow through the selected agents. Use non-sensitive information.</p><button className="primary full" disabled={!!busy || run?.status === "running" || run?.status === "queued" || !company.trim() || !notes.trim()} onClick={() => action("Queueing run", async () => { const created = await api<Run>(`agents/${agent.id}/invoke`, { company, notes }); setRun(created); setHistory((prior) => [created, ...prior]); })}>{busy || "Run agent"}<span>↗</span></button></section>
+          <div className="run-layout"><section className="panel"><AgentInputs schema={agent.uiSchema ?? reportForm} values={{ company, notes }} onChange={(name, value) => name === "company" ? setCompany(value) : setNotes(value)} /><p className="hint">These notes flow through the selected agents. Use non-sensitive information.</p><button className="primary full" disabled={!!busy || run?.status === "running" || run?.status === "queued" || !company.trim() || !notes.trim()} onClick={() => action("Queueing run", async () => { const created = await api<Run>(`agents/${agent.id}/invoke`, { company, notes }); setRun(created); setHistory((prior) => [created, ...prior]); })}>{busy || (agent.uiSchema ?? reportForm).submitLabel}<span>↗</span></button></section>
           <section className="panel trace"><div className="card-heading"><h2>Execution trace</h2><span className="badge">{run?.status ?? "READY"}</span></div><p className="hint">Real A2A messages. One step at a time.</p>{agent.steps.map((step, index) => { const attempts = run?.attempts.filter((attempt) => attempt.capability === step.capability); const latest = attempts?.at(-1); return <div className={`trace-step ${latest?.status ?? "waiting"}`} key={step.capability}><span className="trace-dot">{latest?.status === "completed" ? "✓" : latest?.status === "failed" ? "!" : index + 1}</span><div><h3>{step.name}</h3><p>{latest?.status ?? "Waiting"}{latest?.completedAt ? ` · ${((Date.parse(latest.completedAt) - Date.parse(latest.startedAt)) / 1000).toFixed(1)}s` : ""}{latest && latest.attempt > 1 ? ` · attempt ${latest.attempt}` : ""}</p>{latest?.error && <p className="error-text">{latest.error}</p>}{latest?.output && <details><summary>View step output</summary><pre>{JSON.stringify(latest.output, null, 2)}</pre></details>}</div></div>; })}
           {run?.status === "queued" && <p className="hint">Waiting for the local worker. Start it using the setup guide if the queue does not advance.</p>}
           {run?.status === "failed" && <><p className="error-text">{run.error}</p><button className="secondary" disabled={!!busy} onClick={() => action("Retrying", async () => setRun(await api<Run>(`runs/${run.id}/retry`, {})))}>Retry failed step</button></>}

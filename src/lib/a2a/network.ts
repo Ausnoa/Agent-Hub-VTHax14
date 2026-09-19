@@ -9,7 +9,7 @@ export function isPublicAddress(address: string): boolean {
 export function makeAgentFetch(allowLocalFixtures = false): typeof fetch {
   return async (input, init) => {
     const url = new URL(input instanceof Request ? input.url : String(input));
-    const local = allowLocalFixtures && url.hostname === "127.0.0.1" && ["4311", "4312", "4313"].includes(url.port);
+    const local = allowLocalFixtures && url.protocol === "http:" && url.hostname === "127.0.0.1" && ["4311", "4312", "4313"].includes(url.port);
     if (url.username || url.password || url.hash || (!local && (url.protocol !== "https:" || (url.port && url.port !== "443")))) {
       throw new Error("Agent URL is outside the supported network policy");
     }
@@ -36,6 +36,10 @@ export function makeAgentFetch(allowLocalFixtures = false): typeof fetch {
         chunks.push(chunk);
       }
       return new Response(Buffer.concat(chunks), { status: response.status, headers: { "content-type": response.headers.get("content-type") ?? "application/json" } });
+    } catch (error) {
+      if (error instanceof TypeError) throw new Error("Agent is unavailable. Check that its service is running, then retry the failed step.");
+      if (error instanceof Error && ["TimeoutError", "AbortError"].includes(error.name)) throw new Error("Agent request timed out. Check the service before retrying.");
+      throw error;
     } finally {
       await dispatcher.close();
     }
