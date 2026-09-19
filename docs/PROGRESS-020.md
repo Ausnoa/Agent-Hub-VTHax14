@@ -13,3 +13,7 @@ Supabase is the selected implementation; user has now created a project and was 
 Account UI supports email/password sign-up, confirmation, sign-in, session restoration, sign-out, and separate local/hosted workspaces. Hosted records do not get local workflow buttons or claim ANS publication. Missing configuration shows a setup state. Browser checks confirmed local saved definitions still load and switching to the unconfigured hosted account does not expose local data.
 
 Validation: 50 existing/new tests passed together, plus the additional SDK server-auth test passed separately (51 total). The actual SQL migration ran in embedded Postgres with owner/anonymous authorization and quota checks. Production build and typecheck passed. Docker was unavailable, so PGlite tests simulate Supabase auth.uid; real Supabase auth/email and deployed persistence still require live acceptance after the user's configuration. See HOSTED-BUILDER.md for setup and the two-account acceptance checklist.
+
+## Live Supabase connection
+
+User saved project configuration in .env.local. Live auth settings returned HTTP 200 with email sign-in enabled and auto-confirm disabled. Anonymous template_agents access returned permission-denied (401/42501). Rebuilt and restarted the preview; browser now shows the configured Supabase sign-in form. Requested that the user create/confirm/sign in directly to continue the authenticated create/reload/test acceptance. No secret values or user credentials were displayed. GitHub push still fails due to host DNS resolution; commits remain local.
