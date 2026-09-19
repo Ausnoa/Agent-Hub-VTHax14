@@ -54,3 +54,7 @@ Sources checked on 2026-09-19:
 4. Public deployment, ACTIVE registration, and end-to-end evidence (no secrets committed).
 
 Each implementation checkpoint records actual checks and remaining blockers. Do not claim the milestone complete until public ANS-to-A2A invocation passes.
+
+## Implementation checkpoint
+
+User selected a simple first agent. Domain: gloryforglorria.us at Porkbun. Hosting: Vercel, currently deploying main; implementation remains on codex/agent-creation. Added Glorria Brief, a stateless supplied-text summarizer, public /a2a and /.well-known/agent-card.json routes. Reuses structured model generation; no SQLite/worker dependency. Inference is disabled unless AGENT_ENABLED=true. The card requires a configured HTTPS origin rather than trusting request headers. Focused tests and live validation follow in the next checkpoint.
