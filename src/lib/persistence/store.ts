@@ -2,7 +2,7 @@ import { DatabaseSync } from "node:sqlite";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { randomUUID } from "node:crypto";
-import type { Composite, Proposal, Run } from "../contracts/index.ts";
+import type { AgentStats, Composite, Proposal, Run } from "../contracts/index.ts";
 import { databasePath } from "../gateways/db.ts";
 
 export class Store {
@@ -40,6 +40,25 @@ export class Store {
   }
   recentRuns(limit = 50): Run[] {
     return this.db.prepare("SELECT body FROM runs ORDER BY rowid DESC LIMIT ?").all(limit).map((row) => JSON.parse(row.body as string));
+  }
+  // Real run-count and average wall-clock latency per agent, computed from stored runs
+  // (createdAt -> updatedAt for finished runs) so the fleet UI never has to show invented numbers.
+  runStats(): Map<string, AgentStats> {
+    const rows = this.db.prepare(`
+      SELECT json_extract(body,'$.agentId') AS agentId,
+             COUNT(*) AS runCount,
+             AVG(CASE WHEN status IN ('completed','failed')
+                      THEN (julianday(json_extract(body,'$.updatedAt')) - julianday(json_extract(body,'$.createdAt'))) * 86400000 END) AS avgLatencyMs
+      FROM runs GROUP BY agentId
+    `).all();
+    const stats = new Map<string, AgentStats>();
+    for (const row of rows) {
+      stats.set(row.agentId as string, {
+        runCount: Number(row.runCount),
+        avgLatencyMs: row.avgLatencyMs == null ? null : Number(row.avgLatencyMs),
+      });
+    }
+    return stats;
   }
   saveRun(run: Run) {
     run.updatedAt = new Date().toISOString();

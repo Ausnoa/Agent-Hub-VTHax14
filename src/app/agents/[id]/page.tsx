@@ -74,7 +74,7 @@ export default function RuntimeInterfacePage({ params }: { params: Promise<{ id:
         </Button>
       </Card>
 
-      <Card>
+      <Card id="pipeline">
         <CardHead>Nodes in composite workflow</CardHead>
         <div style={{ display: "grid", gap: 10 }}>
           {agent.steps.map((step, index) => <div className="registry-item" key={step.capability}>
@@ -89,7 +89,7 @@ export default function RuntimeInterfacePage({ params }: { params: Promise<{ id:
       </Card>
     </div>
 
-    {!!history.length && <Card style={{ marginTop: 20 }}>
+    {!!history.length && <Card id="runs" style={{ marginTop: 20 }}>
       <CardHead>Recent runs</CardHead>
       {history.map((item) => <button className="history-item" key={item.id} onClick={() => router.push(`/execution/${item.id}`)}>
         <span>{item.input.company}</span>

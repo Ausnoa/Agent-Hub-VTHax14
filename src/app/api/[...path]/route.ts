@@ -113,7 +113,10 @@ async function handle(request: Request, context: { params: Promise<{ path: strin
         candidates: registry.searchCandidates(input.query, input.limit),
       })));
     }
-    if (request.method === "GET" && path.join("/") === "agents") return json(store.agents());
+    if (request.method === "GET" && path.join("/") === "agents") {
+      const stats = store.runStats();
+      return json(store.agents().map((agent) => ({ ...agent, stats: stats.get(agent.id) })));
+    }
     if (request.method === "POST" && path.join("/") === "agents") {
       const input = z.object({ proposalId: z.string().uuid() }).parse(await body(request));
       const found = store.document<Proposal>("proposal", input.proposalId);
