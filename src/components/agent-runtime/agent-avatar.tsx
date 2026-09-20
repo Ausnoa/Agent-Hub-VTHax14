@@ -26,8 +26,9 @@ export function slotCorner(index: number): Point {
 }
 
 // The persistent per-agent avatar: draggable, click to open the mini window.
-// `inline`: hosted inside a CatAgentBar, so this cat has no drag/position of its own — the bar lays it out.
-export default function AgentAvatar({ agentId, name, variant, status, slot = 0, inline = false, dimmed, onOpen, onRemove, onPositionChange, children }: {
+// `inline`: hosted inside a CatAgentBar, so this cat has no free position of its own — grabbing it
+// instead drags the whole bar (via onDragStart/onDragMove/onDragEnd), same click-vs-drag threshold as before.
+export default function AgentAvatar({ agentId, name, variant, status, slot = 0, inline = false, dimmed, onOpen, onRemove, onPositionChange, onDragStart, onDragMove, onDragEnd, children }: {
   agentId: string;
   name: string;
   variant: Variant;
@@ -38,6 +39,9 @@ export default function AgentAvatar({ agentId, name, variant, status, slot = 0, 
   onOpen: () => void;
   onRemove: () => void;
   onPositionChange?: (agentId:string,position:Point)=>void;
+  onDragStart?: () => void;             // inline only: this cat started dragging the bar
+  onDragMove?: (dx: number, dy: number) => void;   // inline only: delta since the drag started
+  onDragEnd?: () => void;               // inline only: drag finished, bar should persist its position
   children?: React.ReactNode;   // the mini window renders alongside its own cat
 }) {
   const [position, setPosition] = useState<Point>();
@@ -62,14 +66,28 @@ export default function AgentAvatar({ agentId, name, variant, status, slot = 0, 
     return () => window.removeEventListener("resize", onResize);
   }, [inline]);
 
+  const inlineDrag = useRef<{ x: number; y: number; moved: boolean } | null>(null);
+
   const onPointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
-    if (inline || !position) return;
     event.currentTarget.setPointerCapture(event.pointerId);
+    if (inline) { inlineDrag.current = { x: event.clientX, y: event.clientY, moved: false }; return; }
+    if (!position) return;
     drag.current = { dx: event.clientX - position.x, dy: event.clientY - position.y, moved: false };
   };
 
   const onPointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
-    if (inline || !drag.current || !position) return;
+    if (inline) {
+      if (!inlineDrag.current) return;
+      const dx = event.clientX - inlineDrag.current.x, dy = event.clientY - inlineDrag.current.y;
+      if (!inlineDrag.current.moved && (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD)) {
+        inlineDrag.current.moved = true;
+        setDragging(true);
+        onDragStart?.();
+      }
+      if (inlineDrag.current.moved) onDragMove?.(dx, dy);
+      return;
+    }
+    if (!drag.current || !position) return;
     const next = clamp({ x: event.clientX - drag.current.dx, y: event.clientY - drag.current.dy });
     if (!drag.current.moved && (Math.abs(next.x - position.x) > DRAG_THRESHOLD || Math.abs(next.y - position.y) > DRAG_THRESHOLD)) {
       drag.current.moved = true;
@@ -79,11 +97,18 @@ export default function AgentAvatar({ agentId, name, variant, status, slot = 0, 
   };
 
   const onPointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
-    if (inline) return;   // inline cats open via the plain click below, never via drag
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
+    if (inline) {
+      const moved = inlineDrag.current?.moved ?? false;
+      inlineDrag.current = null;
+      setDragging(false);
+      if (moved) { onDragEnd?.(); return; }   // a drag is never a click
+      onOpen();
+      return;
+    }
     const moved = drag.current?.moved ?? false;
     drag.current = null;
     setDragging(false);
-    event.currentTarget.releasePointerCapture?.(event.pointerId);
     if (moved) {
       setPosition((current) => {
         if (current) try { localStorage.setItem(positionKey(agentId), JSON.stringify(current)); } catch { /* best-effort only */ }
@@ -121,9 +146,9 @@ export default function AgentAvatar({ agentId, name, variant, status, slot = 0, 
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onKeyDown={onKeyDown}
-      onClick={event=>{if(inline||event.detail===0)onOpen();}}
-      aria-label={inline ? `Open ${name}. Status: ${statusLabel}.` : `Open ${name}. Status: ${statusLabel}. Drag to move, or use arrow keys.`}
-      title={inline ? `${name} — ${statusLabel}. Click to open.` : `${name} — ${statusLabel}. Click to open, drag to move.`}
+      onClick={event=>{if(event.detail===0)onOpen();}}
+      aria-label={inline ? `Open ${name}. Status: ${statusLabel}. Drag to move the bar.` : `Open ${name}. Status: ${statusLabel}. Drag to move, or use arrow keys.`}
+      title={inline ? `${name} — ${statusLabel}. Click to open, drag to move the bar.` : `${name} — ${statusLabel}. Click to open, drag to move.`}
     >
       <Mascot width={44} variant={variant} asleep={status === "idle"} />
     </button>

@@ -6,11 +6,13 @@ import { SlidersHorizontal, X } from "lucide-react";
 type Point = { x: number; y: number };
 type Candidate = { id: string; name: string };
 type Selection = { mode: "recent" } | { mode: "custom"; ids: string[] };
+export type BarDrag = { onDragStart: () => void; onDragMove: (dx: number, dy: number) => void; onDragEnd: () => void };
 
 const BAR_LIMIT = 4;
 const DRAG_THRESHOLD = 4;
-// Anything interactive (or the open management panel) starts its own action, never a bar drag.
-const NO_DRAG_SELECTOR = "button, a, input, textarea, .agent-mini, .cat-agent-bar-manage-panel";
+// Only the manage control (and content inside an open mini window) is exempt from starting a bar drag.
+// A cat itself IS a drag handle: grabbing one and moving it drags the whole bar; releasing without moving opens it.
+const NO_DRAG_SELECTOR = "a, input, textarea, .agent-mini, .cat-agent-bar-manage-panel, .cat-agent-bar-manage, .agent-dismiss";
 
 function clampToBar(point: Point, size: { width: number; height: number }): Point {
   return {
@@ -32,10 +34,12 @@ function loadSelection(key: string): Selection {
 
 // Groups the existing cat avatars into one persistent, draggable strip instead of each
 // floating independently. Cats themselves (AgentAvatar) are unchanged, just laid out here.
+// Bottom-right is only the starting position each time the app opens — dragging the bar,
+// or dragging any cat in it, moves the whole group and that position is remembered.
 export default function CatAgentBar({ storageKey, candidates, renderCat }: {
-  storageKey: string;                          // namespaces this bar's saved position + selection ("local" or "hosted:<userId>")
-  candidates: Candidate[];                     // every selectable cat, ordered newest first
-  renderCat: (id: string) => React.ReactNode;  // renders that cat's existing <AgentAvatar inline .../>
+  storageKey: string;                                    // namespaces this bar's saved position + selection ("local" or "hosted:<userId>")
+  candidates: Candidate[];                               // every selectable cat, ordered newest first
+  renderCat: (id: string, drag: BarDrag) => React.ReactNode;  // renders that cat's existing <AgentAvatar inline .../>, wired to drag the bar
 }) {
   const positionKey = `agent-hub:cat-bar-position:${storageKey}`;
   const selectionKey = `agent-hub:cat-bar-selection:${storageKey}`;
@@ -54,6 +58,7 @@ export default function CatAgentBar({ storageKey, candidates, renderCat }: {
     return candidates.slice(0, BAR_LIMIT).map((candidate) => candidate.id);
   }, [candidates, selection]);
 
+  // This is only the default starting spot each time the app opens; once dragged, `position` takes over.
   const [position, setPosition] = useState<Point>();
   useEffect(() => {
     try {
@@ -64,38 +69,50 @@ export default function CatAgentBar({ storageKey, candidates, renderCat }: {
 
   const barRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
-  const drag = useRef<{ dx: number; dy: number; moved: boolean } | null>(null);
+  const dragOrigin = useRef<Point>(null);   // the bar's own top-left, captured once when a drag starts
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
-    if ((event.target as HTMLElement).closest(NO_DRAG_SELECTOR)) return;
+  const handleDragStart = useCallback(() => {
     const bar = barRef.current;
-    if (!bar) return;
+    if (bar) { const rect = bar.getBoundingClientRect(); dragOrigin.current = { x: rect.left, y: rect.top }; }
+    setDragging(true);
+  }, []);
+
+  const handleDragMove = useCallback((dx: number, dy: number) => {
+    const bar = barRef.current, origin = dragOrigin.current;
+    if (!bar || !origin) return;
     const rect = bar.getBoundingClientRect();
-    event.currentTarget.setPointerCapture(event.pointerId);
-    drag.current = { dx: event.clientX - rect.left, dy: event.clientY - rect.top, moved: false };
-  };
+    setPosition(clampToBar({ x: origin.x + dx, y: origin.y + dy }, { width: rect.width, height: rect.height }));
+  }, []);
 
-  const onPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (!drag.current || !barRef.current) return;
-    const rect = barRef.current.getBoundingClientRect();
-    const next = clampToBar({ x: event.clientX - drag.current.dx, y: event.clientY - drag.current.dy }, { width: rect.width, height: rect.height });
-    if (!drag.current.moved && (Math.abs(next.x - rect.left) > DRAG_THRESHOLD || Math.abs(next.y - rect.top) > DRAG_THRESHOLD)) {
-      drag.current.moved = true;
-      setDragging(true);
-    }
-    if (drag.current.moved) setPosition(next);
-  };
-
-  const onPointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
-    const moved = drag.current?.moved ?? false;
-    drag.current = null;
+  const handleDragEnd = useCallback(() => {
     setDragging(false);
-    event.currentTarget.releasePointerCapture?.(event.pointerId);
-    if (moved) setPosition((current) => {
+    setPosition((current) => {
       if (current) try { localStorage.setItem(positionKey, JSON.stringify(current)); } catch { /* best-effort only */ }
       return current;
     });
+  }, [positionKey]);
+
+  const barDrag = useMemo<BarDrag>(() => ({ onDragStart: handleDragStart, onDragMove: handleDragMove, onDragEnd: handleDragEnd }), [handleDragStart, handleDragMove, handleDragEnd]);
+
+  // Dragging from the bar's own background (the gaps/padding around the cats), not through a cat.
+  const backgroundDrag = useRef<Point | null>(null);
+  const onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if ((event.target as HTMLElement).closest(NO_DRAG_SELECTOR)) return;
+    if ((event.target as HTMLElement).closest(".avatar-button")) return;   // that cat drives its own drag
+    backgroundDrag.current = { x: event.clientX, y: event.clientY };
+    handleDragStart();
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+  const onPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!backgroundDrag.current) return;
+    handleDragMove(event.clientX - backgroundDrag.current.x, event.clientY - backgroundDrag.current.y);
+  };
+  const onPointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!backgroundDrag.current) return;
+    backgroundDrag.current = null;
+    handleDragEnd();
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
   };
 
   useEffect(() => {
@@ -123,12 +140,12 @@ export default function CatAgentBar({ storageKey, candidates, renderCat }: {
     className={`cat-agent-bar${position ? "" : " default-corner"}${dragging ? " dragging" : ""}`}
     style={position ? { left: position.x, top: position.y } : undefined}
     role="group"
-    aria-label="Cat agent bar. Drag to move."
+    aria-label="Cat agent bar. Drag the bar or a cat to move it."
     onPointerDown={onPointerDown}
     onPointerMove={onPointerMove}
     onPointerUp={onPointerUp}
   >
-    <div className="cat-agent-bar-cats">{visibleIds.map((id) => <div className="cat-agent-bar-slot" key={id}>{renderCat(id)}</div>)}</div>
+    <div className="cat-agent-bar-cats">{visibleIds.map((id) => <div className="cat-agent-bar-slot" key={id}>{renderCat(id, barDrag)}</div>)}</div>
     <button className="cat-agent-bar-manage" onClick={() => setMenuOpen((open) => !open)} aria-expanded={menuOpen} aria-label="Choose which cat agents appear in this bar" title="Choose cat agents">
       <SlidersHorizontal size={13} />
     </button>
