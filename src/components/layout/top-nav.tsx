@@ -15,7 +15,6 @@ const tabs = [
   { key: "agents", label: "My Agents", href: "/agents", paths: ["/agents"] },
   { key: "agent-preview", label: "Create agent", href: "/agent-preview", paths: ["/agent-preview"] },
   { key: "compose", label: "Compose", href: "/create", paths: ["/create", "/discovery", "/workflow", "/general"] },
-  { key: "execution", label: "Execution", href: "/execution", paths: ["/execution"] },
 ] as const;
 
 function owns(pathname: string, path: string) {
@@ -38,7 +37,7 @@ export default function TopNav() {
     <nav className="topnav-links" aria-label="Main navigation">
       {tabs.map((tab) => (
         <Link key={tab.key} href={tab.href} className={`topnav-link${activeTab === tab.key ? " active" : ""}`} aria-current={activeTab === tab.key ? "page" : undefined}>
-          {hosted && tab.key === "execution" ? "History" : tab.label}
+          {tab.label}
         </Link>
       ))}
     </nav>

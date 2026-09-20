@@ -27,7 +27,6 @@ export default function BuilderAccess({enabled,hostedTestsEnabled}:{enabled:bool
       <p className="account-bar-user">Signed in as <strong>{account.session.user.email}</strong></p>
       <div className="account-bar-links">
         <Link href="/agents">My agents</Link>
-        <Link href="/execution">Test history</Link>
         <Button variant="ghost" size="sm" disabled={busy} onClick={signOut}>Sign out</Button>
       </div>
     </div>:<p><Link href="/login?next=/agent-preview">Sign in or create an account</Link> to save and test your agents.</p>)}

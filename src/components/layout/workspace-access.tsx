@@ -17,7 +17,7 @@ export default function WorkspaceAccess({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [local, setLocal] = useState<boolean>();
   useEffect(() => { setLocal(["localhost", "127.0.0.1"].includes(window.location.hostname) && !new URLSearchParams(window.location.search).has("hosted")); }, [pathname]);
-  if (["/agent-preview", "/login", "/dashboard"].includes(pathname) || pathname.startsWith("/profile/")) return children;
+  if (["/agent-preview", "/login", "/dashboard", "/execution"].includes(pathname) || pathname.startsWith("/profile/")) return children;
   if (local === undefined) return <PageShell><p role="status">Loading workspace…</p></PageShell>;
   if (local) return children;
   if (pathname === "/agents") return <AccountPages />;
@@ -25,7 +25,6 @@ export default function WorkspaceAccess({ children }: { children: ReactNode }) {
   // isn't in the always-passthrough list above; on a hosted deployment it's the
   // read-only detail/launch page for either an owned or a public agent.
   if (pathname.startsWith("/agents/")) return <AgentDetailPage />;
-  if (pathname === "/execution") return <><WorkflowPages mode="history"/><AccountPages history /></>;
   // Use the hosted registry implementation of the local Discover screen.
   // It retains account-scoped data and hosted APIs instead of local-only endpoints.
   if (pathname === "/discover") return <WorkflowPages mode="discover"/>;

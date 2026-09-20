@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Boxes, Network, Sparkles, ShieldCheck, Plus, History, Search } from "lucide-react";
+import { Boxes, Network, Sparkles, ShieldCheck, Plus, Search } from "lucide-react";
 import type { Composite } from "../../lib/contracts/index";
 import { api } from "../../lib/api-client";
 import PageShell from "../../components/layout/page-shell";
@@ -47,7 +47,6 @@ export default function MyAgentsPage() {
       title="My Agent Fleet"
       description="Supervise, monitor, and invoke your multi-agent workflows. One workspace for your entire fleet."
       action={<div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-        <Link href="/execution"><Button variant="secondary"><History size={14} /> Run history</Button></Link>
         <Link href="/create"><Button variant="primary"><Plus size={14} /> Compose New Agent</Button></Link>
       </div>}
     />
