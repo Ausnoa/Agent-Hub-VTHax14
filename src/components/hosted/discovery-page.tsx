@@ -5,9 +5,8 @@ import { useAccount } from '../../lib/hosted/use-account';
 import { hostedApi } from '../../lib/hosted/browser';
 import PageShell from '../layout/page-shell';
 import PageHeader from '../layout/page-header';
-import Card from '../ui/card';
-import StatusPill from '../ui/status-pill';
 import Avatar from './avatar';
+import PublicAgentCard from './public-agent-card';
 import './hosted.css';
 
 type PublicAgent = { kind: 'template' | 'workflow'; id: string; name: string; description: string; createdAt: string; owner: { userId: string; username: string; displayName: string; avatarUrl: string | null } };
@@ -45,18 +44,12 @@ function DiscoveryList() {
     </div>
     {!agents && !error && <p className="hint">Loading public agents…</p>}
     {shown && !!shown.length && <div className="discover-grid">
-      {shown.map((agent) => <Card key={`${agent.kind}:${agent.id}`}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
-          <h2 style={{ margin: 0 }}>{agent.name}</h2>
-          <StatusPill tone={agent.kind === 'workflow' ? 'violet' : 'accent'}>{agent.kind === 'workflow' ? 'Composite' : 'Template'}</StatusPill>
-        </div>
-        <p>{agent.description}</p>
+      {shown.map((agent) => <PublicAgentCard key={`${agent.kind}:${agent.id}`} agent={agent} footer={
         <Link href={`/profile/${agent.owner.username}`} className="discover-card-owner">
           <Avatar url={agent.owner.avatarUrl} name={agent.owner.displayName || agent.owner.username} small />
           <span>{agent.owner.displayName || `@${agent.owner.username}`}</span>
         </Link>
-        <p><Link href={`/agents/${agent.id}`}>Open agent →</Link></p>
-      </Card>)}
+      } />)}
     </div>}
     {shown && !shown.length && <p className="empty">No public agents match yet. Publish one from My Agents to be the first.</p>}
   </PageShell>;

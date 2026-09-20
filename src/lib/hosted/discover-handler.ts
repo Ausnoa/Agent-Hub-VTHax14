@@ -12,6 +12,9 @@ export async function handleDiscoverApi(request: Request, path: string[], deps =
       const query = new URL(request.url).searchParams.get('query') ?? '';
       return respond(await deps.discover(identity).list(query.slice(0, 256)));
     }
+    if (path.length === 3 && path[0] === 'discover' && path[1] === 'by-owner' && request.method === 'GET') {
+      return respond(await deps.discover(identity).byOwner(z.uuid().parse(path[2])));
+    }
     throw new HostedError(404, 'Route not found');
   } catch (error) {
     if (error instanceof HostedError) return respond({ error: error.message }, error.status);
