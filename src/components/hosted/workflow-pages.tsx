@@ -72,7 +72,9 @@ function Workspace({mode}:{mode:Mode}){
   useEffect(()=>{
     if(mode!=='discover')return;
     let live=true;
-    hostedApi<PublicAgentSummary[]>('discover?query=').then(data=>{if(live)setPublicAgents(data.slice(0,4));}).catch(e=>{if(live)setPublicAgentsError(e instanceof Error?e.message:'Could not load public agents');});
+    // Full list (the discover endpoint itself caps at 60), not just a preview slice — the
+    // Discover page shows the whole thing in a scrollable row with its own search.
+    hostedApi<PublicAgentSummary[]>('discover?query=').then(data=>{if(live)setPublicAgents(data);}).catch(e=>{if(live)setPublicAgentsError(e instanceof Error?e.message:'Could not load public agents');});
     return()=>{live=false;};
   },[mode]);
   // Bookmarks are fetched only once the finder actually shows them.
