@@ -8,4 +8,8 @@
 - Settled pipeline, report, and final brand snapshots inspected for fit and readability.
 - Render target: 1920×1080, 30 fps, 22 seconds, delivery quality, one worker.
 
+## Enhanced cut
+
+Glass/3D revision: Hyperframes check again passed with 0 runtime errors, 0 layout issues across 9 samples, and 69/69 WCAG AA text checks. Opening, topology report, and closing snapshots were visually inspected. Rotating cube faces use perspective and preserved 3D transforms; animation runs on the same deterministic timeline as the UI. The six non-blocking structural lint advisories remain.
+
 The composition is an illustrative UI film. It does not exercise or test live backend agent execution.

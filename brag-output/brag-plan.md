@@ -25,3 +25,7 @@ Happy Beats & Business Moves Vol. 1 by Sascha Ende, bundled with brag, CC BY 4.0
 
 ## Scope
 This is a source-based promotional UI recreation, not a recording of a live agent run. Product application and backend remain unchanged.
+
+## Motion upgrade
+Opening and closing use a real DOM 3D glass cube with three revolving satellite rings. Pipeline cards enter in perspective, then hold with a gentle float; light travels along their connections. Execution trace includes the source topology graph with moving signals. Glass sheen sweeps across panels, with cyan/violet ambient light behind them.
+

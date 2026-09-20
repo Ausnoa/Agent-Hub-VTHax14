@@ -9,5 +9,12 @@
   "media": {
     "autoProxy": true
   },
-  "authoringSkill": "brag"
+  "authoringSkill": "brag",
+  "registryItems": [
+    {
+      "name": "locked-nucleus-orbit",
+      "type": "hyperframes:component",
+      "target": "compositions/components/locked-nucleus-orbit.html"
+    }
+  ]
 }

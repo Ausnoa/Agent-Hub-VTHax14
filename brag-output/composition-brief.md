@@ -13,3 +13,6 @@ Motion: one deterministic paused GSAP timeline, staged card entrances, path illu
 Audio: local licensed music at low gain, 22s excerpt with 1.5s fade-out; low-HF soft reveal/card/logo effects. Credit Sascha Ende and CC BY 4.0 in the output README and share copy. Music preset supplies optional 3.02/4.02/5.03/6.02/18.02 timing guidance. No voice requested.
 
 Validate with Hyperframes check, inspect snapshots at settled scene times, render delivery quality, verify duration/audio with ffprobe, extract pipeline scene poster and bake it into frame zero. User has requested running and saving the completed output to GitHub; deliver the video and reproducible sources on main.
+
+Revision: add glass-panel highlights, DOM 3D rotating nucleus and orbit rings, perspective card entrances, traveling handoff pulses, and the Stitch-derived core/satellite topology graph. Keep 22-second timing and local assets.
+
