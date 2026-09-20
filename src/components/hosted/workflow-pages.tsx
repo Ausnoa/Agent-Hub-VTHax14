@@ -29,6 +29,7 @@ function Workspace({mode}:{mode:Mode}){
   const [selected,setSelected]=useState<HostedWorkflow>(),[run,setRun]=useState<HostedRun>();
   const [source,setSource]=useState(''),[inputFormat,setInputFormat]=useState<'text'|'json'>('text'),[confirmed,setConfirmed]=useState(false);
   const [busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[error,setError]=useState('');
+  const [suggesting,setSuggesting]=useState(false),[suggestionError,setSuggestionError]=useState(''),[suggestionNotice,setSuggestionNotice]=useState('');
   const requestKey=useRef<{key:string;id:string}|undefined>(undefined);
   function open(workflow:HostedWorkflow){setSelected(workflow);setName(workflow.definition.name);setSteps(workflow.definition.steps);setRun(undefined);setConfirmed(false);setError('');}
   useEffect(()=>{
@@ -47,6 +48,19 @@ function Workspace({mode}:{mode:Mode}){
     return()=>{active.current=false;};
   },[mode]);
   async function task(work:()=>Promise<void>){setBusy(true);setError('');try{await work();}catch(e){if(active.current)setError(e instanceof Error?e.message:'Request failed');}finally{if(active.current)setBusy(false);}}
+  async function suggest(){
+    if(busy)return;
+    setBusy(true);setSuggesting(true);setError('');setSuggestionError('');setSuggestionNotice('');
+    try{
+      const result=await hostedApi<{draft:{name:string;steps:Selection[]};candidates:Candidate[]}>('workflows/suggest',{description,query});
+      if(!active.current)return;
+      if(!result.draft.steps.length)throw new Error('No suitable workflow was found. Try a more specific outcome or add a matching agent.');
+      setName(result.draft.name);setSteps(result.draft.steps);setCandidates(old=>mergeCandidates([...old,...result.candidates]));setSelected(undefined);setRun(undefined);setConfirmed(false);
+      setSuggestionNotice(`Suggested ${result.draft.steps.length} steps for “${result.draft.name}”. Review the graph and steps below, then save.`);
+      requestAnimationFrame(()=>{if(active.current){const graph=document.getElementById('suggested-workflow');graph?.focus({preventScroll:true});graph?.scrollIntoView({block:'start'});}});
+    }catch(e){if(active.current)setSuggestionError(e instanceof Error?e.message:'Could not suggest a workflow. Please try again.');}
+    finally{if(active.current){setBusy(false);setSuggesting(false);}}
+  }
   async function search(more=false){await task(async()=>{const result=await hostedApi<{candidates:Candidate[];nextPageToken?:string}>('registry/search',{query:more?searched:query,...(more?{pageToken:nextPage}:{})});if(active.current){setCandidates(old=>mergeCandidates([...(more?old:old.filter(a=>a.source==='template')),...result.candidates]));setSearched(query);setNextPage(result.nextPageToken);}});}
   function add(candidate:Candidate,skill:string){
     if(mode==='discover'){sessionStorage.setItem('hosted-workflow-step',JSON.stringify({agentId:candidate.agentId,skill}));router.push('/create');return;}
@@ -75,8 +89,14 @@ function Workspace({mode}:{mode:Mode}){
       {!loading&&!candidates.length&&<p>No agents shown yet. Search ANS or create a template agent.</p>}{nextPage&&<Button disabled={busy} onClick={()=>void search(true)}>Load more ANS results</Button>}
     </Card>}
     {mode==='compose'&&<>
-      <Card><h2>Workflow graph</h2><WorkflowGraph steps={steps} names={steps.map((s,i)=>selected?.definition.steps[i]?.name??candidates.find(c=>c.agentId===s.agentId)?.name??s.skill)} run={run}/></Card>
-      <Card><h2>Describe your workflow</h2><label>Desired outcome<textarea value={description} maxLength={2000} disabled={busy} onChange={e=>setDescription(e.target.value)} placeholder="Summarize my meeting notes, then extract owners and deadlines."/></label><Button disabled={busy||description.trim().length<10} onClick={()=>void task(async()=>{const result=await hostedApi<{draft:{name:string;steps:Selection[]};candidates:Candidate[]}>('workflows/suggest',{description,query});if(active.current){setName(result.draft.name);setSteps(result.draft.steps);setCandidates(old=>mergeCandidates([...old,...result.candidates]));setSelected(undefined);setRun(undefined);setConfirmed(false);}})}>Suggest workflow</Button><p className="hint">Uses your saved templates and the first page of ANS results for the search above. Sends the description and candidate details to OpenAI. Up to 10 suggestions per UTC day; review every proposed step.</p></Card>
+      <Card aria-busy={suggesting}><h2>Describe your workflow</h2><label>Desired outcome<textarea value={description} maxLength={2000} disabled={busy} onChange={e=>{setDescription(e.target.value);setSuggestionNotice('');setSuggestionError('');}} placeholder="Summarize my meeting notes, then extract owners and deadlines."/></label>
+        <Button disabled={busy||loading||description.trim().length<10} onClick={()=>void suggest()}>{suggesting?'Suggesting workflow…':'Suggest workflow'}</Button>
+        {description.trim().length<10&&<p className="hint">Describe your desired outcome in at least 10 characters to get a suggestion.</p>}
+        <p role="status" aria-live="polite">{suggesting?'Finding agents and drafting your workflow. This can take up to a minute.':suggestionNotice}</p>
+        {suggestionError&&<p role="alert" className="alert">{suggestionError}</p>}
+        <p className="hint">Uses your saved templates and the first page of ANS results for the search above. Sends the description and candidate details to OpenAI. Up to 10 suggestions per UTC day; review every proposed step.</p>
+      </Card>
+      <Card id="suggested-workflow" tabIndex={-1} style={{scrollMarginTop:90}}> <h2>Workflow graph</h2><WorkflowGraph steps={steps} names={steps.map((s,i)=>selected?.definition.steps[i]?.name??candidates.find(c=>c.agentId===s.agentId)?.name??s.skill)} run={run}/></Card>
       <Card><h2>Review the steps</h2><label>Workflow name<input value={name} maxLength={100} disabled={busy} onChange={e=>{setName(e.target.value);setSelected(undefined);setRun(undefined);setConfirmed(false);}}/></label>
         {steps.map((step,index)=><article id={`hosted-step-${index}`} className="hosted-step" key={index}><h3>{index+1}. {selected?.definition.steps[index]?.name??candidates.find(c=>c.agentId===step.agentId)?.name??step.agentId}</h3><p>{step.skill}</p>
           {selected&&<p className="hint">{step.agentId.startsWith('template:')?'Your private saved template':`Endpoint: ${selected.definition.steps[index].endpoint}`}</p>}
