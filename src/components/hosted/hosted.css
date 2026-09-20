@@ -7,7 +7,7 @@
 
 .avatar-circle { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; background: var(--bg-inset); border: 1px solid var(--border-strong); flex-shrink: 0; }
 .avatar-circle--sm { width: 32px; height: 32px; }
-.avatar-fallback { display: flex; align-items: center; justify-content: center; font-weight: 600; text-transform: uppercase; color: var(--text-muted); }
+.avatar-fallback { display: flex; align-items: center; justify-content: center; color: var(--text-muted); }
 
 .profile-header { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
 .profile-header h1 { margin: 0; }
