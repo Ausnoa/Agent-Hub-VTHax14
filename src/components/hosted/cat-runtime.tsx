@@ -1,5 +1,5 @@
 "use client";
-import { useCallback,useEffect,useRef,useState } from 'react';
+import { useCallback,useEffect,useLayoutEffect,useRef,useState } from 'react';
 import Link from 'next/link';
 import { Maximize2,Minimize2,X } from 'lucide-react';
 import { useAccount } from '../../lib/hosted/use-account';
@@ -10,23 +10,33 @@ import { variantFor } from '../../lib/agent-ui/variant';
 import AgentAvatar from '../agent-runtime/agent-avatar';
 import Mascot from '../agent-runtime/mascot';
 import './cat.css';
+import {chatPosition} from '../../lib/agent-ui/chat-position';
 type Target={id:string;name:string;kind:'agent'|'workflow';createdAt:string;workflow?:HostedWorkflow};
 type Message={id:string;input:string;output:string;status:string};
 export default function HostedCatRuntime(){const account=useAccount();return account.session?<CatPack key={account.session.user.id}/>:null;}
 function CatPack(){
+  const [positions,setPositions]=useState<Record<string,{x:number;y:number}>>({});
+  const onPositionChange=useCallback((id:string,position:{x:number;y:number})=>setPositions(old=>({...old,[id]:position})),[]);
   const [targets,setTargets]=useState<Target[]>([]),[hidden,setHidden]=useState<string[]>([]),[selected,setSelected]=useState<string>();
   const [status,setStatus]=useState<Record<string,'idle'|'working'|'done'|'error'>>({});
   useEffect(()=>{let active=true;const refresh=()=>{Promise.all([hostedApi<OwnedAgent[]>('agents'),hostedApi<HostedWorkflow[]>('workflows')]).then(([agents,workflows])=>{if(active)setTargets([...agents.map(a=>({id:a.id,name:a.name,kind:'agent' as const,createdAt:a.createdAt})),...workflows.map(w=>({id:w.id,name:w.definition.name,kind:'workflow' as const,createdAt:w.created_at,workflow:w}))].sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).slice(0,4));}).catch(()=>{/* Main workspace shows account/storage errors. */});};refresh();window.addEventListener('hosted-workspace-changed',refresh);return()=>{active=false;window.removeEventListener('hosted-workspace-changed',refresh);};},[]);
   const visible=targets.filter(t=>!hidden.includes(t.id));const target=targets.find(t=>t.id===selected);
-  return <>{visible.map((item,index)=><AgentAvatar key={item.id} agentId={`hosted:${item.id}`} name={item.name} variant={variantFor(item.id,index)} status={status[item.id]??'idle'} slot={index} dimmed={Boolean(selected&&selected!==item.id)} onOpen={()=>{if(!Object.values(status).includes('working'))setSelected(item.id);}} onRemove={()=>{if(status[item.id]==='working')return;setHidden(old=>[...old,item.id]);if(selected===item.id)setSelected(undefined);}}/>)}
+  return <>{visible.map((item,index)=><AgentAvatar key={item.id} agentId={`hosted:${item.id}`} name={item.name} onPositionChange={onPositionChange} variant={variantFor(item.id,index)} status={status[item.id]??'idle'} slot={index} dimmed={Boolean(selected&&selected!==item.id)} onOpen={()=>{if(!Object.values(status).includes('working'))setSelected(item.id);}} onRemove={()=>{if(status[item.id]==='working')return;setHidden(old=>[...old,item.id]);if(selected===item.id)setSelected(undefined);}}/>)}
     {hidden.length>0&&<button className="restore-cats" onClick={()=>setHidden([])}>Show cats</button>}
-    {target&&<CatChat key={target.id} target={target} onClose={()=>setSelected(undefined)} onStatus={value=>setStatus(old=>({...old,[target.id]:value}))}/>}
+    {target&&<CatChat key={target.id} target={target} anchor={positions[`hosted:${target.id}`]} onClose={()=>setSelected(undefined)} onStatus={value=>setStatus(old=>({...old,[target.id]:value}))}/>}
   </>;
 }
-function CatChat({target,onClose,onStatus}:{target:Target;onClose:()=>void;onStatus:(status:'idle'|'working'|'done'|'error')=>void}){
+function CatChat({target,anchor,onClose,onStatus}:{target:Target;anchor?:{x:number;y:number};onClose:()=>void;onStatus:(status:'idle'|'working'|'done'|'error')=>void}){
   const [expanded,setExpanded]=useState(false),[text,setText]=useState(''),[json,setJson]=useState(false),[confirmed,setConfirmed]=useState(false);
   const [messages,setMessages]=useState<Message[]>([]),[busy,setBusy]=useState(false),[error,setError]=useState('');
   const lock=useRef(false),active=useRef(true),request=useRef<{key:string;id:string}|null>(null),dialog=useRef<HTMLElement>(null);
+  const [placement,setPlacement]=useState<{left:number;top:number}>();
+  useLayoutEffect(()=>{
+    const element=dialog.current;if(!element||expanded||!anchor)return;
+    const update=()=>{const rect=element.getBoundingClientRect();const next=chatPosition(anchor,rect,{width:window.innerWidth,height:window.innerHeight});setPlacement(old=>old?.left===next.left&&old?.top===next.top?old:next);};
+    update();const observer=new ResizeObserver(update);observer.observe(element);window.addEventListener('resize',update);
+    return()=>{observer.disconnect();window.removeEventListener('resize',update);};
+  },[anchor,expanded]);
   const [pending,setPending]=useState<HostedRun>();
   const refresh=useCallback(async()=>{
     if(target.kind==='agent'){
@@ -58,7 +68,7 @@ function CatChat({target,onClose,onStatus}:{target:Target;onClose:()=>void;onSta
     }catch(e){if(active.current){onStatus('error');setError(`${e instanceof Error?e.message:'Request failed'}. Check history before starting another run.`);setConfirmed(false);}}
     finally{try{await refresh();}catch{/* Retain original execution error. */}window.dispatchEvent(new Event('hosted-workspace-changed'));lock.current=false;if(active.current)setBusy(false);}
   }
-  return <section className={`hosted-cat-chat${expanded?' expanded':''}`} role="dialog" aria-label={`${target.name} cat chat`} tabIndex={-1} ref={dialog}>
+  return <section className={`hosted-cat-chat${expanded?' expanded':''}`} style={!expanded&&placement?{left:placement.left,top:placement.top,right:'auto',bottom:'auto'}:undefined} role="dialog" aria-label={`${target.name} cat chat`} tabIndex={-1} ref={dialog}>
     <header><Mascot width={34} variant={variantFor(target.id)}/><div><strong>{target.name}</strong><small>{target.kind==='workflow'?'Workflow companion':'Agent companion'}</small></div><button onClick={()=>setExpanded(!expanded)} aria-label={expanded?'Minimize cat chat':'Expand cat chat'}>{expanded?<Minimize2 size={16}/>:<Maximize2 size={16}/>}</button><button disabled={busy} onClick={onClose} aria-label="Close cat chat"><X size={16}/></button></header>
     <div className="cat-chat-body"><p className="hint">Each message starts an independent {target.kind==='workflow'?'workflow run':'agent test'}. Previous messages are not sent as context.</p>
       <Link href={target.kind==='workflow'?`/create?workflow=${target.id}`:`/agent-preview?agent=${target.id}`}>Open {target.kind==='workflow'?'workflow':'agent'} →</Link>

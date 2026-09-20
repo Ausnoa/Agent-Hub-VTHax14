@@ -26,7 +26,7 @@ export function slotCorner(index: number): Point {
 }
 
 // The persistent per-agent avatar: draggable, click to open the mini window.
-export default function AgentAvatar({ agentId, name, variant, status, slot, dimmed, onOpen, onRemove, children }: {
+export default function AgentAvatar({ agentId, name, variant, status, slot, dimmed, onOpen, onRemove, onPositionChange, children }: {
   agentId: string;
   name: string;
   variant: Variant;
@@ -35,9 +35,11 @@ export default function AgentAvatar({ agentId, name, variant, status, slot, dimm
   dimmed: boolean;              // another cat's window is open
   onOpen: () => void;
   onRemove: () => void;
+  onPositionChange?: (agentId:string,position:Point)=>void;
   children?: React.ReactNode;   // the mini window renders alongside its own cat
 }) {
   const [position, setPosition] = useState<Point>();
+  useEffect(()=>{if(position)onPositionChange?.(agentId,position);},[position,agentId,onPositionChange]);
   const [dragging, setDragging] = useState(false);
   const drag = useRef<{ dx: number; dy: number; moved: boolean }>(null);
 
