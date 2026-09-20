@@ -72,3 +72,11 @@ test('same-origin browser writes accept the public Host when Next uses an intern
   const request=new Request('http://localhost:3001/api/hosted/agents',{method:'POST',headers:{Host:'127.0.0.1:3001',Origin:'http://127.0.0.1:3001',Authorization:'Bearer alice','Content-Type':'application/json'},body:JSON.stringify(definition)});
   assert.equal((await handleHostedApi(request,['agents'],dependencies)).status,201);
 });
+
+test('account test history requires authentication',async()=>{
+  const {dependencies}=setup();
+  assert.equal((await handleHostedApi(req(undefined,'invalid'),['tests'],dependencies)).status,401);
+  const response=await handleHostedApi(req(),['tests'],dependencies);
+  assert.equal(response.status,200);
+  assert.deepEqual(await response.json(),[]);
+});

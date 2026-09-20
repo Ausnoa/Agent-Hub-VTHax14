@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ShieldCheck } from "lucide-react";
@@ -22,6 +23,8 @@ function owns(pathname: string, path: string) {
 
 export default function TopNav() {
   const pathname = usePathname();
+  const [hosted,setHosted] = useState(false);
+  useEffect(()=>{setHosted(!["localhost","127.0.0.1"].includes(location.hostname));},[]);
   const activeTab = pathname === "/" ? "agents" : tabs.find((tab) => tab.paths.some((path) => owns(pathname, path)))?.key;
 
   return <header className="topnav">
@@ -33,12 +36,13 @@ export default function TopNav() {
     <nav className="topnav-links" aria-label="Main navigation">
       {tabs.map((tab) => (
         <Link key={tab.key} href={tab.href} className={`topnav-link${activeTab === tab.key ? " active" : ""}`} aria-current={activeTab === tab.key ? "page" : undefined}>
-          {tab.label}
+          {hosted && tab.key === "execution" ? "Test history" : tab.label}{hosted && ["discover","compose"].includes(tab.key) ? " · Local" : ""}
         </Link>
       ))}
     </nav>
     <div className="topnav-right">
       <div className="topnav-stat">Agent workspace<strong>MVP EDITION</strong></div>
+      <Link href="/login">Account</Link>
       <ThemeToggle />
     </div>
   </header>;

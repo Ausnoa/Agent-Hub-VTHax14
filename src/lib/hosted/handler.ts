@@ -32,6 +32,7 @@ export async function handleHostedApi(request: Request, path: string[], dependen
     }
     const identity = await dependencies.authenticate(request);
     const store = dependencies.repository(identity);
+    if (path.length === 1 && path[0] === 'tests' && request.method === 'GET') return respond(await store.history());
     if (path.length === 1 && path[0] === 'agents') {
       if (request.method === 'GET') return respond(await store.list());
       if (request.method === 'POST') return respond(await store.create(await readBody(request)), 201);

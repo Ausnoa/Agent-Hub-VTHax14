@@ -6,6 +6,7 @@ import Link from "next/link";
 import PageShell from "./page-shell";
 import PageHeader from "./page-header";
 import Card from "../ui/card";
+import AccountPages from "../hosted/account-pages";
 
 // Presentation only. The API still enforces its own local-workspace restriction.
 // Keep workspace children unmounted on hosted pages so their effects cannot call
@@ -14,12 +15,14 @@ export default function WorkspaceAccess({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [local, setLocal] = useState<boolean>();
   useEffect(() => { setLocal(["localhost", "127.0.0.1"].includes(window.location.hostname)); }, []);
-  if (pathname === "/agent-preview") return children;
+  if (["/agent-preview", "/login"].includes(pathname)) return children;
   if (local === undefined) return <PageShell><p role="status">Loading workspace…</p></PageShell>;
   if (local) return children;
+  if (pathname === "/agents") return <AccountPages />;
+  if (pathname === "/execution") return <AccountPages history />;
   return <PageShell narrow>
-    <PageHeader eyebrow="HOSTED PREVIEW" title="Workflow execution runs locally for now"
-      description="Registry browsing, multi-agent workflows, and their run history still require the local workspace. The template builder has a separate hosted account flow." />
+    <PageHeader eyebrow="HOSTED PREVIEW" title={pathname === "/discover" || pathname === "/available" ? "Registry discovery needs the local workspace" : "Hosted workflows are coming next"}
+      description="You can create agents, save them to your account, and review test results online. Registry search and multi-agent workflow execution still use the local backend." />
     <Card>
       <h2>Create and test template agents</h2>
       <p>Open the template builder to sign in, save your agents, and test them once hosted accounts are configured. You can also explore the templates without signing in.</p>
