@@ -25,6 +25,25 @@ function CatPack({userId}:{userId:string}){
   useEffect(()=>{const created=(e:Event)=>{const item=(e as CustomEvent).detail;if(item&&typeof item.id==='string'&&typeof item.name==='string'&&Array.isArray(item.skills))setSpawn(old=>[...old,{id:item.id,name:item.name,skills:item.skills.filter((s:unknown)=>typeof s==='string')}]);};window.addEventListener('hosted-agent-created',created);return()=>window.removeEventListener('hosted-agent-created',created);},[]);
   useEffect(()=>{if(!spawn.length)return;const timer=setTimeout(()=>setSpawn(old=>old.slice(1)),2400);return()=>clearTimeout(timer);},[spawn]);
   const visible=hiddenReady?targets.filter(t=>!hidden.includes(t.id)&&!spawn.some(s=>s.id===t.id)):[];const target=targets.find(t=>t.id===selected);
+  // Same index the bar cat uses for its color, so the chat header's mascot always matches the
+  // cat you actually clicked instead of a second, unrelated hash-based color.
+  const targetIndex=target?visible.findIndex(item=>item.id===target.id):-1;
+  // The bar owns cat position via raw DOM style updates during drag, not React state this
+  // component can subscribe to, so the open cat's chat window tracks it by reading the DOM
+  // directly, every frame, for as long as a chat is open.
+  const catNodes=useRef(new Map<string,HTMLDivElement>());
+  const [anchor,setAnchor]=useState<{x:number;y:number}>();
+  useEffect(()=>{
+    if(!selected)return;
+    let frame:number;
+    const measure=()=>{
+      const node=catNodes.current.get(selected);
+      if(node){const rect=node.getBoundingClientRect();setAnchor(old=>old&&old.x===rect.left&&old.y===rect.top?old:{x:rect.left,y:rect.top});}
+      frame=requestAnimationFrame(measure);
+    };
+    frame=requestAnimationFrame(measure);
+    return()=>cancelAnimationFrame(frame);
+  },[selected]);
   return <>{spawn[0]&&<div key={spawn[0].id} className="agent-spawn" style={{zIndex:110}} aria-live="polite"><div className="agent-spawn-card"><span className="agent-spawn-halo"/><Mascot width={96} variant={variantFor(spawn[0].id,0)}/><span className="agent-spawn-kicker">Agent created</span><strong>{spawn[0].name}</strong><div className="agent-spawn-tags">{spawn[0].skills.slice(0,3).map((skill,i)=><span key={i}>{skill}</span>)}</div><small>Heading to the corner — click your cat to open its chat.</small></div></div>}
     <CatAgentBar
       storageKey={`hosted:${userId}`}
@@ -33,13 +52,13 @@ function CatPack({userId}:{userId:string}){
         const item=visible.find(candidate=>`hosted:${candidate.id}`===agentId);
         if(!item)return null;
         const index=visible.indexOf(item);
-        return <AgentAvatar key={item.id} agentId={agentId} name={item.name} variant={variantFor(item.id,index)} status={status[item.id]??'idle'} inline {...drag} dimmed={Boolean(selected&&selected!==item.id)} onOpen={()=>{if(!Object.values(status).includes('working'))setSelected(item.id);}} onRemove={()=>{if(status[item.id]==='working')return;setHidden(old=>[...old,item.id]);if(selected===item.id)setSelected(undefined);}}/>;
+        return <AgentAvatar key={item.id} agentId={agentId} name={item.name} variant={variantFor(item.id,index)} status={status[item.id]??'idle'} inline {...drag} dimmed={Boolean(selected&&selected!==item.id)} onOpen={()=>{if(!Object.values(status).includes('working'))setSelected(item.id);}} onRemove={()=>{if(status[item.id]==='working')return;setHidden(old=>[...old,item.id]);if(selected===item.id)setSelected(undefined);}} elementRef={el=>{if(el)catNodes.current.set(item.id,el);else catNodes.current.delete(item.id);}}/>;
       }}
     />
-    {target&&<CatChat key={target.id} target={target} onClose={()=>setSelected(undefined)} onStatus={value=>setStatus(old=>({...old,[target.id]:value}))}/>}
+    {target&&<CatChat key={target.id} target={target} anchor={anchor} variantIndex={targetIndex>=0?targetIndex:undefined} onClose={()=>setSelected(undefined)} onStatus={value=>setStatus(old=>({...old,[target.id]:value}))}/>}
   </>;
 }
-function CatChat({target,anchor,onClose,onStatus}:{target:Target;anchor?:{x:number;y:number};onClose:()=>void;onStatus:(status:'idle'|'working'|'done'|'error')=>void}){
+function CatChat({target,anchor,variantIndex,onClose,onStatus}:{target:Target;anchor?:{x:number;y:number};variantIndex?:number;onClose:()=>void;onStatus:(status:'idle'|'working'|'done'|'error')=>void}){
   const [expanded,setExpanded]=useState(false),[text,setText]=useState(''),[json,setJson]=useState(false),[confirmed,setConfirmed]=useState(false);
   const [messages,setMessages]=useState<Message[]>([]),[busy,setBusy]=useState(false),[error,setError]=useState('');
   const lock=useRef(false),active=useRef(true),request=useRef<{key:string;id:string}|null>(null),dialog=useRef<HTMLElement>(null);
@@ -82,7 +101,7 @@ function CatChat({target,anchor,onClose,onStatus}:{target:Target;anchor?:{x:numb
     finally{try{await refresh();}catch{/* Retain original execution error. */}window.dispatchEvent(new Event('hosted-workspace-changed'));lock.current=false;if(active.current)setBusy(false);}
   }
   return <section className={`hosted-cat-chat${expanded?' expanded':''}`} style={!expanded&&placement?{left:placement.left,top:placement.top,maxHeight:placement.maxHeight,right:'auto',bottom:'auto'}:undefined} role="dialog" aria-label={`${target.name} cat chat`} tabIndex={-1} ref={dialog}>
-    <header><Mascot width={34} variant={variantFor(target.id)}/><div><strong>{target.name}</strong><small>{target.kind==='workflow'?'Workflow companion':'Agent companion'}</small></div><button onClick={()=>setExpanded(!expanded)} aria-label={expanded?'Minimize cat chat':'Expand cat chat'}>{expanded?<Minimize2 size={16}/>:<Maximize2 size={16}/>}</button><button disabled={busy} onClick={onClose} aria-label="Close cat chat"><X size={16}/></button></header>
+    <header><Mascot width={34} variant={variantFor(target.id,variantIndex)}/><div><strong>{target.name}</strong><small>{target.kind==='workflow'?'Workflow companion':'Agent companion'}</small></div><button onClick={()=>setExpanded(!expanded)} aria-label={expanded?'Minimize cat chat':'Expand cat chat'}>{expanded?<Minimize2 size={16}/>:<Maximize2 size={16}/>}</button><button disabled={busy} onClick={onClose} aria-label="Close cat chat"><X size={16}/></button></header>
     <div className="cat-chat-body"><p className="hint">Each message starts an independent {target.kind==='workflow'?'workflow run':'agent test'}. Previous messages are not sent as context.</p>
       <Link href={target.kind==='workflow'?`/create?workflow=${target.id}`:`/agent-preview?agent=${target.id}`}>Open {target.kind==='workflow'?'workflow':'agent'} →</Link>
       {target.workflow&&<details><summary>Review {target.workflow.definition.steps.length} steps</summary><ol>{target.workflow.definition.steps.map((s,i)=><li key={i}>{s.name} · {s.skill}<br/>{s.agentId.startsWith('template:')?'Your private template':s.endpoint}</li>)}</ol></details>}
