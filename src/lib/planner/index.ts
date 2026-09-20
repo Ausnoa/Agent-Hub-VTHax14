@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { planSchema, type Plan } from "../contracts/index.ts";
 
+export class ModelServiceError extends Error {
+  code: 'not-configured' | 'incomplete' | 'output-limit' | 'invalid-output';
+  constructor(code: ModelServiceError['code']) { super(`Model generation unavailable (${code}).`); this.code=code; }
+}
 export class ModelProviderError extends Error {
   status: number;
   constructor(status: number) { super(`Model provider request failed (HTTP ${status}). Check the deployment's model configuration and provider account.`); this.status = status; }
@@ -11,7 +15,7 @@ export async function planDescription(description: string): Promise<Plan> {
 }
 
 export async function structuredPlan<Schema extends z.ZodType>(input: string, instructions: string, schema: Schema, options: { maxOutputTokens?: number } = {}): Promise<z.output<Schema>> {
-  if (!process.env.OPENAI_API_KEY || !process.env.OPENAI_MODEL) throw new Error("Live planning needs OPENAI_API_KEY and OPENAI_MODEL. Use the labeled local demo to test the workflow.");
+  if (!process.env.OPENAI_API_KEY || !process.env.OPENAI_MODEL) throw new ModelServiceError("not-configured");
   const response = await fetch("https://api.openai.com/v1/responses", {
     method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
     body: JSON.stringify({ model: process.env.OPENAI_MODEL, store: false,
@@ -25,8 +29,8 @@ export async function structuredPlan<Schema extends z.ZodType>(input: string, in
     throw new ModelProviderError(response.status);
   }
   const payload = await response.json();
-  if (payload.status !== "completed") throw new Error("Planner did not complete; try again");
+  if (payload.status !== "completed") throw new ModelServiceError(payload.incomplete_details?.reason === "max_output_tokens" ? "output-limit" : "incomplete");
   const output = payload.output?.flatMap((item: { content?: { type: string; text?: string }[] }) => item.content ?? []).find((item: { type: string }) => item.type === "output_text")?.text;
-  if (typeof output !== "string") throw new Error("Planner returned no usable plan");
-  return schema.parse(JSON.parse(output));
+  if (typeof output !== "string") throw new ModelServiceError("invalid-output");
+  try { return schema.parse(JSON.parse(output)); } catch { throw new ModelServiceError("invalid-output"); }
 }

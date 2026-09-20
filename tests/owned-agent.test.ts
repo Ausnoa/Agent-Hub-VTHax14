@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { agentCard, handleSummary } from "../src/lib/owned-agent/summary.ts";
-import { ModelProviderError } from "../src/lib/planner/index.ts";
+import { ModelProviderError, ModelServiceError } from "../src/lib/planner/index.ts";
 import { invokeGeneral } from "../src/lib/general/client.ts";
 const origin = "https://agent.example.com";
 const fixture = { brief: "Launch date undecided.", keyPoints: ["Launch date undecided."], actionItems: ["Maya will send the draft Friday."] };
@@ -37,4 +37,11 @@ test("card rejects unsafe origins and malformed model outputs become errors", as
 test("provider diagnostics expose HTTP status without raw provider details", async()=>{
   const response=await handleSummary(request(rpc),{enabled:true,summarize:async()=>{throw new ModelProviderError(401);}});
   assert.equal((await response.json()).error.message,'Agent generation unavailable (model provider HTTP 401).');
+});
+
+test("model configuration and incomplete-output errors have safe diagnostic categories", async()=>{
+  for(const code of ['not-configured','output-limit','invalid-output'] as const){
+    const response=await handleSummary(request(rpc),{enabled:true,summarize:async()=>{throw new ModelServiceError(code);}});
+    assert.equal((await response.json()).error.message,`Model generation unavailable (${code}).`);
+  }
 });

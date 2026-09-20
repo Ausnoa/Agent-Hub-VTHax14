@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
-import { ModelProviderError } from "../planner/index.ts";
+import { ModelProviderError, ModelServiceError } from "../planner/index.ts";
 
 const envelope = z.object({ jsonrpc: z.literal("2.0"), id: z.union([z.string().max(200), z.number().finite()]), method: z.string() });
 const paramsSchema = z.object({ message: z.object({ kind: z.literal("message").optional(), role: z.literal("user"), messageId: z.string().min(1).max(200),
@@ -44,6 +44,7 @@ export async function handleTextAgent(request: Request, generate: (text: string)
     return reply({ jsonrpc: "2.0", id, result: { kind: "message", role: "agent", messageId: randomUUID(), parts: [{ kind: "text", text: output }] } });
   } catch (reason) {
     if (reason instanceof InputError) return error(id, -32602, reason.message);
+    if (reason instanceof ModelServiceError) return error(id, -32603, reason.message);
     if (reason instanceof ModelProviderError) return error(id, -32603, `Agent generation unavailable (model provider HTTP ${reason.status}).`);
     return error(id, -32603, options.failure ?? "Agent generation failed; no result was produced");
   }
