@@ -1,5 +1,7 @@
-# Chat windows follow their cats
+# Restore hosted Discover registry
 
-Hosted cat avatars now report their current position to the chat runtime. Compact chat windows anchor above the selected cat (or below when needed), move with pointer/keyboard dragging, and clamp within the viewport. Resizing the window or chat content recalculates placement. Expanded chat remains a full workspace panel; minimizing returns it to its cat. Existing chat state, execution and saved history are unchanged. The Dashboard changes requested earlier were reverted at the user's request and are not part of this update.
+The local main branch was clean and matched GitHub at 5101d86, whose Vercel deployment reported success. The apparent stale Discover screen came from WorkspaceAccess selecting the public marketplace on external hostnames while localhost rendered the registry screen.
 
-A geometry regression test covers drag deltas, viewport boundaries and mobile sizing. Production build and browser checks follow.
+Restored the existing hosted registry screen at /discover via WorkflowPages discover mode. This brings back the two-column composition graph and ANS search layout while retaining authenticated hosted APIs and private saved agents. Local-only endpoints remain restricted.
+
+TypeScript validation and the production build pass. Deployment verification is pending; authenticated ANS search needs a signed-in production session.
