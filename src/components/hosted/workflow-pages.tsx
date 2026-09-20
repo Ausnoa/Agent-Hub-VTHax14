@@ -7,6 +7,7 @@ import { useAccount } from '../../lib/hosted/use-account';
 import { templateFor,type OwnedAgent } from '../../lib/owned-agent/templates';
 import type { Candidate,HostedWorkflow,HostedRun } from '../../lib/hosted/workflow-contracts';
 import type { Selection } from '../../lib/general/contracts';
+import WorkflowGraph from "./workflow-graph";
 import PageShell from '../layout/page-shell';
 import PageHeader from '../layout/page-header';
 import Card from '../ui/card';
@@ -54,10 +55,11 @@ function Workspace({mode}:{mode:Mode}){
   function edit(index:number,patch:Partial<Selection>){setSteps(old=>old.map((s,i)=>i===index?{...s,...patch}:s));setSelected(undefined);setRun(undefined);setConfirmed(false);}
   async function advance(current:HostedRun){
     while(active.current&&current.status==='ready'){
+      setRun({...current,status:'running'});
       current=await hostedApi<HostedRun>(`workflows/runs/${current.id}/advance`,{expectedStep:current.outputs.length,confirmExternalExecution:true});
       if(active.current)setRun(current);
     }
-    if(active.current)setRuns(await hostedApi<HostedRun[]>('workflows/runs'));
+    if(active.current){setRuns(await hostedApi<HostedRun[]>('workflows/runs'));window.dispatchEvent(new Event('hosted-workspace-changed'));}
   }
   async function start(){if(!selected||!confirmed)return;await task(async()=>{
     const input=inputFormat==='text'?{type:'text',value:source}:{type:'json',value:JSON.parse(source)};
@@ -73,15 +75,16 @@ function Workspace({mode}:{mode:Mode}){
       {!loading&&!candidates.length&&<p>No agents shown yet. Search ANS or create a template agent.</p>}{nextPage&&<Button disabled={busy} onClick={()=>void search(true)}>Load more ANS results</Button>}
     </Card>}
     {mode==='compose'&&<>
+      <Card><h2>Workflow graph</h2><WorkflowGraph steps={steps} names={steps.map((s,i)=>selected?.definition.steps[i]?.name??candidates.find(c=>c.agentId===s.agentId)?.name??s.skill)} run={run}/></Card>
       <Card><h2>Describe your workflow</h2><label>Desired outcome<textarea value={description} maxLength={2000} disabled={busy} onChange={e=>setDescription(e.target.value)} placeholder="Summarize my meeting notes, then extract owners and deadlines."/></label><Button disabled={busy||description.trim().length<10} onClick={()=>void task(async()=>{const result=await hostedApi<{draft:{name:string;steps:Selection[]};candidates:Candidate[]}>('workflows/suggest',{description,query});if(active.current){setName(result.draft.name);setSteps(result.draft.steps);setCandidates(old=>mergeCandidates([...old,...result.candidates]));setSelected(undefined);setRun(undefined);setConfirmed(false);}})}>Suggest workflow</Button><p className="hint">Uses your saved templates and the first page of ANS results for the search above. Sends the description and candidate details to OpenAI. Up to 10 suggestions per UTC day; review every proposed step.</p></Card>
       <Card><h2>Review the steps</h2><label>Workflow name<input value={name} maxLength={100} disabled={busy} onChange={e=>{setName(e.target.value);setSelected(undefined);setRun(undefined);setConfirmed(false);}}/></label>
-        {steps.map((step,index)=><article className="hosted-step" key={index}><h3>{index+1}. {selected?.definition.steps[index]?.name??candidates.find(c=>c.agentId===step.agentId)?.name??step.agentId}</h3><p>{step.skill}</p>
+        {steps.map((step,index)=><article id={`hosted-step-${index}`} className="hosted-step" key={index}><h3>{index+1}. {selected?.definition.steps[index]?.name??candidates.find(c=>c.agentId===step.agentId)?.name??step.agentId}</h3><p>{step.skill}</p>
           {selected&&<p className="hint">{step.agentId.startsWith('template:')?'Your private saved template':`Endpoint: ${selected.definition.steps[index].endpoint}`}</p>}
           <div className="hosted-step-controls"><label>Input from<select disabled={busy||index===0} value={step.inputFrom} onChange={e=>edit(index,{inputFrom:e.target.value as Selection['inputFrom']})}><option value="original">Original input</option><option value="previous">Previous step output</option></select></label><label>Format<select disabled={busy||step.agentId.startsWith('template:')} value={step.format} onChange={e=>edit(index,{format:e.target.value as Selection['format'],instruction:''})}><option value="text">Text</option><option value="json">JSON object</option></select></label></div>
           <label>Step instruction<textarea disabled={busy||step.format==='json'} value={step.instruction} maxLength={2000} onChange={e=>edit(index,{instruction:e.target.value})}/></label><Button disabled={busy} onClick={()=>{setSteps(old=>old.filter((_,i)=>i!==index).map((s,i)=>i===0?{...s,inputFrom:'original'}:s));setSelected(undefined);setRun(undefined);setConfirmed(false);}}>Remove step</Button>
         </article>)}
         {!steps.length&&<p>Choose skills above or request a suggested workflow.</p>}
-        <Button variant="primary" disabled={busy||!steps.length||!name.trim()} onClick={()=>void task(async()=>{const saved=await hostedApi<HostedWorkflow>('workflows',{name,steps});if(active.current){setSelected(saved);setSteps(saved.definition.steps);setRun(undefined);setConfirmed(false);setWorkflows(await hostedApi<HostedWorkflow[]>('workflows'));}})}>Check compatibility and save</Button><p className="hint">Saving checks current ANS endpoints and skill compatibility. Existing workflows remain unchanged when you save a new version.</p>
+        <Button variant="primary" disabled={busy||!steps.length||!name.trim()} onClick={()=>void task(async()=>{const saved=await hostedApi<HostedWorkflow>('workflows',{name,steps});if(active.current){setSelected(saved);setSteps(saved.definition.steps);setRun(undefined);setConfirmed(false);setWorkflows(await hostedApi<HostedWorkflow[]>('workflows'));window.dispatchEvent(new Event('hosted-workspace-changed'));}})}>Check compatibility and save</Button><p className="hint">Saving checks current ANS endpoints and skill compatibility. Existing workflows remain unchanged when you save a new version.</p>
       </Card>
       {selected&&<Card><h2>Run {selected.definition.name}</h2><label>Input type<select disabled={busy} value={inputFormat} onChange={e=>{setInputFormat(e.target.value as 'text'|'json');setConfirmed(false);}}><option value="text">Text</option><option value="json">JSON object</option></select></label><label>Workflow input<textarea disabled={busy} value={source} maxLength={12000} onChange={e=>{setSource(e.target.value);setConfirmed(false);}}/></label><label className="hosted-confirm"><input type="checkbox" checked={confirmed} disabled={busy} onChange={e=>setConfirmed(e.target.checked)}/>I reviewed these steps and authorize sending this input and intermediate outputs to the selected agents (and OpenAI for my templates), including any actions they perform.</label><Button variant="primary" disabled={busy||!source.trim()||!confirmed||Boolean(run)} onClick={()=>void start()}>{busy?'Working…':'Run workflow'}</Button><p className="hint">Up to 10 new runs per UTC day. Private templates share the 20-test daily limit. Keep this page open to advance through the steps. Refreshing never automatically repeats a step.</p>
         {run&&<RunResult run={run}/>} {run&&['completed','failed'].includes(run.status)&&<Button disabled={busy} onClick={()=>{requestKey.current=undefined;setRun(undefined);setConfirmed(false);}}>Prepare a new run</Button>} {run&&['ready','running'].includes(run.status)&&<Button disabled={busy||!confirmed} onClick={()=>void task(async()=>{const fresh=await hostedApi<HostedRun>(`workflows/runs/${run.id}`);setRun(fresh);if(fresh.status==='ready')await advance(fresh);else if(fresh.status==='running')setRun(await hostedApi<HostedRun>(`workflows/runs/${fresh.id}/advance`,{expectedStep:fresh.outputs.length,confirmExternalExecution:true}));})}>Refresh status / continue</Button>}
