@@ -554,6 +554,29 @@ input:focus, textarea:focus { outline: none; border-color: var(--accent); box-sh
   .fleet-toolbar { flex-direction: column; align-items: stretch; }
   .fleet-toolbar .filter-bar { max-width: 100%; }
 }
+
+/* ---------- workspace toggle ---------- */
+.workspace-toggle { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; flex-wrap: wrap; }
+.workspace-toggle .eyebrow { margin-bottom: 0; }
+@media (max-width: 480px) {
+  .workspace-toggle { flex-direction: column; align-items: flex-start; }
+}
+
+/* ---------- account bar ---------- */
+.account-bar {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  padding: 14px 16px; margin-bottom: 20px;
+  border: 1px solid var(--border-soft); border-radius: var(--radius-md); background: var(--bg-inset);
+}
+.account-bar-user { font-size: 12px; color: var(--text-muted); margin: 0; }
+.account-bar-user strong { color: var(--text); font-weight: 600; }
+.account-bar-links { display: flex; align-items: center; gap: 16px; }
+.account-bar-links a { font-size: 12px; color: var(--text-muted); transition: color 0.15s ease; }
+.account-bar-links a:hover { color: var(--accent); }
+@media (max-width: 480px) {
+  .account-bar { flex-direction: column; align-items: stretch; }
+  .account-bar-links { justify-content: space-between; }
+}
 @media (max-width: 640px) {
   .fleet-search { min-width: 0; }
   .agent-card { padding: 20px; }
