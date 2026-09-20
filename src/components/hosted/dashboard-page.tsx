@@ -23,12 +23,12 @@ export default function DashboardPage() {
 
 function DashboardBody() {
   const [templates, setTemplates] = useState<OwnedAgent[]>(), [workflows, setWorkflows] = useState<HostedWorkflow[]>();
-  const [discover, setDiscover] = useState<PublicAgentSummary[]>(), [saved, setSaved] = useState<PublicAgentSummary[]>();
+  const [saved, setSaved] = useState<PublicAgentSummary[]>();
   const [error, setError] = useState('');
   useEffect(() => {
     let active = true;
-    Promise.all([hostedApi<OwnedAgent[]>('agents'), hostedApi<HostedWorkflow[]>('workflows'), hostedApi<PublicAgentSummary[]>('discover?query='), hostedApi<PublicAgentSummary[]>('saved')])
-      .then(([templateData, workflowData, discoverData, savedData]) => { if (active) { setTemplates(templateData); setWorkflows(workflowData); setDiscover(discoverData.slice(0, 4)); setSaved(savedData.slice(0, 4)); } })
+    Promise.all([hostedApi<OwnedAgent[]>('agents'), hostedApi<HostedWorkflow[]>('workflows'), hostedApi<PublicAgentSummary[]>('saved')])
+      .then(([templateData, workflowData, savedData]) => { if (active) { setTemplates(templateData); setWorkflows(workflowData); setSaved(savedData.slice(0, 4)); } })
       .catch((reason) => { if (active) setError(reason instanceof Error ? reason.message : 'Could not load your dashboard'); });
     return () => { active = false; };
   }, []);
@@ -58,11 +58,6 @@ function DashboardBody() {
     <Card><CardHead>Your recent agents</CardHead>
       {!myAgents.length && <p className="empty">No agents yet. <Link href="/agent-preview">Create your first one →</Link></p>}
       {!!myAgents.length && <div className="discover-grid">{myAgents.map((agent) => <PublicAgentCard key={`${agent.kind}:${agent.id}`} agent={agent} />)}</div>}
-    </Card>
-    <Card style={{ marginTop: 20 }}><CardHead>Discover public agents</CardHead>
-      {!discover?.length && <p className="hint">Loading…</p>}
-      {!!discover?.length && <div className="discover-grid">{discover.map((agent) => <PublicAgentCard key={`${agent.kind}:${agent.id}`} agent={agent} />)}</div>}
-      <p><Link href="/discover">Browse all public agents →</Link></p>
     </Card>
   </PageShell>;
 }
