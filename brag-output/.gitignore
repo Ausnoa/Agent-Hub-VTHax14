@@ -1,0 +1,6 @@
+composition/.hyperframes/
+composition/node_modules/
+composition/.check/
+composition/snapshots/
+composition/assets/music.mp3
+*.poster.mp4
