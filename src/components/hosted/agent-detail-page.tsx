@@ -32,6 +32,12 @@ function Detail({ id, myId }: { id: string; myId: string }) {
   const [agent, setAgent] = useState<Agent>();
   const [owner, setOwner] = useState<Owner>();
   const [loading, setLoading] = useState(true), [error, setError] = useState('');
+  const [saved, setSaved] = useState(false);
+  async function save() {
+    if (!agent) return;
+    try { await hostedApi('saved', { kind: agent.kind, agentId: id }); setSaved(true); }
+    catch (reason) { setError(reason instanceof Error ? reason.message : 'Could not save this agent'); }
+  }
   useEffect(() => {
     let active = true;
     (async () => {
@@ -65,6 +71,7 @@ function Detail({ id, myId }: { id: string; myId: string }) {
       action={<div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <StatusPill tone={visibility === 'public' ? 'green' : 'neutral'}>{visibility === 'public' ? 'Public' : 'Private'}</StatusPill>
         {mine && <Link href={agent.kind === 'template' ? `/agent-preview?agent=${id}` : `/create?workflow=${id}`}>Edit →</Link>}
+        {!mine && <Button size="sm" disabled={saved} onClick={() => void save()}>{saved ? 'Saved' : 'Save'}</Button>}
       </div>} />
     {owner && <Link href={`/profile/${owner.username}`} className="discover-card-owner">
       <Avatar url={owner.avatarUrl} name={owner.displayName || owner.username} />

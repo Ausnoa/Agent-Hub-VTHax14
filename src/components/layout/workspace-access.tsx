@@ -18,7 +18,7 @@ export default function WorkspaceAccess({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [local, setLocal] = useState<boolean>();
   useEffect(() => { setLocal(["localhost", "127.0.0.1"].includes(window.location.hostname) && !new URLSearchParams(window.location.search).has("hosted")); }, [pathname]);
-  if (["/agent-preview", "/login"].includes(pathname) || pathname.startsWith("/profile/")) return children;
+  if (["/agent-preview", "/login", "/dashboard", "/saved"].includes(pathname) || pathname.startsWith("/profile/")) return children;
   if (local === undefined) return <PageShell><p role="status">Loading workspace…</p></PageShell>;
   if (local) return children;
   if (pathname === "/agents") return <AccountPages />;

@@ -5,6 +5,7 @@ import { useAccount } from '../../lib/hosted/use-account';
 import { hostedApi } from '../../lib/hosted/browser';
 import PageShell from '../layout/page-shell';
 import PageHeader from '../layout/page-header';
+import Button from '../ui/button';
 import Avatar from './avatar';
 import PublicAgentCard from './public-agent-card';
 import './hosted.css';
@@ -22,7 +23,12 @@ export default function DiscoveryPage() {
 function DiscoveryList() {
   const [agents, setAgents] = useState<PublicAgent[]>();
   const [query, setQuery] = useState(''), [kind, setKind] = useState<'all' | 'template' | 'workflow'>('all');
-  const [error, setError] = useState('');
+  const [error, setError] = useState(''), [saved, setSaved] = useState<Set<string>>(new Set());
+  async function save(agent: PublicAgent) {
+    const key = `${agent.kind}:${agent.id}`;
+    try { await hostedApi('saved', { kind: agent.kind, agentId: agent.id }); setSaved((old) => new Set(old).add(key)); }
+    catch (reason) { setError(reason instanceof Error ? reason.message : 'Could not save this agent'); }
+  }
   useEffect(() => {
     let active = true;
     hostedApi<PublicAgent[]>(`discover?query=${encodeURIComponent(query)}`)
@@ -44,12 +50,15 @@ function DiscoveryList() {
     </div>
     {!agents && !error && <p className="hint">Loading public agents…</p>}
     {shown && !!shown.length && <div className="discover-grid">
-      {shown.map((agent) => <PublicAgentCard key={`${agent.kind}:${agent.id}`} agent={agent} footer={
-        <Link href={`/profile/${agent.owner.username}`} className="discover-card-owner">
-          <Avatar url={agent.owner.avatarUrl} name={agent.owner.displayName || agent.owner.username} small />
-          <span>{agent.owner.displayName || `@${agent.owner.username}`}</span>
-        </Link>
-      } />)}
+      {shown.map((agent) => <PublicAgentCard key={`${agent.kind}:${agent.id}`} agent={agent}
+        footer={
+          <Link href={`/profile/${agent.owner.username}`} className="discover-card-owner">
+            <Avatar url={agent.owner.avatarUrl} name={agent.owner.displayName || agent.owner.username} small />
+            <span>{agent.owner.displayName || `@${agent.owner.username}`}</span>
+          </Link>
+        }
+        aside={<Button size="sm" disabled={saved.has(`${agent.kind}:${agent.id}`)} onClick={() => void save(agent)}>{saved.has(`${agent.kind}:${agent.id}`) ? 'Saved' : 'Save'}</Button>}
+      />)}
     </div>}
     {shown && !shown.length && <p className="empty">No public agents match yet. Publish one from My Agents to be the first.</p>}
   </PageShell>;
