@@ -25,6 +25,22 @@ function CatPack({userId}:{userId:string}){
   useEffect(()=>{const created=(e:Event)=>{const item=(e as CustomEvent).detail;if(item&&typeof item.id==='string'&&typeof item.name==='string'&&Array.isArray(item.skills))setSpawn(old=>[...old,{id:item.id,name:item.name,skills:item.skills.filter((s:unknown)=>typeof s==='string')}]);};window.addEventListener('hosted-agent-created',created);return()=>window.removeEventListener('hosted-agent-created',created);},[]);
   useEffect(()=>{if(!spawn.length)return;const timer=setTimeout(()=>setSpawn(old=>old.slice(1)),2400);return()=>clearTimeout(timer);},[spawn]);
   const visible=hiddenReady?targets.filter(t=>!hidden.includes(t.id)&&!spawn.some(s=>s.id===t.id)):[];const target=targets.find(t=>t.id===selected);
+  // The bar owns cat position via raw DOM style updates during drag, not React state this
+  // component can subscribe to, so the open cat's chat window tracks it by reading the DOM
+  // directly, every frame, for as long as a chat is open.
+  const catNodes=useRef(new Map<string,HTMLDivElement>());
+  const [anchor,setAnchor]=useState<{x:number;y:number}>();
+  useEffect(()=>{
+    if(!selected)return;
+    let frame:number;
+    const measure=()=>{
+      const node=catNodes.current.get(selected);
+      if(node){const rect=node.getBoundingClientRect();setAnchor(old=>old&&old.x===rect.left&&old.y===rect.top?old:{x:rect.left,y:rect.top});}
+      frame=requestAnimationFrame(measure);
+    };
+    frame=requestAnimationFrame(measure);
+    return()=>cancelAnimationFrame(frame);
+  },[selected]);
   return <>{spawn[0]&&<div key={spawn[0].id} className="agent-spawn" style={{zIndex:110}} aria-live="polite"><div className="agent-spawn-card"><span className="agent-spawn-halo"/><Mascot width={96} variant={variantFor(spawn[0].id,0)}/><span className="agent-spawn-kicker">Agent created</span><strong>{spawn[0].name}</strong><div className="agent-spawn-tags">{spawn[0].skills.slice(0,3).map((skill,i)=><span key={i}>{skill}</span>)}</div><small>Heading to the corner — click your cat to open its chat.</small></div></div>}
     <CatAgentBar
       storageKey={`hosted:${userId}`}
@@ -33,10 +49,10 @@ function CatPack({userId}:{userId:string}){
         const item=visible.find(candidate=>`hosted:${candidate.id}`===agentId);
         if(!item)return null;
         const index=visible.indexOf(item);
-        return <AgentAvatar key={item.id} agentId={agentId} name={item.name} variant={variantFor(item.id,index)} status={status[item.id]??'idle'} inline {...drag} dimmed={Boolean(selected&&selected!==item.id)} onOpen={()=>{if(!Object.values(status).includes('working'))setSelected(item.id);}} onRemove={()=>{if(status[item.id]==='working')return;setHidden(old=>[...old,item.id]);if(selected===item.id)setSelected(undefined);}}/>;
+        return <AgentAvatar key={item.id} agentId={agentId} name={item.name} variant={variantFor(item.id,index)} status={status[item.id]??'idle'} inline {...drag} dimmed={Boolean(selected&&selected!==item.id)} onOpen={()=>{if(!Object.values(status).includes('working'))setSelected(item.id);}} onRemove={()=>{if(status[item.id]==='working')return;setHidden(old=>[...old,item.id]);if(selected===item.id)setSelected(undefined);}} elementRef={el=>{if(el)catNodes.current.set(item.id,el);else catNodes.current.delete(item.id);}}/>;
       }}
     />
-    {target&&<CatChat key={target.id} target={target} onClose={()=>setSelected(undefined)} onStatus={value=>setStatus(old=>({...old,[target.id]:value}))}/>}
+    {target&&<CatChat key={target.id} target={target} anchor={anchor} onClose={()=>setSelected(undefined)} onStatus={value=>setStatus(old=>({...old,[target.id]:value}))}/>}
   </>;
 }
 function CatChat({target,anchor,onClose,onStatus}:{target:Target;anchor?:{x:number;y:number};onClose:()=>void;onStatus:(status:'idle'|'working'|'done'|'error')=>void}){

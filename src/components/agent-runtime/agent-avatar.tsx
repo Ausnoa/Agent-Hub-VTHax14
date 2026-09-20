@@ -28,7 +28,7 @@ export function slotCorner(index: number): Point {
 // The persistent per-agent avatar: draggable, click to open the mini window.
 // `inline`: hosted inside a CatAgentBar, so this cat has no free position of its own — grabbing it
 // instead drags the whole bar (via onDragStart/onDragMove/onDragEnd), same click-vs-drag threshold as before.
-export default function AgentAvatar({ agentId, name, variant, status, slot = 0, inline = false, dimmed, onOpen, onRemove, onPositionChange, onDragStart, onDragMove, onDragEnd, children }: {
+export default function AgentAvatar({ agentId, name, variant, status, slot = 0, inline = false, dimmed, onOpen, onRemove, onPositionChange, onDragStart, onDragMove, onDragEnd, elementRef, children }: {
   agentId: string;
   name: string;
   variant: Variant;
@@ -42,6 +42,10 @@ export default function AgentAvatar({ agentId, name, variant, status, slot = 0, 
   onDragStart?: () => void;             // inline only: this cat started dragging the bar
   onDragMove?: (dx: number, dy: number) => void;   // inline only: delta since the drag started
   onDragEnd?: () => void;               // inline only: drag finished, bar should persist its position
+  // Inline mode has no position state of its own (the bar owns it via raw DOM style updates a
+  // caller can't subscribe to), so a caller that needs this cat's live screen position — to
+  // anchor a chat window to it — reads it straight from the DOM via this ref.
+  elementRef?: (element: HTMLDivElement | null) => void;
   children?: React.ReactNode;   // the mini window renders alongside its own cat
 }) {
   const [position, setPosition] = useState<Point>();
@@ -134,6 +138,7 @@ export default function AgentAvatar({ agentId, name, variant, status, slot = 0, 
   const statusLabel = { idle: "Ready", working: "Working", done: "Run complete", error: "Run failed" }[status];
 
   return <div
+    ref={elementRef}
     className={`agent-avatar-layer${inline ? " inline" : ""}${dimmed ? " dimmed" : ""}`}
     style={inline ? undefined : position ? { left: position.x, top: position.y } : { right: 24 + slot * (AVATAR_W + SLOT_GAP), bottom: 24 }}
   >
