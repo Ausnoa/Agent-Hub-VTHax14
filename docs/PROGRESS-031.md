@@ -7,3 +7,5 @@ Added owner-scoped archive/restore endpoints and controls in My Agents and saved
 Requires supabase/migrations/202609200004_archive_agents_workflows.sql before deployment. Database regression tests verify owner isolation, public hiding, blocked new execution, restoration, and retained history. API test verifies archived agent tests do not reach inference. Nine targeted tests and typecheck pass. User asked to apply the migration; deployment waits for that confirmation.
 
 Full suite: all 83 tests pass. Prisma's additive schema now includes the archive columns to match the SQL migration. Production build succeeds. No permanent deletion was implemented, per the user's archive preference. Deployment is withheld until the migration is applied to avoid breaking existing workspace reads.
+
+User confirmed the archive migration ran successfully in Supabase. Schema probes no longer report missing archive columns; anonymous table access remains denied. Deploying for authenticated production lifecycle verification.
