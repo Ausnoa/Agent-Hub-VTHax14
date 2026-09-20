@@ -49,7 +49,7 @@ test('profiles and visibility migration: public profiles, publishable agents, cr
     // Once the owner publishes it, another signed-in user can read it and invoke it,
     // and the resulting test run is attributed to the invoker, not the owner.
     await asAlice();
-    assert.equal((await db.query("update public.template_agents set visibility='public' where id=$1 returning visibility", [agentId])).rows[0].visibility, 'public');
+    assert.equal((await db.query<{ visibility: string }>("update public.template_agents set visibility='public' where id=$1 returning visibility", [agentId])).rows[0].visibility, 'public');
     await asBob();
     assert.equal((await db.query('select id from public.template_agents where id=$1', [agentId])).rows.length, 1);
     const testRun = (await db.query<{ id: string }>('select public.reserve_agent_test($1,$2) id', [agentId, 'Maya sends the draft Friday.'])).rows[0].id;
