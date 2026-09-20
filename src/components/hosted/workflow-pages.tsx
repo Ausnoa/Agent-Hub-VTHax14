@@ -7,6 +7,7 @@ import { useAccount } from '../../lib/hosted/use-account';
 import { templateFor,type OwnedAgent } from '../../lib/owned-agent/templates';
 import type { Candidate,HostedWorkflow,HostedRun } from '../../lib/hosted/workflow-contracts';
 import type { Selection } from '../../lib/general/contracts';
+import {showcaseAgents,showcaseDraft} from "../../lib/hosted/showcase";
 import HostedDiscover from "./discover-page";
 import WorkflowGraph from "./workflow-graph";
 import PageShell from '../layout/page-shell';
@@ -43,6 +44,9 @@ function Workspace({mode}:{mode:Mode}){
       const params=new URLSearchParams(location.search),workflow=saved.find(w=>w.id===params.get('workflow'));
       if(workflow)open(workflow);
       if(mode==='compose'){
+        const demo=showcaseDraft(params.get('showcase')??'');
+        if(demo){setName(demo.name);setSteps(demo.steps);setSource(params.has('blank')?'':demo.input);setCandidates(old=>mergeCandidates([...old,...showcaseAgents.map(a=>({agentId:a.id,name:a.name,description:a.purpose,source:'ans' as const,endpoint:`${a.origin}/a2a`,skills:[{id:a.skill,name:a.name,tags:[]}]}))]));setSelected(undefined);setRun(undefined);setConfirmed(false);return;}
+
         const pending=sessionStorage.getItem('hosted-workflow-step');
         if(pending){sessionStorage.removeItem('hosted-workflow-step');const value=JSON.parse(pending);if(typeof value.agentId==='string'&&typeof value.skill==='string'){setSelected(undefined);setSteps([{agentId:value.agentId,skill:value.skill,format:'text',inputFrom:'original',instruction:''}]);}}
       }

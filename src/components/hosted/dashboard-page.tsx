@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from 'react';
+import AnsShowcase from "./ans-showcase";
 import Link from 'next/link';
 import { useAccount } from '../../lib/hosted/use-account';
 import { hostedApi } from '../../lib/hosted/browser';
@@ -40,6 +41,7 @@ function DashboardBody() {
 
   return <PageShell>
     <PageHeader eyebrow="DASHBOARD" title="Your dashboard" description="Manage your agents and discover what other members have published." />
+    <AnsShowcase />
     {error && <div role="alert" className="alert"><strong>Something needs attention</strong><p>{error}</p></div>}
     <div className="metric-row">
       <MetricTile label="Your agents" value={String((templates?.length ?? 0) + (workflows?.length ?? 0))} />

@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from 'react';
+import AnsShowcase from "./ans-showcase";
 import Link from 'next/link';
 import { useAccount } from '../../lib/hosted/use-account';
 import { hostedApi } from '../../lib/hosted/browser';
@@ -40,6 +41,7 @@ function DiscoveryList() {
 
   return <PageShell>
     <PageHeader eyebrow="DISCOVER" title="Discover agents" description="Browse public agents published by other members. Using one never gives you ownership or edit rights over it." />
+    <AnsShowcase />
     {error && <div role="alert" className="alert"><strong>Something needs attention</strong><p>{error}</p></div>}
     <div className="search-bar" style={{ marginBottom: 16 }}>
       <label className="sr-only" htmlFor="discover-search">Search public agents</label>
