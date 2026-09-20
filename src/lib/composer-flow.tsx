@@ -1,9 +1,9 @@
-"use client";
+﻿"use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
 import type { Proposal } from "./contracts/index";
 
-const storageKey = "agent-hub:composer-flow";
+const storageKey = "agent-glorria:composer-flow";
 
 type ComposerFlowValue = {
   proposal?: Proposal;

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -13,12 +13,12 @@ import Card, { CardHead } from "../../components/ui/card";
 import Button from "../../components/ui/button";
 import StatusPill from "../../components/ui/status-pill";
 import SegmentedControl from "../../components/ui/segmented-control";
-import TopologyGraph from "../../components/agent-hub/topology-graph";
+import TopologyGraph from "../../components/agent-glorria/topology-graph";
 
 const example = "Research a company, identify important risks, and write an executive summary.";
 const supportedCapabilities = ["company-research", "risk-analysis", "summarization"];
 const modeCopy = {
-  pilot: "Real LLM planning → small indexed catalog → local A2A test agents. Execution uses supplied notes, not live research.",
+  pilot: "Real LLM planning â†’ small indexed catalog â†’ local A2A test agents. Execution uses supplied notes, not live research.",
   demo: "Offline demo uses a fixed three-step template and deterministic test agents. No LLM request is made.",
   live: "Continue to the general builder for arbitrary advertised skills and up to eight steps. Review compatibility before execution.",
 };
@@ -60,7 +60,7 @@ export default function CreateAgentPage() {
       <div className="eyebrow"><span className="line" /> FROM IDEA TO ORCHESTRATION</div>
       <h1>Orchestrate Autonomous Intelligence</h1>
       <p>Describe the outcome. Find the right capabilities. Compose an agent that gets the whole job done.</p>
-      <Link href="/general">Build a general workflow with arbitrary skills →</Link>
+      <Link href="/general">Build a general workflow with arbitrary skills â†’</Link>
     </div>
 
     {error && <div role="alert" className="alert"><strong>Something needs attention</strong><p>{error}</p></div>}
@@ -68,7 +68,7 @@ export default function CreateAgentPage() {
     <div className="local-composer-grid">
     <Card className="mesh-panel">
       <CardHead>Composition topology preview</CardHead>
-      <p className="hint" style={{ marginBottom: 6 }}>Illustrative only — your directive is decomposed into capabilities, then resolved against the ANS mesh in the next step.</p>
+      <p className="hint" style={{ marginBottom: 6 }}>Illustrative only â€” your directive is decomposed into capabilities, then resolved against the ANS mesh in the next step.</p>
       <TopologyGraph
         coreLabel="Composer Core"
         coreSublabel="Goal Decomposer"
@@ -86,7 +86,7 @@ export default function CreateAgentPage() {
       <div className="prompt-footer"><span>Be specific about the outcome you want.</span><span>{description.length} / 2,000</span></div>
 
       <div className="compose-token-row">
-        <span className="hint" style={{ alignSelf: "center", marginRight: 4 }}>{mode === "live" ? "General workflows: advertised skills · text/JSON · 1–8 steps" : "Report demo capabilities:"}</span>
+        <span className="hint" style={{ alignSelf: "center", marginRight: 4 }}>{mode === "live" ? "General workflows: advertised skills Â· text/JSON Â· 1â€“8 steps" : "Report demo capabilities:"}</span>
         {mode !== "live" && supportedCapabilities.map((capability) => <span className="token-chip" key={capability}>{capability}</span>)}
       </div>
 
@@ -98,14 +98,14 @@ export default function CreateAgentPage() {
           options={[{ value: "live", label: "General workflow" }, { value: "pilot", label: "Report pilot" }, { value: "demo", label: "Offline report demo" }]}
         />
         <Button variant="primary" disabled={busy || description.trim().length < 10} onClick={decompose}>
-          {busy ? "Opening…" : <>{mode === "live" ? "Continue to general builder" : "Build report demo"} <ArrowRight size={14} /></>}
+          {busy ? "Openingâ€¦" : <>{mode === "live" ? "Continue to general builder" : "Build report demo"} <ArrowRight size={14} /></>}
         </Button>
       </div>
       <p className="hint" style={{ marginTop: 14 }}>
         {modeCopy[mode]} {mode !== "demo" && `Planner ${plannerConfigured ? "configured" : "not configured"}.`}
       </p>
       {mode !== "demo" && !plannerConfigured && <p className="hint" style={{ marginTop: 6 }}>
-        No LLM key on this workspace — decomposing a directive needs one. You can still <Link href="/discover" style={{ color: "var(--accent)" }}>browse the ANS registry directly</Link> (no key required), or switch to Offline demo above.
+        No LLM key on this workspace â€” decomposing a directive needs one. You can still <Link href="/discover" style={{ color: "var(--accent)" }}>browse the ANS registry directly</Link> (no key required), or switch to Offline demo above.
       </p>}
     </Card>
 

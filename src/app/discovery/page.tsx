@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -10,9 +10,9 @@ import ComposeSteps from "../../components/layout/compose-steps";
 import Card, { CardHead } from "../../components/ui/card";
 import Button from "../../components/ui/button";
 import StatusPill from "../../components/ui/status-pill";
-import TopologyGraph, { type TopologyNode } from "../../components/agent-hub/topology-graph";
-import RegistryBrowser from "../../components/agent-hub/registry-browser";
-import PipelineSummary from "../../components/agent-hub/pipeline-summary";
+import TopologyGraph, { type TopologyNode } from "../../components/agent-glorria/topology-graph";
+import RegistryBrowser from "../../components/agent-glorria/registry-browser";
+import PipelineSummary from "../../components/agent-glorria/pipeline-summary";
 
 // Step 2 of Compose. Browsing the registry without a composition lives at /discover.
 export default function DiscoveryPage() {
@@ -23,7 +23,7 @@ export default function DiscoveryPage() {
     if (hydrated && !proposal) router.replace("/discover");
   }, [hydrated, proposal, router]);
 
-  if (!hydrated || !proposal) return <PageShell><p className="hint">Loading…</p></PageShell>;
+  if (!hydrated || !proposal) return <PageShell><p className="hint">Loadingâ€¦</p></PageShell>;
 
   const nodes: TopologyNode[] = proposal.steps.map((step, index) => ({
     id: step.capability,

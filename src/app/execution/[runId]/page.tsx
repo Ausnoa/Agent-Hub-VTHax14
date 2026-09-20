@@ -10,10 +10,10 @@ import PageHeader from "../../../components/layout/page-header";
 import Card, { CardHead } from "../../../components/ui/card";
 import Button from "../../../components/ui/button";
 import StatusPill, { toneForRunStatus } from "../../../components/ui/status-pill";
-import PipelineStepCard, { PipelineConnector } from "../../../components/agent-hub/pipeline-step-card";
-import TerminalLogFeed, { type LogLine } from "../../../components/agent-hub/terminal-log-feed";
-import RunReceiptPanel from "../../../components/agent-hub/run-receipt-panel";
-import ReportPanel from "../../../components/agent-hub/report-panel";
+import PipelineStepCard, { PipelineConnector } from "../../../components/agent-glorria/pipeline-step-card";
+import TerminalLogFeed, { type LogLine } from "../../../components/agent-glorria/terminal-log-feed";
+import RunReceiptPanel from "../../../components/agent-glorria/run-receipt-panel";
+import ReportPanel from "../../../components/agent-glorria/report-panel";
 
 export default function ExecutionPage({ params }: { params: Promise<{ runId: string }> }) {
   const { runId } = use(params);

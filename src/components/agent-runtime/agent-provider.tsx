@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { AgentUISpec } from "../../lib/agent-ui/spec";
 import { paletteCount } from "../../lib/agent-ui/variant";
 
-// avatar → mini → full are the view states of the *active* agent; "spawning" is the brief
+// avatar â†’ mini â†’ full are the view states of the *active* agent; "spawning" is the brief
 // entrance animation played right after an agent is generated, before it joins the pack.
 export type AgentView = "hidden" | "spawning" | "avatar" | "mini" | "full";
 
@@ -19,7 +19,7 @@ type AgentRuntimeValue = {
   remove: (agentId: string) => void;
 };
 
-const storageKey = "agent-hub:runtime-pack";
+const storageKey = "agent-glorria:runtime-pack";
 const PACK_LIMIT = 4;             // how many robocats may share the screen
 const SPAWN_MS = 2400;   // pop in, hold so the user sees the new agent, then fly to the corner
 const AgentRuntimeContext = createContext<AgentRuntimeValue | undefined>(undefined);

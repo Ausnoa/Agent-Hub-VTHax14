@@ -6,7 +6,7 @@
 
 Source-based UI recreation: operational directive → three-agent pipeline → executive synthesis. The result scene is explicitly an illustrative offline supplied-notes demo, not a live execution recording. No application behavior was changed.
 
-The enhanced cut adds glass panels with traveling highlights, a rotating 3D glass nucleus with satellite rings, perspective card entrances, handoff pulses, and a topology graph derived from the Stitch discovery mesh in `src/components/agent-hub/topology-graph.tsx`. Effects are editable in `composition/effects.css` and `composition/effects.js`.
+The enhanced cut adds glass panels with traveling highlights, a rotating 3D glass nucleus with satellite rings, perspective card entrances, handoff pulses, and a topology graph derived from the Stitch discovery mesh in `src/components/agent-glorria/topology-graph.tsx`. Effects are editable in `composition/effects.css` and `composition/effects.js`.
 
 ## Re-render
 

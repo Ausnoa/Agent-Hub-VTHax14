@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Fragment, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -14,13 +14,13 @@ import ComposeSteps from "../../components/layout/compose-steps";
 import Card, { CardHead } from "../../components/ui/card";
 import Button from "../../components/ui/button";
 import StatusPill from "../../components/ui/status-pill";
-import PipelineStepCard, { PipelineConnector } from "../../components/agent-hub/pipeline-step-card";
-import PipelineSummary from "../../components/agent-hub/pipeline-summary";
+import PipelineStepCard, { PipelineConnector } from "../../components/agent-glorria/pipeline-step-card";
+import PipelineSummary from "../../components/agent-glorria/pipeline-summary";
 
 const modeNotice = {
-  pilot: "Pilot catalog · Real LLM plan · Local test agents · Not registered with ANS",
-  demo: "Offline demo · Fixed template · Fixture agents · Not registered with ANS",
-  live: "Indexed ANS results · Real LLM plan · Identity has not been independently verified",
+  pilot: "Pilot catalog Â· Real LLM plan Â· Local test agents Â· Not registered with ANS",
+  demo: "Offline demo Â· Fixed template Â· Fixture agents Â· Not registered with ANS",
+  live: "Indexed ANS results Â· Real LLM plan Â· Identity has not been independently verified",
 };
 
 export default function WorkflowReviewPage() {
@@ -36,7 +36,7 @@ export default function WorkflowReviewPage() {
     if (hydrated && !proposal && !busy) router.replace("/create");
   }, [hydrated, proposal, busy, router]);
 
-  if (!hydrated || !proposal) return <PageShell><p className="hint">Loading…</p></PageShell>;
+  if (!hydrated || !proposal) return <PageShell><p className="hint">Loadingâ€¦</p></PageShell>;
 
   async function approve(current: Proposal) {
     setBusy(true); setError("");
@@ -103,7 +103,7 @@ export default function WorkflowReviewPage() {
     <div className="screen-actionbar">
       <Button variant="secondary" onClick={() => router.push("/discovery")}><ArrowLeft size={14} /> Back to discovery</Button>
       <Button variant="primary" disabled={busy || !!proposal.blockers.length || !proposal.steps.length} onClick={() => approve(proposal)}>
-        {busy ? "Deploying…" : <><Rocket size={14} /> Deploy & Generate Agent Interface <ArrowRight size={14} /></>}
+        {busy ? "Deployingâ€¦" : <><Rocket size={14} /> Deploy & Generate Agent Interface <ArrowRight size={14} /></>}
       </Button>
     </div>
   </PageShell>;

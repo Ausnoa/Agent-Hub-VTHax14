@@ -13,9 +13,9 @@ import PageHeader from "../../../components/layout/page-header";
 import Card, { CardHead } from "../../../components/ui/card";
 import Button from "../../../components/ui/button";
 import StatusPill from "../../../components/ui/status-pill";
-import AgentInputs from "../../../components/agent-hub/agent-inputs";
-import ReportPanel from "../../../components/agent-hub/report-panel";
-import AgentDagPreview from "../../../components/agent-hub/agent-dag-preview";
+import AgentInputs from "../../../components/agent-glorria/agent-inputs";
+import ReportPanel from "../../../components/agent-glorria/report-panel";
+import AgentDagPreview from "../../../components/agent-glorria/agent-dag-preview";
 
 const modeLabel = { pilot: "LLM PILOT", demo: "OFFLINE DEMO", live: "ANS CATALOG" } as const;
 const modeTone = { pilot: "accent", demo: "neutral", live: "violet" } as const;

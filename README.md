@@ -1,5 +1,5 @@
-# Agent-Hub-VTHax14
-VTHax project, agent hub of multiagentic workflows supporting ANS security and agent composition
+# Agent-Glorria-VTHax14
+VTHax project, agent glorria of multiagentic workflows supporting ANS security and agent composition
 
 ## Quick start
 
