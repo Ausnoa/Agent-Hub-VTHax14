@@ -7,6 +7,8 @@ The hosted backend runs as Node.js route handlers on the existing Vercel project
 - `supabase/migrations/202609190001_hosted_agents.sql`
 - `supabase/migrations/202609190002_hosted_workflows.sql`
 
+- `supabase/migrations/202609190003_profiles_and_visibility.sql` (profiles, agent visibility, saved agents — see `DECISION-005`)
+
 Existing environment variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `HOSTED_AGENT_TESTS_ENABLED=true`, `OPENAI_API_KEY`, `OPENAI_MODEL`. No service-role secret is required. Keep GoDaddy registration credentials off the browser. Discovery uses the existing public ANS API by default; `ANS_BASE_URL` defaults to `https://api.godaddy.com`.
 
 For the three public Glorria agents registered separately with ANS, configure these on the production deployment serving their domains:
@@ -24,11 +26,11 @@ The hosted route exports `maxDuration=300`. Vercel Fluid compute supports this o
 
 ## User flow
 
-Sign in at `/login`, use `/discover` for live ANS search and private templates, then `/create` to compose. Choose up to eight skills manually or request a suggested draft. Suggestions use the first registry page for the search phrase plus saved private templates, not a complete global semantic index. They are constrained to supplied skill IDs.
+Sign in at `/login`, which lands on `/dashboard` by default. `/create` composes a workflow: choose up to eight skills manually, or request a suggested draft — suggestions use the first registry page for the search phrase plus saved private templates, not a complete global semantic index, and are constrained to supplied skill IDs.
 
 Check compatibility and save the immutable workflow, review resolved endpoints, provide input, and confirm execution. Private templates run as the signed-in owner. External steps re-resolve ANS registration and inspect the A2A card, retain public-network restrictions, and support the existing unauthenticated A2A 0.3 JSON-RPC text/JSON subset.
 
-`/execution` shows workflow runs and agent test history. `/agents` continues to show private saved templates. Local report pilots and the old SQLite index remain local. To test hosted composition using a localhost sign-in, open `/create?hosted=1` (or `/discover?hosted=1`). This changes presentation only; hosted endpoints always require verified bearer authentication and RLS.
+`/execution` shows workflow runs and agent test history. `/agents` shows the signed-in user's own template agents and workflows, each with a Publish/Make private toggle (`DECISION-005`). `/discover` is the public marketplace — other members' published agents, searchable, each opening at `/agents/:id` for a read-only detail view and a Launch action that runs it without granting ownership. `/profile/:username` shows a member's public agents (never their email); `/saved` lists bookmarked public agents. Local report pilots and the old SQLite index remain local. To test hosted composition using a localhost sign-in, open `/create?hosted=1` (or `/discover?hosted=1`). This changes presentation only; hosted endpoints always require verified bearer authentication and RLS.
 
 ## Execution semantics
 

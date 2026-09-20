@@ -10,6 +10,7 @@
 - Small SQLite catalog: three local test agents and six genuine ANS records, explicitly separated by provenance.
 - Conservative allowlisted ANS-agent selection; registry presence alone never implies compatibility or verified identity.
 - Local ANS registry index: the worker syncs live ANS into SQLite, searchable through `POST /api/registry/search`. Proposal building does not use it yet.
+- Hosted multi-user dashboard, profiles, agent visibility (public/private), discovery, agent detail/launch, and saved agents on top of the existing Supabase accounts (`DECISION-005`). Local single-tenant workspace is unaffected.
 
 ## Not yet demonstrated
 

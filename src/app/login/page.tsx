@@ -20,7 +20,7 @@ export default function LoginPage(){
     setBusy(true);setError('');setMessage('');
     try{
       const client=browserAuth();if(!client)throw new Error('Not configured');
-      const result=signup?await client.auth.signUp({email,password,options:{emailRedirectTo:`${location.origin}/agent-preview`}}):await client.auth.signInWithPassword({email,password});
+      const result=signup?await client.auth.signUp({email,password,options:{emailRedirectTo:`${location.origin}/dashboard`}}):await client.auth.signInWithPassword({email,password});
       if(result.error)throw result.error;
       setPassword('');if(signup&&!result.data.session)setMessage('Check your email to confirm your account, then sign in.');
     }catch{setError(signup?'Could not create the account. Check your details and try again.':'Could not sign in. Check your email, password, and email confirmation.');}
