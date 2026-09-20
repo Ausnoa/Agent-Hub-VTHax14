@@ -7,6 +7,8 @@ import TopNav from "../components/layout/top-nav";
 import WorkspaceAccess from "../components/layout/workspace-access";
 import { themeScript } from "../lib/theme";
 import InlineScript from "../components/layout/inline-script";
+import { AgentProvider } from "../components/agent-runtime/agent-provider";
+import AgentRuntime from "../components/agent-runtime/agent-runtime";
 import { ComposerFlowProvider } from "../lib/composer-flow";
 
 const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-jakarta", weight: ["400", "500", "600", "700"] });
@@ -20,11 +22,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <InlineScript html={themeScript} />
   </head><body>
     <ComposerFlowProvider>
+      <AgentProvider>
       <div className="app-shell">
         <TopNav />
         <WorkspaceAccess>{children}</WorkspaceAccess>
         <WorkspaceFooter />
+        <AgentRuntime />
       </div>
+      </AgentProvider>
     </ComposerFlowProvider>
   </body></html>;
 }

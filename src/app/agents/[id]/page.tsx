@@ -6,6 +6,8 @@ import { Play, Network, SlidersHorizontal } from "lucide-react";
 import type { Composite, Run } from "../../../lib/contracts/index";
 import { reportForm } from "../../../lib/contracts/ui";
 import { api } from "../../../lib/api-client";
+import { useAgentRuntime } from "../../../components/agent-runtime/agent-provider";
+import { specForComposite } from "../../../lib/agent-ui/derive";
 import PageShell from "../../../components/layout/page-shell";
 import PageHeader from "../../../components/layout/page-header";
 import Card, { CardHead } from "../../../components/ui/card";
@@ -26,6 +28,7 @@ const modeNotice = {
 export default function RuntimeInterfacePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const { spawn } = useAgentRuntime();
   const [agent, setAgent] = useState<Composite>();
   const [history, setHistory] = useState<Run[]>([]);
   const [company, setCompany] = useState("Northstar (fictional)");
@@ -35,9 +38,9 @@ export default function RuntimeInterfacePage({ params }: { params: Promise<{ id:
 
   useEffect(() => {
     api<{ agent: Composite; runs: Run[] }>(`agents/${id}`)
-      .then((data) => { setAgent(data.agent); setHistory(data.runs); })
+      .then((data) => { setAgent(data.agent); setHistory(data.runs); spawn(specForComposite(data.agent)); })
       .catch(() => setError("Could not load this agent"));
-  }, [id]);
+  }, [id, spawn]);
 
   async function invoke() {
     setBusy(true); setError("");
