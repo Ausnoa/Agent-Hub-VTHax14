@@ -33,11 +33,11 @@ export default function HostedDiscover({candidates,query,setQuery,busy,loading,e
     <div className="split-layout">
       <Card className="mesh-panel"><CardHead>Compose an agent</CardHead><p className="hint" style={{marginBottom:16}}>Have an outcome in mind? Describe it and Agent Hub will suggest a workflow using your saved agents and this registry.</p>
         <TopologyGraph coreLabel="ANS Discovery" coreSublabel="Capability resolution" nodes={[{id:'directive',label:'Your directive',sublabel:'Describe an outcome',angle:225,radius:0.8},{id:'registry',label:'Agent registry',sublabel:'Browse capabilities',angle:45,radius:0.8,tone:'violet'}]}/>
-        <p className="hint">Illustrative topology · search results appear in the registry panel.</p><Link className="btn btn-primary" href="/create">Start composing <ArrowRight size={14}/></Link>
+        <p className="hint">Illustrative topology · search results appear in the registry panel.</p><Link className="btn btn-primary" href="/create" style={{marginTop:'auto'}}>Start composing <ArrowRight size={14}/></Link>
       </Card>
       <Card className="registry-panel"><CardHead badge={<Radar size={16}/>}>ANS capability resolution</CardHead>
         {error&&<div role="alert" className="alert"><strong>Something needs attention</strong><p>{error}</p></div>}
-        <section aria-label="Your saved agents"><p className="notice">{saved.length} private agents · Live ANS results are not identity-verified. Compatibility is checked when you save a workflow.</p><h3 className="discover-section-title">Your saved agents</h3>
+        <section aria-label="Your saved agents"><h3 className="discover-section-title">Your saved agents</h3>
           {!loading&&!!saved.length&&<div className="search-bar fleet-search" style={{marginBottom:10}}>
             <Search size={16} aria-hidden="true"/>
             <label className="sr-only" htmlFor="hosted-saved-query">Search your saved agents</label>
