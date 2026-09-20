@@ -43,7 +43,7 @@ export default function TopNav() {
     </nav>
     <div className="topnav-right">
       <div className="topnav-stat">Agent workspace<strong>MVP EDITION</strong></div>
-      <Link href={account.session ? "/profile/settings" : "/login"}>{account.session ? "Profile" : "Account"}</Link>
+      <Link href={account.session ? "/profile/settings" : "/login"} className="topnav-agents-btn">{account.session ? "Profile" : "Account"}</Link>
       <ThemeToggle />
     </div>
   </header>;

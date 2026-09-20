@@ -185,9 +185,10 @@ code, .mono { font-family: var(--font-mono); }
   display: inline-flex; align-items: center; gap: 8px;
   padding: 8px 14px; border-radius: var(--radius-sm);
   border: 1px solid var(--border-strong); background: var(--bg-panel);
-  backdrop-filter: var(--blur-panel);
-  font-size: 12px; font-weight: 600; transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  backdrop-filter: var(--blur-panel); color: var(--text-muted);
+  font-size: 12px; font-weight: 600; transition: border-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
 }
+.topnav-agents-btn:hover { border-color: var(--accent); color: var(--accent); }
 .topnav-agents-btn.active { border-color: var(--accent); color: var(--accent); box-shadow: var(--shadow-glow); }
 .theme-toggle {
   display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: var(--radius-sm);
