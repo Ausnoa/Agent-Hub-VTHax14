@@ -65,9 +65,18 @@ export class AnsHttpError extends Error {
   }
 }
 
+export class AnsConfigurationError extends Error {
+  constructor(){super('ANS_BASE_URL must be https://api.godaddy.com (or another HTTPS registry origin), with no path, credentials, query, or fragment.');}
+}
+function registryBase(value?:string){
+  let base:URL;
+  try{base=new URL((value??'https://api.godaddy.com').trim());}catch{throw new AnsConfigurationError();}
+  if(base.protocol!=='https:'||base.username||base.password||base.pathname!=='/'||base.search||base.hash)throw new AnsConfigurationError();
+  return base;
+}
+
 export async function resolveAgent(id: string): Promise<DiscoveredAgent[]> {
-  const base = new URL(process.env.ANS_BASE_URL ?? "https://api.godaddy.com");
-  if (base.protocol !== "https:" || base.username || base.password) throw new Error("Invalid ANS base URL");
+  const base = registryBase(process.env.ANS_BASE_URL);
   const headers: Record<string, string> = { Accept: "application/json" };
   const authorization = discoveryAuthorization();
   if (authorization) headers.Authorization = authorization;
@@ -215,10 +224,7 @@ export async function fetchRegistryPage(options: {
   if (options.query.length > 256) throw new Error("Search query must be at most 256 characters");
   const pageSize = options.pageSize ?? 20;
   if (!Number.isInteger(pageSize) || pageSize < 1 || pageSize > 100) throw new Error("Page size must be between 1 and 100");
-  const base = new URL(options.baseUrl ?? "https://api.godaddy.com");
-  if (base.protocol !== "https:" || base.username || base.password || base.pathname !== "/" || base.search || base.hash) {
-    throw new Error("ANS base URL must be an HTTPS origin without credentials");
-  }
+  const base = registryBase(options.baseUrl);
   const url = new URL("/v1/ans/registered-agents", base);
   const params = new URLSearchParams({ query: options.query, protocols: "A2A", statuses: "ACTIVE", pageSize: String(pageSize) });
   if (options.pageToken) {

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AnsHttpError,discoverAgents,discoveryAuthorization,resolveAgent } from '../ans/client.ts';
+import { AnsConfigurationError,AnsHttpError,discoverAgents,discoveryAuthorization,resolveAgent } from '../ans/client.ts';
 import { inspectGeneral,invokeGeneral } from '../general/client.ts';
 import { draftSchema,selectionSchema,mapInput,valueSchema,type GeneralStep } from '../general/contracts.ts';
 import { structuredPlan,ModelProviderError,ModelServiceError } from '../planner/index.ts';
@@ -16,7 +16,7 @@ export async function searchHosted(query:string,pageToken:string|undefined,agent
   const templates:Candidate[]=saved.map(agent=>({agentId:`template:${agent.id}`,name:agent.name,description:agent.instructions||templateFor(agent.template).description,skills:[{id:templateFor(agent.template).skill,name:templateFor(agent.template).name,tags:[]}],source:'template'}));
   let page;
   try{page=await services.discover({query,pageToken,baseUrl:process.env.ANS_BASE_URL,authorization:discoveryAuthorization()});}
-  catch(error){throw new HostedError(503,error instanceof AnsHttpError?`ANS discovery failed (HTTP ${error.status}). Please try again later.`:error instanceof Error&&error.name==='TimeoutError'?'ANS discovery timed out. Please try again.':'Could not reach or read the ANS registry. Please try again later.');}
+  catch(error){throw new HostedError(503,error instanceof AnsConfigurationError?'The deployment has an invalid ANS_BASE_URL. Set it to https://api.godaddy.com in Vercel and redeploy.':error instanceof AnsHttpError?`ANS discovery failed (HTTP ${error.status}). Please try again later.`:error instanceof Error&&error.name==='TimeoutError'?'ANS discovery timed out. Please try again.':'Could not reach or read the ANS registry. Please try again later.');}
   const external:Candidate[]=page.agents.filter(agent=>agent.metadataUrl && agent.skills?.length).map(agent=>({agentId:agent.ansId,name:agent.name,description:agent.description,skills:agent.skills!,source:'ans',endpoint:agent.endpoint}));
   return {candidates:[...templates.filter(a=>!query||`${a.name} ${a.description} ${a.skills.map(s=>s.id)}`.toLowerCase().includes(query.toLowerCase())),...external],hasMore:page.hasMore,nextPageToken:page.nextPageToken,skippedRecords:page.skippedRecords,source:'live-ans' as const};
 }
