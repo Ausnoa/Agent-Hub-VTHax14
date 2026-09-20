@@ -1,8 +1,8 @@
-# Agent Hub launch video
+# Agent Glorria launch video
 
 [Watch the 22-second video](brag.mp4)
 
-![Agent Hub pipeline poster](brag.jpg)
+![Agent Glorria pipeline poster](brag.jpg)
 
 Source-based UI recreation: operational directive → three-agent pipeline → executive synthesis. The result scene is explicitly an illustrative offline supplied-notes demo, not a live execution recording. No application behavior was changed.
 
@@ -24,9 +24,11 @@ The CLI is pinned to Hyperframes 0.8.52. Fonts, logo, animation runtime, and edi
 
 Created with the [/brag skill](https://github.com/latent-spaces/brag) and [Hyperframes](https://github.com/heygen-com/hyperframes).
 
-Music: **Happy Beats & Business Moves Vol. 1**, Sascha Ende — [source](https://ende.app/en/song/12866-happy-beats-business-moves-vol-1), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Modified: first 22 seconds, fade-in/out, reduced volume, mixed with effects. Credit must accompany reuse of the video.
+Current soundtrack: **Clarity (feat. Foxes)** by Zedd, from the user-supplied audio file. The excerpt starts at source 0:47; the requested source 1:05 drop lands exactly at video 0:18, the Agent Glorria closing reveal. The excerpt fades out over the final 1.2 seconds. This track is not covered by the earlier CC BY music license.
 
-Sound effects: `impactSoft_medium_001.ogg` and `bong_001.ogg` from the brag bundled Kenney sound collections (CC0).
+The current cut omits the earlier sound effects so the music drop is clear. Earlier music and effects remain as unused source assets.
 
-Plus Jakarta Sans: SIL Open Font License, included in `composition/assets/OFL.txt`. GSAP 3.14.2: copyright GreenSock, [standard license](https://gsap.com/standard-license); original license header retained. Agent Hub emblem comes from this repository.
+Plus Jakarta Sans: SIL Open Font License, included in `composition/assets/OFL.txt`. GSAP 3.14.2: copyright GreenSock, [standard license](https://gsap.com/standard-license); original license header retained. Agent Glorria emblem comes from this repository.
+
+
 

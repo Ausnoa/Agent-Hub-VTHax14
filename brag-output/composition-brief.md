@@ -1,4 +1,4 @@
-# Hyperframes composition brief: Agent Hub
+# Hyperframes composition brief: Agent Glorria
 
 Create a polished 22-second, 1920×1080 launch video in `composition/`, rendered to `brag.mp4`, with `brag.jpg` and `share-copy.txt` beside it.
 
@@ -16,3 +16,6 @@ Validate with Hyperframes check, inspect snapshots at settled scene times, rende
 
 Revision: add glass-panel highlights, DOM 3D rotating nucleus and orbit rings, perspective card entrances, traveling handoff pulses, and the Stitch-derived core/satellite topology graph. Keep 22-second timing and local assets.
 
+
+
+Current soundtrack override: user-supplied Clarity by Zedd feat. Foxes. Source 0:47–1:09 maps to video 0:00–0:22; source 1:05 lands at closing reveal 0:18. No supplemental SFX. Branding is Agent Glorria; repository URL is unchanged.
