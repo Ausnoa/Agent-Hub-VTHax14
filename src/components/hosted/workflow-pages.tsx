@@ -6,6 +6,7 @@ import { hostedApi } from '../../lib/hosted/browser';
 import { useAccount } from '../../lib/hosted/use-account';
 import { templateFor,type OwnedAgent } from '../../lib/owned-agent/templates';
 import type { Candidate,HostedWorkflow,HostedRun } from '../../lib/hosted/workflow-contracts';
+import type { PublicAgentSummary } from './public-agent-card';
 import type { Selection } from '../../lib/general/contracts';
 import {showcaseAgents,showcaseDraft} from "../../lib/hosted/showcase";
 import {ArchiveButton,ArchivedItems} from "./archive-controls";
@@ -27,6 +28,7 @@ export default function WorkflowPages({mode}:{mode:Mode}){
 function Workspace({mode}:{mode:Mode}){
   const router=useRouter();const active=useRef(true);
   const [candidates,setCandidates]=useState<Candidate[]>([]),[workflows,setWorkflows]=useState<HostedWorkflow[]>([]),[runs,setRuns]=useState<HostedRun[]>([]);
+  const [publicAgents,setPublicAgents]=useState<PublicAgentSummary[]>(),[publicAgentsError,setPublicAgentsError]=useState('');
   const [hasSearched,setHasSearched]=useState(false);
   const [query,setQuery]=useState(''),[searched,setSearched]=useState(''),[nextPage,setNextPage]=useState<string>();
   const [name,setName]=useState('My workflow'),[description,setDescription]=useState(''),[summary,setSummary]=useState(''),[steps,setSteps]=useState<Selection[]>([]);
@@ -53,6 +55,14 @@ function Workspace({mode}:{mode:Mode}){
       }
     }).catch(e=>{if(active.current)setError(e.message);}).finally(()=>{if(active.current)setLoading(false);});
     return()=>{active.current=false;};
+  },[mode]);
+  // Discover public agents lives at the bottom of the Discover page (moved off the dashboard);
+  // only fetched in that mode.
+  useEffect(()=>{
+    if(mode!=='discover')return;
+    let live=true;
+    hostedApi<PublicAgentSummary[]>('discover?query=').then(data=>{if(live)setPublicAgents(data.slice(0,4));}).catch(e=>{if(live)setPublicAgentsError(e instanceof Error?e.message:'Could not load public agents');});
+    return()=>{live=false;};
   },[mode]);
   async function task(work:()=>Promise<void>){setBusy(true);setError('');try{await work();}catch(e){if(active.current)setError(e instanceof Error?e.message:'Request failed');}finally{if(active.current)setBusy(false);}}
   async function toggleVisibility(workflow:HostedWorkflow){await task(async()=>{
@@ -92,7 +102,7 @@ function Workspace({mode}:{mode:Mode}){
     const current=await hostedApi<HostedRun>(`workflows/${selected.id}/invoke`,{requestId:requestKey.current.id,input,confirmExternalExecution:true});
     if(active.current){setRun(current);await advance(current);}
   });}
-  if(mode==='discover')return <HostedDiscover candidates={candidates} query={query} setQuery={setQuery} busy={busy} loading={loading} error={error} searched={hasSearched} hasMore={Boolean(nextPage)} search={search} add={add}/>;
+  if(mode==='discover')return <HostedDiscover candidates={candidates} query={query} setQuery={setQuery} busy={busy} loading={loading} error={error} searched={hasSearched} hasMore={Boolean(nextPage)} search={search} add={add} publicAgents={publicAgents} publicAgentsError={publicAgentsError}/>;
   const title=mode==='compose'?'Compose a workflow':'Workflow runs';
   return <PageShell className="hosted-workflows"><PageHeader eyebrow="YOUR HOSTED WORKSPACE" title={title} description={mode==='compose'?'Connect up to eight agents, review the steps, then run them with your input.':'Your latest 20 workflow runs. Open a workflow to review its saved steps and continue between completed steps.'}/>
     {loading&&<p role="status">Loading your workspace…</p>}{error&&<div role="alert" className="alert">{error}</div>}

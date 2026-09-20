@@ -8,9 +8,10 @@ import Card,{CardHead} from '../ui/card';
 import Button from '../ui/button';
 import StatusPill from '../ui/status-pill';
 import TopologyGraph from '../agent-hub/topology-graph';
+import PublicAgentCard, {type PublicAgentSummary} from './public-agent-card';
 
-type Props={candidates:Candidate[];query:string;setQuery:(value:string)=>void;busy:boolean;loading:boolean;error:string;searched:boolean;hasMore:boolean;search:(more?:boolean)=>Promise<void>;add:(candidate:Candidate,skill:string)=>void};
-export default function HostedDiscover({candidates,query,setQuery,busy,loading,error,searched,hasMore,search,add}:Props){
+type Props={candidates:Candidate[];query:string;setQuery:(value:string)=>void;busy:boolean;loading:boolean;error:string;searched:boolean;hasMore:boolean;search:(more?:boolean)=>Promise<void>;add:(candidate:Candidate,skill:string)=>void;publicAgents?:PublicAgentSummary[];publicAgentsError?:string};
+export default function HostedDiscover({candidates,query,setQuery,busy,loading,error,searched,hasMore,search,add,publicAgents,publicAgentsError}:Props){
   const saved=candidates.filter(c=>c.source==='template'),external=candidates.filter(c=>c.source==='ans');
   function row(candidate:Candidate){return <article className="registry-item" key={candidate.agentId}>
     <span className="registry-item-icon">{candidate.source==='template'?<Cpu size={15}/>:<Radar size={15}/>}</span>
@@ -43,5 +44,13 @@ export default function HostedDiscover({candidates,query,setQuery,busy,loading,e
         {hasMore&&<Button disabled={busy} onClick={()=>void search(true)}>Load more ANS results</Button>}
       </Card>
     </div>
+    {/* Moved here from the dashboard: what other hosted members have published, distinct from
+        the live ANS search above (this is other users' saved agents/workflows, not a registry). */}
+    <Card style={{marginTop:20}}><CardHead>Discover public agents</CardHead>
+      {publicAgentsError&&<div role="alert" className="alert"><strong>Something needs attention</strong><p>{publicAgentsError}</p></div>}
+      {!publicAgentsError&&publicAgents===undefined&&<p className="hint">Loading…</p>}
+      {!!publicAgents?.length&&<div className="discover-grid">{publicAgents.map(agent=><PublicAgentCard key={`${agent.kind}:${agent.id}`} agent={agent}/>)}</div>}
+      {publicAgents&&!publicAgents.length&&<p className="hint">No public agents published yet.</p>}
+    </Card>
   </PageShell>;
 }
