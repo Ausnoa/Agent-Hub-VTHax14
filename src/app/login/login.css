@@ -1,0 +1,7 @@
+.login-page.page-shell { max-width: 540px; padding-top: 64px; }
+.login-page form { display: grid; gap: 20px; }
+.login-page label { display: grid; gap: 8px; font-size: 14px; font-weight: 500; }
+.login-page input { width: 100%; box-sizing: border-box; padding: 12px 14px; border: 1px solid var(--border-strong); border-radius: var(--radius-md); background: var(--bg-inset); }
+.login-page input:focus { outline: 2px solid var(--accent); }
+.login-page > a { display: inline-block; margin-top: 20px; color: var(--text-muted); }
+@media (max-width: 600px) { .login-page.page-shell { padding-top: 32px; } }

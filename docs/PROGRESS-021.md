@@ -7,3 +7,5 @@ Hosted /agents now lists the authenticated user's saved template definitions. Ho
 Discover and Compose still require the local registry/workflow backend; navigation labels say Local and pages explain this specific limitation. This change does not claim hosted multi-agent execution is implemented.
 
 Validation: all 54 tests pass, including authenticated history access and safe login return destinations. Production build passes. Browser checks verified standalone sign-in, signup toggle, and the hosted My Agents sign-in prompt. Signed-in production navigation still needs verification after deployment.
+
+Visual QA caught unstyled native login fields; added a narrow, vertically spaced form with themed inputs and a prominent sign-in action. Rebuilt successfully and verified the corrected browser layout, plus the Test history login return link.
