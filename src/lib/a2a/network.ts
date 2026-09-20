@@ -26,7 +26,7 @@ export function makeAgentFetch(allowLocalFixtures = false): typeof fetch {
       const response = await request(url, {
         method: init?.method ?? "GET", headers: init?.headers as Record<string, string>,
         body: init?.body as string | undefined, redirect: "error", dispatcher,
-        signal: AbortSignal.any([AbortSignal.timeout(20_000), ...(init?.signal ? [init.signal] : [])]),
+        signal: AbortSignal.any([AbortSignal.timeout(45_000), ...(init?.signal ? [init.signal] : [])]),
       });
       const chunks: Uint8Array[] = [];
       let size = 0;

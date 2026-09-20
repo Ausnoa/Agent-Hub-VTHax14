@@ -14,13 +14,21 @@ export async function planDescription(description: string): Promise<Plan> {
   return structuredPlan(description, "Plan a sequential company-research workflow. Supported capabilities in order are company-research, risk-analysis, summarization. Choose only necessary steps. Research must be first. Never choose agents or URLs. Put any unsupported requested capabilities in unsupported. For an entirely unsupported request return an empty capabilities list. Do not invent research or claim execution.", planSchema);
 }
 
-export async function structuredPlan<Schema extends z.ZodType>(input: string, instructions: string, schema: Schema, options: { maxOutputTokens?: number } = {}): Promise<z.output<Schema>> {
+export async function structuredPlan<Schema extends z.ZodType>(input: string, instructions: string, schema: Schema, options: { maxOutputTokens?: number; model?: string } = {}): Promise<z.output<Schema>> {
   if (!process.env.OPENAI_API_KEY || !process.env.OPENAI_MODEL) throw new ModelServiceError("not-configured");
+  // Composing a workflow is the one task that benefits from a reasoning model; the
+  // agent tasks are literal extraction and summarizing, which a faster model does as
+  // well and far quicker. Falls back to OPENAI_MODEL when no override is configured.
+  const model = options.model || process.env.OPENAI_MODEL;
   let response: Response;
   try { response = await fetch("https://api.openai.com/v1/responses", {
     method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
-    body: JSON.stringify({ model: process.env.OPENAI_MODEL, store: false,
+    body: JSON.stringify({ model, store: false,
       instructions, input, ...(options.maxOutputTokens ? { max_output_tokens: options.maxOutputTokens } : {}),
+      // Reasoning models spend max_output_tokens on reasoning before emitting any
+      // answer, which surfaces as output-limit or as a timeout at the A2A transport's
+      // shorter deadline. Only sent when configured, since non-reasoning models reject it.
+      ...(process.env.OPENAI_REASONING_EFFORT ? { reasoning: { effort: process.env.OPENAI_REASONING_EFFORT } } : {}),
       text: { format: { type: "json_schema", name: "workflow_plan", strict: true, schema: z.toJSONSchema(schema) } },
     }), signal: AbortSignal.timeout(45_000),
   });
