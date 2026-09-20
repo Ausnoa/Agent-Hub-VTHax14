@@ -9,8 +9,8 @@ const unknownOwner = (ownerId: string): PublicOwner => ({ userId: ownerId, usern
 
 type Unowned = Omit<PublicAgent, 'owner'> & { ownerId: string };
 async function fetchPublicAgents(client: Identity['client'], ownerId?: string): Promise<Unowned[]> {
-  let templateQuery = client.from('template_agents').select('id,definition,created_at,visibility,owner_id').eq('visibility', 'public').order('created_at', { ascending: false }).limit(60);
-  let workflowQuery = client.from('hosted_workflows').select('id,definition,created_at,visibility,owner_id').eq('visibility', 'public').order('created_at', { ascending: false }).limit(60);
+  let templateQuery = client.from('template_agents').select('id,definition,created_at,visibility,owner_id').eq('archived',false).eq('visibility', 'public').order('created_at', { ascending: false }).limit(60);
+  let workflowQuery = client.from('hosted_workflows').select('id,definition,created_at,visibility,owner_id').eq('archived',false).eq('visibility', 'public').order('created_at', { ascending: false }).limit(60);
   if (ownerId) { templateQuery = templateQuery.eq('owner_id', ownerId); workflowQuery = workflowQuery.eq('owner_id', ownerId); }
   const [templates, workflows] = await Promise.all([templateQuery, workflowQuery]);
   if (templates.error || workflows.error) throw new HostedError(503, 'Discovery is unavailable');

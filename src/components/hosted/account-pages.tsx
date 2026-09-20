@@ -11,6 +11,7 @@ import Button from '../ui/button';
 import PublicAgentCard, { type PublicAgentSummary } from './public-agent-card';
 import HostedAgentCard from './hosted-agent-card';
 import './hosted.css';
+import {ArchiveButton,ArchivedItems} from './archive-controls';
 type Run={id:string;agent_id:string;status:string;output:string|null;created_at:string};
 type Saved = PublicAgentSummary & { owner: { username: string; displayName: string; avatarUrl: string | null } };
 export default function AccountPages({history=false}:{history?:boolean}){
@@ -32,6 +33,7 @@ function AccountData({history}:{history:boolean}){
     hostedApi<Saved[]>('saved').then(data=>{if(active)setSaved(data);}).catch(reason=>{if(active)setSavedError(reason instanceof Error?reason.message:'Could not load saved agents');});
     return()=>{active=false;};
   },[history]);
+  async function refreshAgents(){setAgents(await hostedApi<OwnedAgent[]>('agents'));}
   async function toggleVisibility(agentId:string,next:'public'|'private'){
     setBusy(agentId);
     try{const updated=await hostedApi<OwnedAgent>(`agents/${agentId}/visibility`,{visibility:next});setAgents(old=>old.map(a=>a.id===agentId?updated:a));}
@@ -49,8 +51,9 @@ function AccountData({history}:{history:boolean}){
     {loading&&<p role="status">Loading {history?'tests':'agents'}…</p>}{error&&<p role="alert">{error}</p>}
     {!loading&&!error&&(history?runs.length?runs.map(run=><Card key={run.id}><h2>{agents.find(a=>a.id===run.agent_id)?.name??'Agent test'}</h2><p>{new Date(run.created_at).toLocaleString()} · {run.status==='running'?'Pending or interrupted':run.status}</p>{run.output&&<pre style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{run.output}</pre>}<Link href={`/agent-preview?agent=${run.agent_id}`}>Open agent →</Link></Card>):<p>No tests yet. Open an agent to run your first test.</p>:agents.length?
       // Same fleet-grid + card layout as the local /agents page.
-      <div className="fleet-grid">{agents.map(agent=><HostedAgentCard key={agent.id} agent={agent} runs={runs} busy={busy} onToggleVisibility={toggleVisibility}/>)}</div>
+      <div className="fleet-grid">{agents.map(agent=><HostedAgentCard key={agent.id} agent={agent} runs={runs} busy={busy} onToggleVisibility={toggleVisibility} onArchived={()=>void refreshAgents()}/>)}</div>
       :<p>No agents yet. Choose a template to create your first agent.</p>)}
+    {!history&&<ArchivedItems kind="agents" onChanged={()=>void refreshAgents()}/>}
     {!history&&<section id="saved" style={{marginTop:32}}>
       <h2>Saved agents</h2>
       <p className="hint">Public agents you&apos;ve bookmarked from Discover.</p>

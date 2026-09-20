@@ -18,18 +18,23 @@ export async function authenticate(request: Request) {
   return { client, userId: data.user.id };
 }
 export type Identity = Awaited<ReturnType<typeof authenticate>>;
-const columns = 'id,definition,created_at,visibility,owner_id';
-const rowSchema = z.object({ id: z.uuid(), definition: definitionSchema, created_at: z.string(), visibility: z.enum(['public', 'private']), owner_id: z.uuid() });
+const columns = 'id,definition,created_at,visibility,owner_id,archived';
+const rowSchema = z.object({ id: z.uuid(), definition: definitionSchema, created_at: z.string(), visibility: z.enum(['public', 'private']), owner_id: z.uuid(), archived:z.boolean().default(false) });
 export function asAgent(row: unknown): OwnedAgent {
   const value = rowSchema.parse(row);
-  return { ...value.definition, id: value.id, createdAt: value.created_at, visibility: value.visibility, ownerId: value.owner_id };
+  return { ...value.definition, id: value.id, createdAt: value.created_at, visibility: value.visibility, ownerId: value.owner_id, archived:value.archived };
 }
 export function repository({ client, userId }: Identity) {
   return {
-    async list() {
-      const { data, error } = await client.from('template_agents').select(columns).eq('owner_id', userId).order('created_at', { ascending: false }).limit(100);
+    async list(archived=false) {
+      const { data, error } = await client.from('template_agents').select(columns).eq('owner_id', userId).eq('archived',archived).order('created_at', { ascending: false }).limit(100);
       if (error) throw new HostedError(503, 'Agent storage is unavailable');
       return (data ?? []).map(asAgent);
+    },
+    async setArchived(id:string,archived:boolean){
+      const {data,error}=await client.from('template_agents').update({archived,...(archived?{visibility:'private'}:{})}).eq('owner_id',userId).eq('id',id).select(columns).maybeSingle();
+      if(error)throw new HostedError(503,'Could not archive or restore agent. Apply the archive migration in Supabase.');
+      if(!data)throw new HostedError(404,'Agent not found');return asAgent(data);
     },
     async create(input: unknown) {
       const definition = definitionSchema.parse(input);
