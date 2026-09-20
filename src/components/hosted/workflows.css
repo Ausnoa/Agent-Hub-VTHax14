@@ -20,6 +20,11 @@
 .hosted-discovery .discover-skill-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
 .hosted-discovery .registry-item h3,.hosted-discovery .registry-item p { overflow-wrap:anywhere; }
 .hosted-discovery .search-bar input { min-width:0; }
+/* "Compose an agent" is naturally shorter than "ANS capability resolution" (which stacks two
+   sections); stretch the shorter card to match instead of leaving mismatched heights. Scoped to
+   this page — .split-layout elsewhere intentionally top-aligns cards of very different lengths. */
+.hosted-discovery .split-layout { align-items: stretch; }
+.hosted-discovery .mesh-panel { display: flex; flex-direction: column; }
 @media(max-width:600px){.hosted-discovery .registry-item { gap:8px; padding:12px; }.hosted-discovery .registry-item .pill { font-size:9px; }}
 
 /* Find agents lives on the workflow graph. The trigger sits in the graph card's
