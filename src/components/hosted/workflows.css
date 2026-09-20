@@ -1,0 +1,18 @@
+.hosted-workflows { display: grid; gap: 24px; }
+.hosted-workflows label { display: grid; gap: 8px; margin: 16px 0; }
+.hosted-workflows input:not([type=checkbox]), .hosted-workflows textarea, .hosted-workflows select { width: 100%; box-sizing: border-box; padding: 12px; background: var(--bg-inset); border: 1px solid var(--border-strong); border-radius: var(--radius-md); }
+.hosted-workflows textarea { min-height: 110px; resize: vertical; }
+.hosted-workflows h2, .hosted-workflows h3 { margin-bottom: 12px; }
+.hosted-workflows p { margin: 10px 0; overflow-wrap: anywhere; }
+.hosted-search { display: flex; align-items: end; gap: 16px; }
+.hosted-search label { flex: 1; margin-bottom: 0; }
+.hosted-candidates { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,280px),1fr)); gap: 16px; margin-top: 24px; }
+.hosted-workflows article { padding: 20px; margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius-md); }
+.hosted-workflows article button { margin: 4px 8px 4px 0; }
+.hosted-step-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.hosted-workflows .hosted-confirm { display: flex; align-items: flex-start; gap: 12px; }
+.hosted-confirm input { margin-top: 4px; flex-shrink: 0; }
+.hosted-run { margin: 20px 0; }
+.hosted-run pre { white-space: pre-wrap; overflow-wrap: anywhere; padding: 16px; background: var(--bg-inset); }
+@media(max-width:600px){.hosted-search {display:block;} .hosted-search button {margin-top:12px;} .hosted-step-controls{grid-template-columns:1fr;} }
+.hosted-candidates { max-height: 520px; overflow-y: auto; padding-right: 8px; }

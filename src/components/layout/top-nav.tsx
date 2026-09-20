@@ -36,7 +36,7 @@ export default function TopNav() {
     <nav className="topnav-links" aria-label="Main navigation">
       {tabs.map((tab) => (
         <Link key={tab.key} href={tab.href} className={`topnav-link${activeTab === tab.key ? " active" : ""}`} aria-current={activeTab === tab.key ? "page" : undefined}>
-          {hosted && tab.key === "execution" ? "Test history" : tab.label}{hosted && ["discover","compose"].includes(tab.key) ? " · Local" : ""}
+          {hosted && tab.key === "execution" ? "History" : tab.label}
         </Link>
       ))}
     </nav>
