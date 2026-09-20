@@ -14,8 +14,8 @@ export default function DiscoverPage() {
   return <PageShell className="screen-discovery">
     <PageHeader
       eyebrow="AUTONOMOUS PIPELINE DISCOVERY"
-      title="Browse the dashboard"
-      description="See your agents, discover what other members have published, and manage your account — all in one place."
+      title="Discover your next capability."
+      description="Explore the ANS registry, inspect agent capabilities, and find the right collaborators for your workflow."
       action={<Link href="/dashboard"><Button variant="primary">Open dashboard <ArrowRight size={14} /></Button></Link>}
     />
     <div className="split-layout">

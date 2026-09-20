@@ -1,0 +1,24 @@
+.celestial { position: relative; isolation: isolate; min-height: 410px; background: radial-gradient(ellipse at 50% 50%, var(--accent-soft), transparent 60%), radial-gradient(var(--border-soft) .7px, transparent .7px); background-size: auto, 18px 18px; }
+.cosmos { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: -1; }
+.orbit { position: absolute; left: 50%; top: 50%; width: 75%; height: 42%; border: 1px solid color-mix(in srgb, var(--accent) 42%, transparent); border-radius: 50%; transform: translate(-50%, -50%) rotate(-30deg); animation: celestial-turn 70s linear infinite; box-shadow: 0 0 16px var(--accent-soft), inset 0 0 16px var(--accent-soft); }
+.orbit i { position: absolute; width: 17px; height: 17px; border-radius: 50%; background: radial-gradient(circle at 30% 25%, #dcffff, var(--accent) 35%, #087eac 75%); box-shadow: 0 0 22px var(--accent-glow); top: 18%; left: 8%; }
+.orbit i:nth-child(2) { top: 75%; left: 84%; width: 11px; height: 11px; }
+.orbit i:nth-child(3) { top: -4%; left: 50%; width: 8px; height: 8px; }
+.violet { width: 65%; height: 68%; border-color: color-mix(in srgb, var(--violet) 50%, transparent); animation-duration: 95s; animation-direction: reverse; }
+.violet i { background: radial-gradient(circle at 30% 25%, #ede1ff, var(--violet) 50%, #502caa); width: 23px; height: 23px; box-shadow: 0 0 18px var(--violet-soft); }
+.outer { width: 90%; height: 55%; animation-duration: 120s; opacity: .5; }
+.celestial :global(.topology-core) { width: 152px; height: 152px; border: 1px solid var(--accent); background: radial-gradient(circle at 35% 25%, var(--accent-soft), var(--stitch-well) 70%); box-shadow: 0 0 0 7px var(--accent-soft), 0 0 50px var(--accent-glow), inset 0 0 26px var(--accent-soft); animation: none; }
+.celestial :global(.topology-core) > div { position: relative; z-index: 1; }
+.sphere { position: absolute; inset: 7px; overflow: hidden; border-radius: 50%; pointer-events: none; opacity: .45; }
+.sphere i { position: absolute; inset: 0; border: 1px solid var(--accent); border-radius: 50%; transform: scaleX(.3); }
+.sphere i:nth-child(2) { transform: scaleX(.65); }
+.sphere i:nth-child(3) { transform: scaleY(.3); }
+.sphere i:nth-child(4) { transform: scaleY(.65); }
+.celestial :global(.topology-node) { background: var(--bg-panel); backdrop-filter: blur(12px); border: 1px solid var(--border); box-shadow: inset 0 1px 0 var(--border), 0 12px 30px #0002; max-width: 180px; z-index: 2; transition: border-color .2s, box-shadow .2s; }
+.celestial :global(.topology-node):hover { border-color: var(--accent) !important; box-shadow: 0 0 18px var(--accent-soft); }
+.motion { position: absolute; bottom: 5px; right: 5px; display: flex; align-items: center; gap: 6px; color: var(--text-muted); padding: 8px; border: 1px solid var(--border-soft); border-radius: 8px; font: 9px var(--font-mono); z-index: 3; background: var(--bg-panel); }
+.motion:hover { color: var(--accent); }
+.paused .orbit { animation-play-state: paused; }
+@keyframes celestial-turn { to { transform: translate(-50%, -50%) rotate(330deg); } }
+@media(max-width: 540px) { .celestial { min-height: 420px; padding-bottom: 46px !important; } .celestial :global(.topology-core) { position: relative; left: auto; top: auto; transform: none; } .celestial :global(.topology-node) { max-width: none; } .cosmos { height: 220px; } }
+@media(prefers-reduced-motion: reduce) { .orbit { animation: none; } .motion { display: none; } }

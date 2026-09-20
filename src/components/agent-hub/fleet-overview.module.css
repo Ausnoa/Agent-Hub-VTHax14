@@ -1,0 +1,28 @@
+.overview { margin-bottom: 40px; }
+.hero { padding: 24px 0 30px; }
+.hero h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(36px, 4.5vw, 64px); letter-spacing: -.045em; line-height: 1.15; margin: 16px 0; }
+.hero h1 em { color: var(--accent); font-weight: 400; }
+.heroBottom { display: flex; justify-content: space-between; align-items: end; gap: 24px; }
+.heroBottom p { max-width: 660px; color: var(--text-muted); line-height: 1.8; }
+.heroBottom a { flex-shrink: 0; }
+.workspace { display: grid; grid-template-columns: minmax(0, 1.8fr) minmax(280px, 1fr); border: 1px solid var(--border); border-radius: 20px; background: var(--bg-panel); box-shadow: var(--shadow-card), inset 0 1px 0 var(--border); overflow: hidden; }
+.graph { min-width: 0; padding: 24px; background: radial-gradient(ellipse at 50% 55%, var(--accent-soft), transparent 65%); }
+.graphHead { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.graphHead h2 { display: flex; align-items: center; gap: 8px; font: 10px var(--font-mono); letter-spacing: 1.2px; }
+.graphHead h2 svg { color: var(--accent); }
+.graphHead a { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted); }
+.graphHead a:hover { color: var(--accent); }
+.caption { font: 10px/1.7 var(--font-mono); color: var(--text-muted); margin-top: 12px; }
+.guide { padding: 28px; border-left: 1px solid var(--border-soft); display: flex; flex-direction: column; background: linear-gradient(150deg, var(--bg-panel-strong), transparent); }
+.kicker { display: flex; gap: 8px; color: var(--accent); font: 10px var(--font-mono); letter-spacing: 1px; }
+.guide h2 { font-family: var(--font-display); font-weight: 400; font-size: 30px; line-height: 1.25; margin: 22px 0 12px; }
+.guide > p { color: var(--text-muted); font-size: 12px; line-height: 1.8; }
+.guide ol { display: grid; gap: 20px; list-style: none; padding: 0; margin: 26px 0 30px; }
+.guide li { display: flex; gap: 14px; }
+.guide li > span { font: 10px var(--font-mono); color: var(--accent); border: 1px solid var(--border); border-radius: 8px; width: 30px; height: 30px; display: grid; place-items: center; flex-shrink: 0; }
+.guide strong { font-size: 12px; font-weight: 500; }
+.guide li p { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+.guide > a { margin-top: auto; }
+.guide .note { text-align: center; font-size: 10px; margin-top: 12px; }
+@media(max-width: 1000px) { .workspace { grid-template-columns: 1fr; } .guide { border-left: 0; border-top: 1px solid var(--border); } .guide ol { grid-template-columns: repeat(3, 1fr); } }
+@media(max-width: 600px) { .hero { padding-top: 8px; } .heroBottom { align-items: start; flex-direction: column; } .graph, .guide { padding: 18px; } .graphHead { flex-wrap: wrap; } .guide ol { grid-template-columns: 1fr; } .hero h1 em { display: block; } }

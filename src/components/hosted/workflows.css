@@ -1,4 +1,13 @@
 .hosted-workflows { display: grid; gap: 24px; }
+.celestial-composer-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(300px, 1fr); gap: 20px; align-items: start; }
+.celestial-composer-grid > * { min-width: 0; }
+.celestial-composer-grid .topology { min-height: 420px; }
+.celestial-directive h2 { font-family: var(--font-display); font-size: 28px; font-weight: 400; }
+.celestial-directive textarea { min-height: 180px; }
+.workflow-graph { overflow-x: auto; border-radius: 12px; background: radial-gradient(var(--border-soft) 1px, transparent 1px); background-size: 20px 20px; }
+.workflow-graph svg { min-width: 540px; width: 100%; }
+.hosted-step { background: var(--bg-inset); box-shadow: inset 0 1px 0 var(--border-soft); scroll-margin-top: 120px; }
+@media(max-width: 1050px) { .celestial-composer-grid { grid-template-columns: 1fr; } }
 .hosted-workflows label { display: grid; gap: 8px; margin: 16px 0; }
 .hosted-workflows input:not([type=checkbox]), .hosted-workflows textarea, .hosted-workflows select { width: 100%; box-sizing: border-box; padding: 12px; background: var(--bg-inset); border: 1px solid var(--border-strong); border-radius: var(--radius-md); }
 .hosted-workflows textarea { min-height: 110px; resize: vertical; }

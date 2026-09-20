@@ -31,8 +31,10 @@ export default function WorkflowReviewPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (hydrated && !proposal) router.replace("/create");
-  }, [hydrated, proposal, router]);
+    // Approval clears the draft before navigating to the saved agent. Do not let
+    // the missing-draft fallback race that successful navigation.
+    if (hydrated && !proposal && !busy) router.replace("/create");
+  }, [hydrated, proposal, busy, router]);
 
   if (!hydrated || !proposal) return <PageShell><p className="hint">Loading…</p></PageShell>;
 

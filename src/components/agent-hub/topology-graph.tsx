@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { BrainCircuit, Network } from "lucide-react";
+import { BrainCircuit, Network, Pause, Play } from "lucide-react";
+import styles from "./topology-graph.module.css";
 
 export type TopologyNode = {
   id: string;
@@ -49,12 +50,14 @@ function measureEdges(container: HTMLElement, core: HTMLElement, boxes: Map<stri
   });
 }
 
-export default function TopologyGraph({ coreLabel, coreSublabel, nodes, animated }: {
+export default function TopologyGraph({ coreLabel, coreSublabel, nodes, animated, celestial = true }: {
   coreLabel: string;
   coreSublabel?: string;
   nodes: TopologyNode[];
   animated?: boolean;
+  celestial?: boolean;
 }) {
+  const [paused, setPaused] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const coreRef = useRef<HTMLDivElement>(null);
   const boxRefs = useRef(new Map<string, HTMLElement>());
@@ -74,7 +77,11 @@ export default function TopologyGraph({ coreLabel, coreSublabel, nodes, animated
     return () => observer.disconnect();
   }, [layoutKey]);
 
-  return <div className="topology" ref={containerRef}>
+  return <div className={`topology ${celestial ? styles.celestial : ""} ${paused ? styles.paused : ""}`} ref={containerRef}>
+    {celestial && <>
+      <div className={styles.cosmos} aria-hidden="true"><div className={styles.orbit}><i /><i /><i /></div><div className={`${styles.orbit} ${styles.violet}`}><i /><i /></div><div className={`${styles.orbit} ${styles.outer}`}><i /></div></div>
+      <button type="button" className={styles.motion} onClick={() => setPaused(value => !value)} aria-pressed={paused} aria-label={paused ? "Resume topology animation" : "Pause topology animation"}>{paused ? <Play size={12} /> : <Pause size={12} />} {paused ? "Resume motion" : "Pause motion"}</button>
+    </>}
     <div className="topology-orbit" style={{ width: "62%", height: "62%" }} />
     <div className="topology-orbit" style={{ width: "88%", height: "88%" }} />
     <svg className="topology-edges" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} aria-hidden="true">
@@ -83,10 +90,11 @@ export default function TopologyGraph({ coreLabel, coreSublabel, nodes, animated
         x1={edge.x1} y1={edge.y1} x2={edge.x2} y2={edge.y2}
         stroke="var(--accent)" strokeOpacity={0.4} strokeWidth={1}
         strokeDasharray={animated ? "4 4" : undefined}
-        style={animated ? { animation: "dash-flow 1.4s linear infinite" } : undefined}
+        style={animated ? { animation: "dash-flow 1.4s linear infinite", animationPlayState: paused ? "paused" : "running" } : undefined}
       />)}
     </svg>
     <div className="topology-core" ref={coreRef}>
+      {celestial && <span className={styles.sphere} aria-hidden="true"><i /><i /><i /><i /></span>}
       <div>
         <BrainCircuit className="topology-core-icon" size={28} aria-hidden="true" />
         <strong style={{ display: "block", fontSize: 11 }}>{coreLabel}</strong>

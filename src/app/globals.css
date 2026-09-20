@@ -1,14 +1,14 @@
 /* ---------- tokens : "Liquid Specular" ---------- */
 :root {
-  --bg: #131315;
-  --bg-raised: #0f0f14;
-  --bg-panel: rgba(14, 14, 16, 0.82);
-  --bg-panel-strong: rgba(255, 255, 255, 0.065);
+  --bg: #040914;
+  --bg-raised: #081224;
+  --bg-panel: rgba(10, 22, 41, 0.82);
+  --bg-panel-strong: rgba(20, 37, 61, 0.72);
   --bg-inset: rgba(0, 0, 0, 0.45);
   --bg-hover: rgba(255, 255, 255, 0.06);
 
-  --border: rgba(255, 255, 255, 0.1);
-  --border-soft: rgba(255, 255, 255, 0.07);
+  --border: rgba(128, 178, 213, 0.19);
+  --border-soft: rgba(128, 178, 213, 0.12);
   --border-strong: rgba(255, 255, 255, 0.2);
 
   --text: #f5f7fa;
@@ -47,7 +47,7 @@
   --font-mono: var(--font-jetbrains), ui-monospace, "SF Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   --font-display: var(--font-playfair), Georgia, serif;
 
-  --nav-bg: rgba(8, 8, 10, 0.75);
+  --nav-bg: rgba(5, 13, 27, 0.88);
   --nav-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
   --alert-text: #ffc2ca;
   --danger-ink: #2a0507;

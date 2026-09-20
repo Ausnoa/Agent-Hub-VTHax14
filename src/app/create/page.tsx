@@ -65,6 +65,19 @@ export default function CreateAgentPage() {
 
     {error && <div role="alert" className="alert"><strong>Something needs attention</strong><p>{error}</p></div>}
 
+    <div className="local-composer-grid">
+    <Card className="mesh-panel">
+      <CardHead>Composition topology preview</CardHead>
+      <p className="hint" style={{ marginBottom: 6 }}>Illustrative only — your directive is decomposed into capabilities, then resolved against the ANS mesh in the next step.</p>
+      <TopologyGraph
+        coreLabel="Composer Core"
+        coreSublabel="Goal Decomposer"
+        nodes={[
+          { id: "input", label: "Input Spec", sublabel: "your directive", angle: 200, radius: 1 },
+          { id: "mesh", label: "ANS Mesh", sublabel: "capability resolution", angle: -20, radius: 1, tone: "accent" },
+        ]}
+      />
+    </Card>
     <Card className="compose-card">
       <CardHead badge={<StatusPill tone="accent">New composition</StatusPill>}><Sparkles size={18} /> Operational directive</CardHead>
       <label className="sr-only" htmlFor="description">Operational directive</label>
@@ -96,6 +109,7 @@ export default function CreateAgentPage() {
       </p>}
     </Card>
 
+    </div>
     <div className="metric-row" style={{ marginTop: 32 }}>
       <Card tight><CardHead badge={<Search size={14} color="var(--accent)" />}>Discover with ANS</CardHead><p className="hint">Find registered agents and inspect where they come from.</p></Card>
       <Card tight><CardHead badge={<ClipboardCheck size={14} color="var(--accent)" />}>Review the composition</CardHead><p className="hint">See each capability and approve the agents working together.</p></Card>
@@ -103,18 +117,6 @@ export default function CreateAgentPage() {
     </div>
 
     <div className="composer-bottom">
-    <Card className="mesh-panel">
-      <CardHead>Composition topology preview</CardHead>
-      <p className="hint" style={{ marginBottom: 6 }}>Illustrative only — your directive is decomposed into capabilities, then resolved against the ANS mesh in the next step.</p>
-      <TopologyGraph
-        coreLabel="Composer Core"
-        coreSublabel="Goal Decomposer"
-        nodes={[
-          { id: "input", label: "Input Spec", sublabel: "your directive", angle: 200, radius: 1 },
-          { id: "mesh", label: "ANS Mesh", sublabel: "capability resolution", angle: -20, radius: 1, tone: "accent" },
-        ]}
-      />
-    </Card>
     <Card className="composer-guide">
       <CardHead badge={<Radio size={16} />}>From intent to execution</CardHead>
       <ol className="guide-feed">

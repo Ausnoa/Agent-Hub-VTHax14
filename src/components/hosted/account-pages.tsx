@@ -11,6 +11,7 @@ import Card from '../ui/card';
 import Button from '../ui/button';
 import PublicAgentCard, { type PublicAgentSummary } from './public-agent-card';
 import HostedAgentCard from './hosted-agent-card';
+import FleetOverview from '../agent-hub/fleet-overview';
 import './hosted.css';
 import {ArchiveButton,ArchivedItems} from './archive-controls';
 type Run={id:string;agent_id:string;status:string;output:string|null;created_at:string};
@@ -18,7 +19,7 @@ type Saved = PublicAgentSummary & { owner: { username: string; displayName: stri
 export default function AccountPages({history=false}:{history?:boolean}){
   const account=useAccount();
   if(!account.ready)return <PageShell><p role="status">Loading account…</p></PageShell>;
-  if(!account.session)return <PageShell narrow><PageHeader eyebrow="YOUR HOSTED WORKSPACE" title={history?'Your test history':'Your agents'} description="Sign in to access your private hosted workspace."/><Link href={`/login?next=${history?'/execution':'/agents'}`}>Sign in or create an account →</Link>{account.error&&<p role="alert">{account.error}</p>}</PageShell>;
+  if(!account.session)return <PageShell narrow><PageHeader headingLevel={history?1:2} eyebrow="YOUR HOSTED WORKSPACE" title={history?'Your test history':'Your agents'} description="Sign in to access your private hosted workspace."/><Link href={`/login?next=${history?'/execution':'/agents'}`}>Sign in or create an account →</Link>{account.error&&<p role="alert">{account.error}</p>}</PageShell>;
   return <AccountData key={`${account.session.user.id}:${history}`} history={history}/>;
 }
 function AccountData({history}:{history:boolean}){
@@ -61,7 +62,7 @@ function AccountData({history}:{history:boolean}){
       return matchesTemplate&&matchesQuery;
     });
   },[agents,query,templateFilter]);
-  return <PageShell><PageHeader eyebrow="YOUR HOSTED WORKSPACE" title={history?'Agent test history':'My Agents'} description={history?'Your latest 20 template tests and their saved results.':'Your saved template agents. Publish one to make it discoverable to other members.'} action={<Link href="/agent-preview"><Button variant="primary"><Plus size={14}/> Create agent</Button></Link>}/>
+  return <PageShell>{!history&&<FleetOverview hosted/>}<PageHeader headingLevel={history?1:2} eyebrow="YOUR HOSTED WORKSPACE" title={history?'Agent test history':'Your agent fleet'} description={history?'Your latest 20 template tests and their saved results.':'Your saved template agents. Publish one to make it discoverable to other members.'} action={<Link href="/agent-preview"><Button variant="primary"><Plus size={14}/> Create agent</Button></Link>}/>
     {loading&&<p role="status">Loading {history?'tests':'agents'}…</p>}{error&&<p role="alert">{error}</p>}
     {!history&&!loading&&!error&&!!agents.length&&<section className="fleet-toolbar" aria-label="Filter your agents">
       <div className="search-bar fleet-search">

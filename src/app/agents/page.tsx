@@ -10,6 +10,7 @@ import PageHeader from "../../components/layout/page-header";
 import Button from "../../components/ui/button";
 import MetricTile from "../../components/ui/metric-tile";
 import AgentCard from "../../components/agent-hub/agent-card";
+import FleetOverview from "../../components/agent-hub/fleet-overview";
 
 export default function MyAgentsPage() {
   const [agents, setAgents] = useState<Composite[]>();
@@ -42,9 +43,11 @@ export default function MyAgentsPage() {
   const ansResolvedSteps = agents?.reduce((sum, agent) => sum + agent.steps.filter((step) => step.source === "ans").length, 0) ?? 0;
 
   return <PageShell className="screen-fleet">
+    <FleetOverview />
     <PageHeader
+      headingLevel={2}
       eyebrow="A2A DEPLOYMENT REGISTRY · LOCAL WORKSPACE"
-      title="My Agent Fleet"
+      title="Your agent fleet"
       description="Supervise, monitor, and invoke your multi-agent workflows. One workspace for your entire fleet."
       action={<div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
         <Link href="/create"><Button variant="primary"><Plus size={14} /> Compose New Agent</Button></Link>

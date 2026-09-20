@@ -131,6 +131,7 @@ function Workspace({mode}:{mode:Mode}){
   return <PageShell className="hosted-workflows"><PageHeader eyebrow="YOUR HOSTED WORKSPACE" title={title} description={mode==='compose'?'Connect up to eight agents, review the steps, then run them with your input.':'Your latest 20 workflow runs. Open a workflow to review its saved steps and continue between completed steps.'}/>
     {loading&&<p role="status">Loading your workspace…</p>}{error&&<div role="alert" className="alert">{error}</div>}
     {mode==='compose'&&<>
+      <div className="celestial-composer-grid">
       <Card id="suggested-workflow" tabIndex={-1} style={{scrollMarginTop:90}}>
         <div className="workflow-graph-head"><h2>Workflow graph</h2>
           <div className="workflow-graph-actions" ref={finderAnchor}><Button aria-expanded={finderOpen} aria-controls="agent-finder" disabled={loading} onClick={()=>finderOpen?closeFinder():setFinderOpen(true)}>{finderOpen?'Close agent finder':'Find agents'}</Button>
@@ -139,13 +140,14 @@ function Workspace({mode}:{mode:Mode}){
         </div>
         <WorkflowGraph steps={steps} names={steps.map((s,i)=>selected?.definition.steps[i]?.name??candidates.find(c=>c.agentId===s.agentId)?.name??s.skill)} run={run}/>
       </Card>
-      <Card aria-busy={suggesting}><h2>Describe your workflow</h2><label>Desired outcome<textarea value={description} maxLength={2000} disabled={busy} onChange={e=>{setDescription(e.target.value);setSuggestionNotice('');setSuggestionError('');}} placeholder="Summarize my meeting notes, then extract owners and deadlines."/></label>
-        <Button disabled={busy||loading||description.trim().length<10} onClick={()=>void suggest()}>{suggesting?'Suggesting workflow…':'Suggest workflow'}</Button>
+      <Card className="celestial-directive" aria-busy={suggesting}><p className="eyebrow">DESCRIBE YOUR WORKFLOW</p><h2>Start with an outcome.</h2><label>Desired outcome<textarea value={description} maxLength={2000} disabled={busy} onChange={e=>{setDescription(e.target.value);setSuggestionNotice('');setSuggestionError('');}} placeholder="Summarize my meeting notes, then extract owners and deadlines."/></label>
+        <Button variant="primary" block disabled={busy||loading||description.trim().length<10} onClick={()=>void suggest()}>{suggesting?'Suggesting workflow…':'Suggest workflow'}</Button>
         {description.trim().length<10&&<p className="hint">Describe your desired outcome in at least 10 characters to get a suggestion.</p>}
         <p role="status" aria-live="polite">{suggesting?'Finding agents and drafting your workflow. This can take up to a minute.':suggestionNotice}</p>
         {suggestionError&&<p role="alert" className="alert">{suggestionError}</p>}
         <p className="hint">Uses your saved templates and the first page of ANS results for the query in Find agents. Sends the description and candidate details to OpenAI. Up to 10 suggestions per UTC day; review every proposed step.</p>
       </Card>
+      </div>
       <Card><h2>Review the steps</h2><label>Workflow name<input value={name} maxLength={100} disabled={busy} onChange={e=>{setName(e.target.value);setSelected(undefined);setRun(undefined);setConfirmed(false);}}/></label>
         <label>Public summary (shown on Discover if you publish this workflow)<textarea value={summary} maxLength={300} disabled={busy} onChange={e=>{setSummary(e.target.value);setSelected(undefined);setRun(undefined);setConfirmed(false);}} placeholder="What does this workflow do, and who is it for?"/></label>
         {steps.map((step,index)=><article id={`hosted-step-${index}`} className="hosted-step" key={index}><h3>{index+1}. {selected?.definition.steps[index]?.name??candidates.find(c=>c.agentId===step.agentId)?.name??step.agentId}</h3><p>{step.skill}</p>
