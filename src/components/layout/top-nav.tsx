@@ -11,12 +11,10 @@ import { useAccount } from "../../lib/hosted/use-account";
 // Each tab owns the pages under it: Compose covers its three-step flow (and the general
 // workflow builder); My Agents covers each agent's interface and its runs.
 const tabs = [
-  { key: "dashboard", label: "Dashboard", href: "/dashboard", paths: ["/dashboard"] },
   { key: "discover", label: "Discover", href: "/discover", paths: ["/discover", "/available"] },
   { key: "agents", label: "My Agents", href: "/agents", paths: ["/agents"] },
   { key: "agent-preview", label: "Create agent", href: "/agent-preview", paths: ["/agent-preview"] },
   { key: "compose", label: "Compose", href: "/create", paths: ["/create", "/discovery", "/workflow", "/general"] },
-  { key: "saved", label: "Saved", href: "/saved", paths: ["/saved"] },
   { key: "execution", label: "Execution", href: "/execution", paths: ["/execution"] },
 ] as const;
 
@@ -29,12 +27,12 @@ export default function TopNav() {
   const account = useAccount();
   const [hosted,setHosted] = useState(false);
   useEffect(()=>{setHosted(!["localhost","127.0.0.1"].includes(location.hostname));},[]);
-  const activeTab = pathname === "/" ? "dashboard" : tabs.find((tab) => tab.paths.some((path) => owns(pathname, path)))?.key;
+  const activeTab = tabs.find((tab) => tab.paths.some((path) => owns(pathname, path)))?.key;
 
   return <header className="topnav">
     <Link href={hosted ? "/dashboard" : "/agents"} className="topnav-brand">
       <Image src="/agent-emblem.svg" alt="" width={30} height={30} className="topnav-mark" priority />
-      <span>AGENT HUB<small>COMPOSER ENGINE</small></span>
+      <span>AGENT GLORRIA<small>COMPOSER ENGINE</small></span>
     </Link>
     <span className="topnav-verified"><span className="live-dot" /><ShieldCheck size={12} /> ANS Discovery · Identity unverified</span>
     <nav className="topnav-links" aria-label="Main navigation">

@@ -9,7 +9,10 @@ import PageShell from '../layout/page-shell';
 import PageHeader from '../layout/page-header';
 import Card from '../ui/card';
 import Button from '../ui/button';
+import PublicAgentCard, { type PublicAgentSummary } from './public-agent-card';
+import './hosted.css';
 type Run={id:string;agent_id:string;status:string;output:string|null;created_at:string};
+type Saved = PublicAgentSummary & { owner: { username: string; displayName: string; avatarUrl: string | null } };
 export default function AccountPages({history=false}:{history?:boolean}){
   const account=useAccount();
   if(!account.ready)return <PageShell><p role="status">Loading account…</p></PageShell>;
@@ -19,12 +22,26 @@ export default function AccountPages({history=false}:{history?:boolean}){
 function AccountData({history}:{history:boolean}){
   const [agents,setAgents]=useState<OwnedAgent[]>([]),[runs,setRuns]=useState<Run[]>([]);
   const [loading,setLoading]=useState(true),[error,setError]=useState(''),[busy,setBusy]=useState('');
+  const [saved,setSaved]=useState<Saved[]>(),[savedError,setSavedError]=useState(''),[savedBusy,setSavedBusy]=useState('');
   useEffect(()=>{let active=true;Promise.all([hostedApi<OwnedAgent[]>('agents'),history?hostedApi<Run[]>('tests'):Promise.resolve([])]).then(([agents,runs])=>{if(active){setAgents(agents);setRuns(runs);}}).catch(e=>{if(active)setError(e.message);}).finally(()=>{if(active)setLoading(false);});return()=>{active=false;};},[history]);
+  useEffect(()=>{
+    if(history)return;
+    let active=true;
+    hostedApi<Saved[]>('saved').then(data=>{if(active)setSaved(data);}).catch(reason=>{if(active)setSavedError(reason instanceof Error?reason.message:'Could not load saved agents');});
+    return()=>{active=false;};
+  },[history]);
   async function toggleVisibility(agentId:string,next:'public'|'private'){
     setBusy(agentId);
     try{const updated=await hostedApi<OwnedAgent>(`agents/${agentId}/visibility`,{visibility:next});setAgents(old=>old.map(a=>a.id===agentId?updated:a));}
     catch(e){setError(e instanceof Error?e.message:'Could not update visibility');}
     finally{setBusy('');}
+  }
+  async function removeSaved(agent:Saved){
+    const key=`${agent.kind}:${agent.id}`;
+    setSavedBusy(key);
+    try{await hostedApi(`saved/${agent.kind}/${agent.id}`,undefined,'DELETE');setSaved(old=>old?.filter(item=>`${item.kind}:${item.id}`!==key));}
+    catch(reason){setSavedError(reason instanceof Error?reason.message:'Could not remove this bookmark');}
+    finally{setSavedBusy('');}
   }
   return <PageShell><PageHeader eyebrow="YOUR HOSTED WORKSPACE" title={history?'Agent test history':'My Agents'} description={history?'Your latest 20 template tests and their saved results.':'Your saved template agents. Publish one to make it discoverable to other members.'} action={<Link href="/agent-preview">Create agent →</Link>}/>
     {loading&&<p role="status">Loading {history?'tests':'agents'}…</p>}{error&&<p role="alert">{error}</p>}
@@ -34,6 +51,18 @@ function AccountData({history}:{history:boolean}){
         <Link href={`/agents/${agent.id}`}>View detail page →</Link>
         <Button size="sm" disabled={busy===agent.id} onClick={()=>void toggleVisibility(agent.id,agent.visibility==='public'?'private':'public')}>{busy===agent.id?'Saving…':agent.visibility==='public'?'Make private':'Publish'}</Button>
       </div>
-    </Card>):<p>No saved agents yet. Choose a template to create your first agent.</p>)}
+    </Card>):<p>No agents yet. Choose a template to create your first agent.</p>)}
+    {!history&&<section id="saved" style={{marginTop:32}}>
+      <h2>Saved agents</h2>
+      <p className="hint">Public agents you&apos;ve bookmarked from Discover.</p>
+      {savedError&&<div role="alert" className="alert"><strong>Something needs attention</strong><p>{savedError}</p></div>}
+      {!saved&&!savedError&&<p className="hint">Loading…</p>}
+      {saved&&!saved.length&&<p className="empty">Nothing saved yet. <Link href="/discover">Browse Discover →</Link></p>}
+      {!!saved?.length&&<div className="discover-grid">
+        {saved.map(agent=><PublicAgentCard key={`${agent.kind}:${agent.id}`} agent={agent} footer={
+          <p className="discover-card-owner"><span>By {agent.owner.displayName||`@${agent.owner.username}`}</span></p>
+        } aside={<Button size="sm" disabled={savedBusy===`${agent.kind}:${agent.id}`} onClick={()=>void removeSaved(agent)}>{savedBusy===`${agent.kind}:${agent.id}`?'Removing…':'Remove'}</Button>}/>)}
+      </div>}
+    </section>}
   </PageShell>;
 }

@@ -50,7 +50,7 @@ function DashboardBody() {
       <Link className="filter-chip" href="/discover">Discover agents</Link>
       <Link className="filter-chip" href="/agents">My agents</Link>
       <Link className="filter-chip" href="/agent-preview">Create agent</Link>
-      <Link className="filter-chip" href="/saved">Saved agents</Link>
+      <Link className="filter-chip" href="/agents#saved">Saved agents</Link>
       <Link className="filter-chip" href="/profile/settings">Profile</Link>
     </nav>
     <Card><CardHead>Your recent agents</CardHead>

@@ -1,6 +1,6 @@
 import type { Variant } from "../../lib/agent-ui/variant";
 
-// The original Agent Hub robocat: a compact head with pointed ears, a dark visor face and a
+// The original Agent Glorria robocat: a compact head with pointed ears, a dark visor face and a
 // dashed antenna. Ears, visor and colour vary per agent (variantFor), so every generated
 // agent gets its own recognisable face inside the circular avatar button.
 export default function Mascot({ width = 44, asleep = false, variant }: { width?: number; asleep?: boolean; variant?: Variant }) {

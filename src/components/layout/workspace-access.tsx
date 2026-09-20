@@ -18,7 +18,7 @@ export default function WorkspaceAccess({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [local, setLocal] = useState<boolean>();
   useEffect(() => { setLocal(["localhost", "127.0.0.1"].includes(window.location.hostname) && !new URLSearchParams(window.location.search).has("hosted")); }, [pathname]);
-  if (["/agent-preview", "/login", "/dashboard", "/saved"].includes(pathname) || pathname.startsWith("/profile/")) return children;
+  if (["/agent-preview", "/login", "/dashboard"].includes(pathname) || pathname.startsWith("/profile/")) return children;
   if (local === undefined) return <PageShell><p role="status">Loading workspace…</p></PageShell>;
   if (local) return children;
   if (pathname === "/agents") return <AccountPages />;
@@ -41,7 +41,7 @@ export default function WorkspaceAccess({ children }: { children: ReactNode }) {
     </Card>
     <Card>
       <h2>Continue in your local workspace</h2>
-      <p>If you have Agent Hub running on your computer, open the localhost address shown in your terminal. Your saved agents and workflows remain there.</p>
+      <p>If you have Agent Glorria running on your computer, open the localhost address shown in your terminal. Your saved agents and workflows remain there.</p>
       <p>Hosted workflow execution is a later milestone. Saving a template agent does not publish it or register it with ANS.</p>
     </Card>
   </PageShell>;

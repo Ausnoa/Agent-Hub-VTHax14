@@ -14,13 +14,14 @@ export default function DiscoverPage() {
   return <PageShell className="screen-discovery">
     <PageHeader
       eyebrow="AUTONOMOUS PIPELINE DISCOVERY"
-      title="Browse the ANS registry"
-      description="Search indexed and live ANS records directly. This doesn't require an LLM key — that's only needed to decompose a natural-language directive into a capability plan."
+      title="Browse the dashboard"
+      description="See your agents, discover what other members have published, and manage your account — all in one place."
+      action={<Link href="/dashboard"><Button variant="primary">Open dashboard <ArrowRight size={14} /></Button></Link>}
     />
     <div className="split-layout">
       <Card className="mesh-panel">
         <CardHead>Compose an agent</CardHead>
-        <p className="hint" style={{ marginBottom: 16 }}>Have an outcome in mind? Describe it and Agent Hub will decompose it into a capability plan, then resolve each capability against this same registry.</p>
+        <p className="hint" style={{ marginBottom: 16 }}>Have an outcome in mind? Describe it and Agent Glorria will decompose it into a capability plan, then resolve each capability against this same registry.</p>
         <TopologyGraph coreLabel="ANS Discovery" coreSublabel="Capability resolution" nodes={[
           { id: "directive", label: "Your directive", sublabel: "Describe an outcome", angle: 225, radius: 0.8 },
           { id: "registry", label: "Agent registry", sublabel: "Browse capabilities", angle: 45, radius: 0.8, tone: "violet" },

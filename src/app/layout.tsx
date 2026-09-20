@@ -15,7 +15,7 @@ const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-jakart
 const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains", weight: ["400", "500", "600", "700"] });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair", weight: ["400", "600"], style: ["normal", "italic"] });
 
-export const metadata: Metadata = { title: "Agent Hub — Orchestrate autonomous agents", description: "Discover A2A agents through ANS and compose reusable workflows." };
+export const metadata: Metadata = { title: "Agent Glorria — Orchestrate autonomous agents", description: "Discover A2A agents through ANS and compose reusable workflows." };
 export default function Layout({ children }: { children: React.ReactNode }) {
   // suppressHydrationWarning: the theme script may set data-theme on <html> before React hydrates.
   return <html lang="en" className={`${jakarta.variable} ${jetbrainsMono.variable} ${playfair.variable}`} suppressHydrationWarning><head>
