@@ -64,7 +64,7 @@ function LocalAgentRuntime() {
     <CatAgentBar
       storageKey="local"
       candidates={pack.map((spec) => ({ id: spec.agentId, name: spec.name }))}
-      renderCat={(agentId) => {
+      renderCat={(agentId, drag) => {
         const spec = pack.find((item) => item.agentId === agentId);
         if (!spec) return null;
         const isActive = spec.agentId === active?.agentId;
@@ -75,6 +75,7 @@ function LocalAgentRuntime() {
           variant={variantFor(spec.variantSeed, spec.accentIndex)}
           status={statusFor(spec.agentId)}
           inline
+          {...drag}
           dimmed={view === "mini" && !isActive}
           onOpen={() => (isActive && view === "mini" ? setView("avatar") : open(spec.agentId, "mini"))}
           onRemove={() => remove(spec.agentId)}
