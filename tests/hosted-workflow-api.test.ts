@@ -47,3 +47,22 @@ test('template step shares test budget and persists output; result-save failures
   await assert.rejects(advanceHosted(run,0,store as never,agents as never,services),/database offline/);
   assert.equal(invokes,1);assert.equal(reserved,1);
 });
+
+test('menu suggestions constrain generation to exact available agent-skill choices',async()=>{
+  const {suggestHosted}=await import('../src/lib/hosted/workflow-service.ts');
+  const candidate={agentId:`template:${id}`,name:'Summary',description:'Summarize supplied text',source:'template' as const,skills:[{id:'summarize-text',name:'Summarizer',tags:[]}]};
+  const services={...workflowServices,generate:async(input:string,_instructions:string,schema:any)=>{
+    const choice=JSON.parse(input).choices[0].choice;
+    const plan={name:'Menu ideas',steps:[{choice,inputFrom:'original',format:'text',instruction:'Extract key ideas from the supplied brewery menu.'}],unsupported:[]};
+    assert.equal(schema.safeParse({...plan,steps:[{...plan.steps[0],choice:'invented-agent'}]}).success,false);
+    return schema.parse(plan);
+  }};
+  const draft=await suggestHosted('Extract key ideas from a brewery menu',[candidate],services);
+  assert.equal(draft.steps[0].agentId,candidate.agentId);
+  assert.equal(draft.steps[0].skill,'summarize-text');
+  await assert.rejects(suggestHosted('Menu ideas',[],services),/No agents/);
+});
+test('discovery timeouts are actionable without exposing upstream details',async()=>{
+  const {searchHosted}=await import('../src/lib/hosted/workflow-service.ts');
+  await assert.rejects(searchHosted('',undefined,{list:async()=>[]} as never,{...workflowServices,discover:async()=>{throw new DOMException('private upstream data','TimeoutError');}}),/ANS discovery timed out/);
+});
