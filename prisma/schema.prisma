@@ -1,0 +1,21 @@
+// Prisma schema for the existing Supabase Postgres project.
+//
+// This file is additive/tooling-only (docs/DECISION-006-PRISMA-INTEGRATION.md):
+// supabase/migrations/*.sql remains the source of truth for schema changes.
+// After any new SQL migration, refresh this file with `npx prisma db pull`
+// and then run `npx prisma generate`.
+//
+// The models below are placeholders until the first introspection run
+// replaces them with the actual live schema (see supabase/migrations/
+// 202609190001_hosted_agents.sql, 202609190002_hosted_workflows.sql, and
+// 202609190003_profiles_and_visibility.sql for the current source of truth).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
