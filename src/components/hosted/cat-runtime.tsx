@@ -30,10 +30,10 @@ function CatChat({target,anchor,onClose,onStatus}:{target:Target;anchor?:{x:numb
   const [expanded,setExpanded]=useState(false),[text,setText]=useState(''),[json,setJson]=useState(false),[confirmed,setConfirmed]=useState(false);
   const [messages,setMessages]=useState<Message[]>([]),[busy,setBusy]=useState(false),[error,setError]=useState('');
   const lock=useRef(false),active=useRef(true),request=useRef<{key:string;id:string}|null>(null),dialog=useRef<HTMLElement>(null);
-  const [placement,setPlacement]=useState<{left:number;top:number}>();
+  const [placement,setPlacement]=useState<{left:number;top:number;maxHeight:number}>();
   useLayoutEffect(()=>{
     const element=dialog.current;if(!element||expanded||!anchor)return;
-    const update=()=>{const rect=element.getBoundingClientRect();const next=chatPosition(anchor,rect,{width:window.innerWidth,height:window.innerHeight});setPlacement(old=>old?.left===next.left&&old?.top===next.top?old:next);};
+    const update=()=>{const rect=element.getBoundingClientRect();const maxHeight=Math.max(120,Math.min(window.innerHeight-100,Math.max(anchor.y-84,window.innerHeight-anchor.y-88)));const next={...chatPosition(anchor,{width:rect.width,height:Math.min(rect.height,maxHeight)},{width:window.innerWidth,height:window.innerHeight}),maxHeight};setPlacement(old=>old?.left===next.left&&old?.top===next.top&&old?.maxHeight===next.maxHeight?old:next);};
     update();const observer=new ResizeObserver(update);observer.observe(element);window.addEventListener('resize',update);
     return()=>{observer.disconnect();window.removeEventListener('resize',update);};
   },[anchor,expanded]);
@@ -68,7 +68,7 @@ function CatChat({target,anchor,onClose,onStatus}:{target:Target;anchor?:{x:numb
     }catch(e){if(active.current){onStatus('error');setError(`${e instanceof Error?e.message:'Request failed'}. Check history before starting another run.`);setConfirmed(false);}}
     finally{try{await refresh();}catch{/* Retain original execution error. */}window.dispatchEvent(new Event('hosted-workspace-changed'));lock.current=false;if(active.current)setBusy(false);}
   }
-  return <section className={`hosted-cat-chat${expanded?' expanded':''}`} style={!expanded&&placement?{left:placement.left,top:placement.top,right:'auto',bottom:'auto'}:undefined} role="dialog" aria-label={`${target.name} cat chat`} tabIndex={-1} ref={dialog}>
+  return <section className={`hosted-cat-chat${expanded?' expanded':''}`} style={!expanded&&placement?{left:placement.left,top:placement.top,maxHeight:placement.maxHeight,right:'auto',bottom:'auto'}:undefined} role="dialog" aria-label={`${target.name} cat chat`} tabIndex={-1} ref={dialog}>
     <header><Mascot width={34} variant={variantFor(target.id)}/><div><strong>{target.name}</strong><small>{target.kind==='workflow'?'Workflow companion':'Agent companion'}</small></div><button onClick={()=>setExpanded(!expanded)} aria-label={expanded?'Minimize cat chat':'Expand cat chat'}>{expanded?<Minimize2 size={16}/>:<Maximize2 size={16}/>}</button><button disabled={busy} onClick={onClose} aria-label="Close cat chat"><X size={16}/></button></header>
     <div className="cat-chat-body"><p className="hint">Each message starts an independent {target.kind==='workflow'?'workflow run':'agent test'}. Previous messages are not sent as context.</p>
       <Link href={target.kind==='workflow'?`/create?workflow=${target.id}`:`/agent-preview?agent=${target.id}`}>Open {target.kind==='workflow'?'workflow':'agent'} →</Link>
