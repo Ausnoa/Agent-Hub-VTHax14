@@ -17,6 +17,17 @@ test('hosted workflow APIs require authentication and reject cross-origin writes
   assert.equal((await handleWorkflowApi(request('workflows',{},'https://evil.example'),['workflows'],deps)).status,403);
   assert.equal(calls,1);
 });
+test('a single workflow can be read by id without colliding with /workflows/runs',async()=>{
+  let sawRunsList=0,sawGetId='';
+  const deps={...hostedWorkflowDependencies,authenticate:async()=>identity,agents:()=>({}) as never,
+    workflows:()=>({runs:async()=>{sawRunsList++;return [];},get:async(target:string)=>{sawGetId=target;return workflow;}}) as never};
+  assert.equal((await handleWorkflowApi(request('workflows/runs'),['workflows','runs'],deps)).status,200);
+  assert.equal(sawRunsList,1);
+  const response=await handleWorkflowApi(request(`workflows/${id}`),['workflows',id],deps);
+  assert.equal(response.status,200);
+  assert.equal(sawGetId,id);
+  assert.deepEqual(await response.json(),workflow);
+});
 test('run start and continuation require explicit execution confirmation',async()=>{
   let starts=0;
   const deps={...hostedWorkflowDependencies,authenticate:async()=>identity,agents:()=>({}) as never,enabled:()=>true,

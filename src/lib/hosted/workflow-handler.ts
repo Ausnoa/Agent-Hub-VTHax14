@@ -29,11 +29,6 @@ export async function handleWorkflowApi(request:Request,path:string[],deps=hoste
       if(request.method==='GET')return respond(await store.list());
       if(request.method==='POST')return respond(await store.save(await prepareHosted(await readBody(request),agents,deps.services)),201);
     }
-    if(path[0]==='workflows'&&path.length===3&&path[2]==='visibility'&&request.method==='POST'){
-      const id=z.uuid().parse(path[1]);
-      const {visibility}=z.object({visibility:z.enum(['public','private'])}).parse(await readBody(request));
-      return respond(await store.setVisibility(id,visibility));
-    }
     if(path.join('/')==='workflows/runs'&&request.method==='GET')return respond(await store.runs());
     if(path[0]==='workflows'&&path[1]==='runs'&&path.length>=3){
       const id=z.uuid().parse(path[2]);const run=await store.run(id);
@@ -49,6 +44,14 @@ export async function handleWorkflowApi(request:Request,path:string[],deps=hoste
       const id=z.uuid().parse(path[1]);await store.get(id);
       const input=z.object({requestId:z.uuid(),input:valueSchema,confirmExternalExecution:z.literal(true)}).parse(await readBody(request));
       const runId=await store.start(input.requestId,id,input.input);return respond(await store.run(runId),201);
+    }
+    if(path[0]==='workflows'&&path.length===3&&path[2]==='visibility'&&request.method==='POST'){
+      const id=z.uuid().parse(path[1]);
+      const {visibility}=z.object({visibility:z.enum(['public','private'])}).parse(await readBody(request));
+      return respond(await store.setVisibility(id,visibility));
+    }
+    if(path[0]==='workflows'&&path.length===2&&path[1]!=='runs'&&request.method==='GET'){
+      return respond(await store.get(z.uuid().parse(path[1])));
     }
     throw new HostedError(404,'Route not found');
   }catch(error){

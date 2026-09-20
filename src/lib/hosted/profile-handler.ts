@@ -13,6 +13,13 @@ export async function handleProfileApi(request: Request, path: string[], deps = 
       if (request.method === 'GET') return respond(await profiles.me());
       if (request.method === 'POST') return respond(await profiles.update(await readBody(request)));
     }
+    if (path.length === 3 && path[0] === 'profiles' && path[1] === 'by-id' && request.method === 'GET') {
+      const targetUserId = z.uuid().parse(path[2]);
+      const owners = await profiles.byUserIds([targetUserId]);
+      const owner = owners.get(targetUserId);
+      if (!owner) throw new HostedError(404, 'Profile not found');
+      return respond(owner);
+    }
     if (path.length === 2 && path[0] === 'profiles' && request.method === 'GET') {
       const username = usernameSchema.parse(path[1]);
       return respond(await profiles.byUsername(username));

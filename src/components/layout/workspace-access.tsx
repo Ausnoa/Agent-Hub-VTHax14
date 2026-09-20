@@ -9,6 +9,7 @@ import Card from "../ui/card";
 import WorkflowPages from "../hosted/workflow-pages";
 import AccountPages from "../hosted/account-pages";
 import DiscoveryPage from "../hosted/discovery-page";
+import AgentDetailPage from "../hosted/agent-detail-page";
 
 // Presentation only. The API still enforces its own local-workspace restriction.
 // Keep workspace children unmounted on hosted pages so their effects cannot call
@@ -21,6 +22,10 @@ export default function WorkspaceAccess({ children }: { children: ReactNode }) {
   if (local === undefined) return <PageShell><p role="status">Loading workspace…</p></PageShell>;
   if (local) return children;
   if (pathname === "/agents") return <AccountPages />;
+  // /agents/[id] has no meaning on the local (single-tenant) workspace, so it
+  // isn't in the always-passthrough list above; on a hosted deployment it's the
+  // read-only detail/launch page for either an owned or a public agent.
+  if (pathname.startsWith("/agents/")) return <AgentDetailPage />;
   if (pathname === "/execution") return <><WorkflowPages mode="history"/><AccountPages history /></>;
   // The old ANS/template component search that used to live at /discover is still
   // available inline inside /create; /discover is now the public agent marketplace.
