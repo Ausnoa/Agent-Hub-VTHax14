@@ -6,6 +6,8 @@ import { ArrowLeft, ArrowRight, Rocket } from "lucide-react";
 import type { Composite, Proposal } from "../../lib/contracts/index";
 import { api } from "../../lib/api-client";
 import { useComposerFlow } from "../../lib/composer-flow";
+import { useAgentRuntime } from "../../components/agent-runtime/agent-provider";
+import { specForComposite } from "../../lib/agent-ui/derive";
 import PageShell from "../../components/layout/page-shell";
 import PageHeader from "../../components/layout/page-header";
 import ComposeSteps from "../../components/layout/compose-steps";
@@ -24,6 +26,7 @@ const modeNotice = {
 export default function WorkflowReviewPage() {
   const router = useRouter();
   const { proposal, setProposal, hydrated } = useComposerFlow();
+  const { spawn } = useAgentRuntime();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -38,6 +41,7 @@ export default function WorkflowReviewPage() {
     try {
       const created = await api<Composite>("agents", { proposalId: current.id });
       setProposal(undefined);
+      spawn(specForComposite(created), true);   // play the entrance animation
       router.push(`/agents/${created.id}`);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Something went wrong");
