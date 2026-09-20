@@ -27,7 +27,7 @@ export async function prepareHosted(input:unknown,agents:Agents,services=workflo
   const steps=await Promise.all(draft.steps.map(async selection=>{
     if(selection.format==='json'&&selection.instruction)throw new HostedError(400,'JSON mappings must have empty instructions');
     if(selection.agentId.startsWith('template:')){
-      const id=z.uuid().parse(selection.agentId.slice(9));const agent=await agents.get(id);
+      const id=z.uuid().parse(selection.agentId.slice(9));const agent=await agents.get(id);if(agent.archived)throw new HostedError(409,'Restore the archived agent before adding it to a workflow.');
       if(selection.skill!==templateFor(agent.template).skill||selection.format!=='text')throw new HostedError(400,'Saved templates require their advertised text skill');
       return {...selection,name:agent.name,endpoint:selection.agentId,metadataUrl:selection.agentId};
     }

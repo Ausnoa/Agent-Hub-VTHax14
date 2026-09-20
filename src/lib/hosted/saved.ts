@@ -22,8 +22,8 @@ export function savedRepository(identity: Identity) {
       // this viewer, simply returns no matching row here -- RLS already prevents
       // reading it, so it silently drops out of the list instead of erroring.
       const [templates, workflows] = await Promise.all([
-        templateIds.length ? client.from('template_agents').select('id,definition,created_at,visibility,owner_id').in('id', templateIds) : Promise.resolve({ data: [], error: null }),
-        workflowIds.length ? client.from('hosted_workflows').select('id,definition,created_at,visibility,owner_id').in('id', workflowIds) : Promise.resolve({ data: [], error: null }),
+        templateIds.length ? client.from('template_agents').select('id,definition,created_at,visibility,owner_id').eq('archived',false).in('id', templateIds) : Promise.resolve({ data: [], error: null }),
+        workflowIds.length ? client.from('hosted_workflows').select('id,definition,created_at,visibility,owner_id').eq('archived',false).in('id', workflowIds) : Promise.resolve({ data: [], error: null }),
       ]);
       if (templates.error || workflows.error) throw new HostedError(503, 'Saved agents are unavailable');
       const templateAgents = (templates.data ?? []).map(asAgent).map((agent) => ({

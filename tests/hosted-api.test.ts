@@ -25,6 +25,7 @@ function setup() {
       list: async() => rows.has(identity.userId) ? [rows.get(identity.userId)!] : [],
       create: async(input: unknown) => {const saved = {...agent,...definitionSchema.parse(input)};rows.set(identity.userId,saved);return saved;},
       get: async() => {if (!rows.has(identity.userId)) throw new HostedError(404,'Agent not found');return rows.get(identity.userId)!;},
+      setArchived:async(_id:string,archived:boolean)=>{if(!rows.has(identity.userId))throw new HostedError(404,'Agent not found');const updated={...rows.get(identity.userId)!,archived,visibility:'private' as const};rows.set(identity.userId,updated);return updated;},
       setVisibility: async(agentId:string,visibility:'public'|'private') => {
         if (!rows.has(identity.userId)) throw new HostedError(404,'Agent not found');
         const updated={...rows.get(identity.userId)!,visibility};rows.set(identity.userId,updated);return updated;
@@ -92,4 +93,13 @@ test('account test history requires authentication',async()=>{
   const response=await handleHostedApi(req(),['tests'],dependencies);
   assert.equal(response.status,200);
   assert.deepEqual(await response.json(),[]);
+});
+
+test('agent archive requires ownership and blocks inference until restored',async()=>{
+ const state=setup();state.rows.set('alice',agent);
+ assert.equal((await handleHostedApi(req({archived:true},'bob'),['agents',id,'archive'],state.dependencies)).status,404);
+ assert.equal((await handleHostedApi(req({archived:true}),['agents',id,'archive'],state.dependencies)).status,200);
+ assert.equal((await handleHostedApi(req({text:'Hello'}),['agents',id,'test'],state.dependencies)).status,409);
+ assert.deepEqual(state.calls,[]);
+ assert.equal((await handleHostedApi(req({archived:false}),['agents',id,'archive'],state.dependencies)).status,200);
 });

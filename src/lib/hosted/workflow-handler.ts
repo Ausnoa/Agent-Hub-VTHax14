@@ -26,9 +26,10 @@ export async function handleWorkflowApi(request:Request,path:string[],deps=hoste
       return respond({draft:await suggestHosted(input.description,results.candidates,deps.services),candidates:results.candidates});
     }
     if(path.join('/')==='workflows'){
-      if(request.method==='GET')return respond(await store.list());
+      if(request.method==='GET')return respond(await store.list(new URL(request.url).searchParams.get('archived')==='true'));
       if(request.method==='POST')return respond(await store.save(await prepareHosted(await readBody(request),agents,deps.services)),201);
     }
+    if(path[0]==='workflows'&&path.length===3&&path[2]==='archive'&&request.method==='POST'){const {archived}=z.object({archived:z.boolean()}).parse(await readBody(request));return respond(await store.setArchived(z.uuid().parse(path[1]),archived));}
     if(path.join('/')==='workflows/runs'&&request.method==='GET')return respond(await store.runs());
     if(path[0]==='workflows'&&path[1]==='runs'&&path.length>=3){
       const id=z.uuid().parse(path[2]);const run=await store.run(id);

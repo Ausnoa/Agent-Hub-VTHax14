@@ -11,6 +11,7 @@ import Card from '../ui/card';
 import Button from '../ui/button';
 import PublicAgentCard, { type PublicAgentSummary } from './public-agent-card';
 import './hosted.css';
+import {ArchiveButton,ArchivedItems} from './archive-controls';
 type Run={id:string;agent_id:string;status:string;output:string|null;created_at:string};
 type Saved = PublicAgentSummary & { owner: { username: string; displayName: string; avatarUrl: string | null } };
 export default function AccountPages({history=false}:{history?:boolean}){
@@ -30,6 +31,7 @@ function AccountData({history}:{history:boolean}){
     hostedApi<Saved[]>('saved').then(data=>{if(active)setSaved(data);}).catch(reason=>{if(active)setSavedError(reason instanceof Error?reason.message:'Could not load saved agents');});
     return()=>{active=false;};
   },[history]);
+  async function refreshAgents(){setAgents(await hostedApi<OwnedAgent[]>('agents'));}
   async function toggleVisibility(agentId:string,next:'public'|'private'){
     setBusy(agentId);
     try{const updated=await hostedApi<OwnedAgent>(`agents/${agentId}/visibility`,{visibility:next});setAgents(old=>old.map(a=>a.id===agentId?updated:a));}
@@ -50,8 +52,10 @@ function AccountData({history}:{history:boolean}){
         <Link href={`/agent-preview?agent=${agent.id}`}>Open and test →</Link>
         <Link href={`/agents/${agent.id}`}>View detail page →</Link>
         <Button size="sm" disabled={busy===agent.id} onClick={()=>void toggleVisibility(agent.id,agent.visibility==='public'?'private':'public')}>{busy===agent.id?'Saving…':agent.visibility==='public'?'Make private':'Publish'}</Button>
+        <ArchiveButton kind="agents" id={agent.id} name={agent.name} onChanged={()=>void refreshAgents()}/>
       </div>
     </Card>):<p>No agents yet. Choose a template to create your first agent.</p>)}
+    {!history&&<ArchivedItems kind="agents" onChanged={()=>void refreshAgents()}/>}
     {!history&&<section id="saved" style={{marginTop:32}}>
       <h2>Saved agents</h2>
       <p className="hint">Public agents you&apos;ve bookmarked from Discover.</p>

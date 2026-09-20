@@ -38,7 +38,7 @@ export async function handleHostedApi(request: Request, path: string[], dependen
     const store = dependencies.repository(identity);
     if (path.length === 1 && path[0] === 'tests' && request.method === 'GET') return respond(await store.history());
     if (path.length === 1 && path[0] === 'agents') {
-      if (request.method === 'GET') return respond(await store.list());
+      if (request.method === 'GET') return respond(await store.list(new URL(request.url).searchParams.get('archived')==='true'));
       if (request.method === 'POST') return respond(await store.create(await readBody(request)), 201);
     }
     if (path[0] === 'agents' && path.length >= 2 && path.length <= 3) {
@@ -47,10 +47,12 @@ export async function handleHostedApi(request: Request, path: string[], dependen
         const { visibility } = z.object({ visibility: z.enum(['public', 'private']) }).parse(await readBody(request));
         return respond(await store.setVisibility(id, visibility));
       }
+      if(path[2]==='archive'&&request.method==='POST'){const {archived}=z.object({archived:z.boolean()}).parse(await readBody(request));return respond(await store.setArchived(id,archived));}
       const agent = await store.get(id);
       if (path.length === 2 && request.method === 'GET') return respond(agent);
       if (path[2] === 'tests' && request.method === 'GET') return respond(await store.history(id));
       if (path[2] === 'test' && request.method === 'POST') {
+        if(agent.archived)throw new HostedError(409,'Restore this archived agent before running it.');
         if (!dependencies.enabled()) throw new HostedError(503, 'Hosted testing is not enabled yet');
         const { text } = z.object({ text: z.string().trim().min(1).max(12000) }).parse(await readBody(request));
         const runId = await store.reserve(id, text);
