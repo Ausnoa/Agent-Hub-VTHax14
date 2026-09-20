@@ -7,8 +7,6 @@ import { hostedApi } from '../../lib/hosted/browser';
 import PageShell from '../layout/page-shell';
 import PageHeader from '../layout/page-header';
 import Button from '../ui/button';
-import Card, {CardHead} from '../ui/card';
-import {ArrowRight} from 'lucide-react';
 import Avatar from './avatar';
 import PublicAgentCard from './public-agent-card';
 import './hosted.css';
@@ -43,7 +41,6 @@ function DiscoveryList() {
 
   return <PageShell>
     <PageHeader eyebrow="DISCOVER" title="Discover agents" description="Browse public agents published by other members. Using one never gives you ownership or edit rights over it." />
-    <Card style={{marginBottom:24}}><CardHead>Dashboard</CardHead><p className="hint" style={{marginBottom:16}}>See your agents, saved workflows, and workflow graph in one place.</p><Link className="btn btn-primary" href="/dashboard">Go to dashboard <ArrowRight size={14}/></Link></Card>
     <AnsShowcase />
     {error && <div role="alert" className="alert"><strong>Something needs attention</strong><p>{error}</p></div>}
     <div className="search-bar" style={{ marginBottom: 16 }}>

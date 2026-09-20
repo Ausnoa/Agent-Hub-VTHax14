@@ -12,8 +12,6 @@ import Card, { CardHead } from '../ui/card';
 import MetricTile from '../ui/metric-tile';
 import PublicAgentCard, { type PublicAgentSummary } from './public-agent-card';
 import './hosted.css';
-import WorkflowGraph from './workflow-graph';
-import {showcaseDraft,showcaseAgents} from '../../lib/hosted/showcase';
 
 export default function DashboardPage() {
   const account = useAccount();
@@ -27,11 +25,6 @@ function DashboardBody() {
   const [templates, setTemplates] = useState<OwnedAgent[]>(), [workflows, setWorkflows] = useState<HostedWorkflow[]>();
   const [discover, setDiscover] = useState<PublicAgentSummary[]>(), [saved, setSaved] = useState<PublicAgentSummary[]>();
   const [error, setError] = useState('');
-  const [graphId,setGraphId]=useState('demo');
-  const graphWorkflow=workflows?.find(w=>w.id===graphId);
-  const graphSteps=graphWorkflow?.definition.steps??showcaseDraft('all')!.steps;
-  const graphNames=graphWorkflow?.definition.steps.map(s=>s.name)??graphSteps.map(s=>showcaseAgents.find(a=>a.id===s.agentId)!.name);
-  const graphUrl=graphWorkflow?`/create?workflow=${graphWorkflow.id}`:'/create?showcase=all';
   useEffect(() => {
     let active = true;
     Promise.all([hostedApi<OwnedAgent[]>('agents'), hostedApi<HostedWorkflow[]>('workflows'), hostedApi<PublicAgentSummary[]>('discover?query='), hostedApi<PublicAgentSummary[]>('saved')])
@@ -62,16 +55,6 @@ function DashboardBody() {
       <Link className="filter-chip" href="/agents#saved">Saved agents</Link>
       <Link className="filter-chip" href="/profile/settings">Profile</Link>
     </nav>
-    <Card className="dashboard-workflow" style={{marginBottom:24}}><CardHead>Workflow graph</CardHead>
-      <p className="hint">Explore how input moves between agents. Select a step to open it in Compose.</p>
-      <label htmlFor="dashboard-workflow-select" style={{display:'block',margin:'16px 0 8px'}}>Show workflow</label>
-      <select id="dashboard-workflow-select" value={graphId} onChange={event=>setGraphId(event.target.value)} style={{maxWidth:'100%',padding:12,background:'var(--bg-inset)',color:'var(--text)',border:'1px solid var(--border-strong)',borderRadius:10}}>
-        <option value="demo">Three-agent demo · Example</option>{workflows?.map(w=><option key={w.id} value={w.id}>{w.definition.name}</option>)}
-      </select>
-      <WorkflowGraph steps={graphSteps} names={graphNames} editUrl={graphUrl}/>
-      <p className="hint">{graphWorkflow?'Saved workflow structure.':'Example: Extract → Brief → Answers. Answers uses the original menu for evidence.'} This view does not start a run or show live execution status.</p>
-      <Link className="btn btn-primary" href={graphUrl}>Open in Compose →</Link>
-    </Card>
     <Card><CardHead>Your recent agents</CardHead>
       {!myAgents.length && <p className="empty">No agents yet. <Link href="/agent-preview">Create your first one →</Link></p>}
       {!!myAgents.length && <div className="discover-grid">{myAgents.map((agent) => <PublicAgentCard key={`${agent.kind}:${agent.id}`} agent={agent} />)}</div>}
