@@ -53,7 +53,7 @@ export function repository({ client, userId }: Identity) {
       if (error || !data) throw new HostedError(503, 'The test result could not be saved. Check history before running again.');
     },
     async history(id?: string) {
-      let query = client.from('agent_test_runs').select('id,agent_id,status,output,created_at').eq('owner_id', userId);
+      let query = client.from('agent_test_runs').select('id,agent_id,input,status,output,created_at').eq('owner_id', userId);
       if (id) query = query.eq('agent_id', id);
       const { data, error } = await query.order('created_at', { ascending: false }).limit(20);
       if (error) throw new HostedError(503, 'Test history is unavailable');

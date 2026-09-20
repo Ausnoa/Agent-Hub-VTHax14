@@ -1,5 +1,7 @@
 "use client";
 
+import HostedCatRuntime from "../hosted/cat-runtime";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { variantFor } from "../../lib/agent-ui/variant";
 import { useAgentRuntime } from "./agent-provider";
@@ -14,10 +16,11 @@ const sampleNotes = "Northstar makes warehouse inventory software.\nRevenue grew
 // Host for every generated agent's interface. Mounted once in the root layout, so the pack of
 // robocats and their windows survive route changes.
 export default function AgentRuntime() {
-  const [local,setLocal]=useState(false);
-  useEffect(()=>{setLocal(['localhost','127.0.0.1'].includes(location.hostname) && !new URLSearchParams(location.search).has('hosted'));},[]);
+  const pathname=usePathname();
+  const [local,setLocal]=useState<boolean>();
+  useEffect(()=>{setLocal(['localhost','127.0.0.1'].includes(location.hostname) && !new URLSearchParams(location.search).has('hosted'));},[pathname]);
   // The report-pilot mascot uses SQLite APIs; do not mount its poller on Vercel.
-  return local ? <LocalAgentRuntime/> : null;
+  return local === undefined ? null : local ? <LocalAgentRuntime/> : <HostedCatRuntime/>;
 }
 function LocalAgentRuntime() {
   const { pack, active, view, hydrated, open, setView, remove } = useAgentRuntime();
