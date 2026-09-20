@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { authenticate, repository, HostedError } from './server.ts';
 import { runDefinition } from '../owned-agent/run.ts';
 
-async function readBody(request: Request) {
+export async function readBody(request: Request) {
   if (request.headers.get('content-type')?.split(';')[0].trim() !== 'application/json') throw new HostedError(415, 'Use application/json');
   const reader = request.body?.getReader();
   if (!reader) throw new HostedError(400, 'JSON body required');
@@ -18,9 +18,8 @@ async function readBody(request: Request) {
     catch { throw new HostedError(400, 'Invalid JSON'); }
   } finally { await reader.cancel(); }
 }
-const respond = (data: unknown, status = 200) => Response.json(data, { status, headers: { 'Cache-Control': 'no-store', 'Vary': 'Authorization', 'X-Content-Type-Options': 'nosniff' } });
-export async function handleHostedApi(request: Request, path: string[], dependencies = { authenticate, repository, run: runDefinition, enabled: () => process.env.HOSTED_AGENT_TESTS_ENABLED === 'true' }) {
-  try {
+export const respond = (data: unknown, status = 200) => Response.json(data, { status, headers: { 'Cache-Control': 'no-store', 'Vary': 'Authorization', 'X-Content-Type-Options': 'nosniff' } });
+export function checkOrigin(request: Request) {
     // Bearer-only auth: cookies do not authorize requests, and no CORS is enabled.
     const origin = request.headers.get('origin');
     if (request.method !== 'GET' && origin) {
@@ -30,6 +29,10 @@ export async function handleHostedApi(request: Request, path: string[], dependen
       const host = request.headers.get('host') ?? new URL(request.url).host;
       if (!['http:', 'https:'].includes(browserOrigin.protocol) || browserOrigin.host !== host || browserOrigin.origin !== origin) throw new HostedError(403, 'Cross-origin writes are not allowed');
     }
+}
+export async function handleHostedApi(request: Request, path: string[], dependencies = { authenticate, repository, run: runDefinition, enabled: () => process.env.HOSTED_AGENT_TESTS_ENABLED === 'true' }) {
+  try {
+    checkOrigin(request);
     const identity = await dependencies.authenticate(request);
     const store = dependencies.repository(identity);
     if (path.length === 1 && path[0] === 'tests' && request.method === 'GET') return respond(await store.history());
