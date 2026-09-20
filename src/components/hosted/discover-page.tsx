@@ -18,6 +18,10 @@ export default function HostedDiscover({candidates,query,setQuery,busy,loading,e
   const [savedQuery,setSavedQuery]=useState('');
   const savedTerm=savedQuery.trim().toLowerCase();
   const visibleSaved=saved.filter(c=>!savedTerm||c.name.toLowerCase().includes(savedTerm)||(c.description||'').toLowerCase().includes(savedTerm)||c.skills.some(s=>s.name.toLowerCase().includes(savedTerm)||s.id.toLowerCase().includes(savedTerm))||c.agentId.toLowerCase().includes(savedTerm));
+  // Same pattern for the public-agents row: the full list is already loaded, so filter locally.
+  const [publicQuery,setPublicQuery]=useState('');
+  const publicTerm=publicQuery.trim().toLowerCase();
+  const visiblePublic=(publicAgents??[]).filter(a=>!publicTerm||a.name.toLowerCase().includes(publicTerm)||a.description.toLowerCase().includes(publicTerm));
   function row(candidate:Candidate){return <article className="registry-item" key={candidate.agentId}>
     <span className="registry-item-icon">{candidate.source==='template'?<Cpu size={15}/>:<Radar size={15}/>}</span>
     <div style={{minWidth:0,flex:1}}><h3>{candidate.name}</h3><p>{candidate.description||'No description provided by the agent owner.'}</p>
@@ -63,8 +67,16 @@ export default function HostedDiscover({candidates,query,setQuery,busy,loading,e
     <Card style={{marginTop:20}}><CardHead>Discover public agents</CardHead>
       {publicAgentsError&&<div role="alert" className="alert"><strong>Something needs attention</strong><p>{publicAgentsError}</p></div>}
       {!publicAgentsError&&publicAgents===undefined&&<p className="hint">Loading…</p>}
-      {!!publicAgents?.length&&<div className="discover-grid">{publicAgents.map(agent=><PublicAgentCard key={`${agent.kind}:${agent.id}`} agent={agent}/>)}</div>}
+      {!!publicAgents?.length&&<div className="search-bar fleet-search" style={{marginBottom:14}}>
+        <Search size={16} aria-hidden="true"/>
+        <label className="sr-only" htmlFor="hosted-public-query">Search public agents</label>
+        <input id="hosted-public-query" placeholder="Search by name or description" value={publicQuery} onChange={e=>setPublicQuery(e.target.value)}/>
+      </div>}
+      {/* A horizontal scroller, not a wrapping grid: every public agent is here (the discover
+          endpoint itself caps at 60), scrolled left/right instead of stacking into more rows. */}
+      {!!visiblePublic.length&&<div className="discover-scroll">{visiblePublic.map(agent=><div className="discover-scroll-item" key={`${agent.kind}:${agent.id}`}><PublicAgentCard agent={agent}/></div>)}</div>}
       {publicAgents&&!publicAgents.length&&<p className="hint">No public agents published yet.</p>}
+      {!!publicAgents?.length&&!visiblePublic.length&&<p className="hint">No public agents match that search.</p>}
     </Card>
   </PageShell>;
 }
