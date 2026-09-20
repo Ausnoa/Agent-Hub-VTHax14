@@ -20,6 +20,7 @@ type AgentRuntimeValue = {
 };
 
 const storageKey = "agent-glorria:runtime-pack";
+const legacyStorageKey = "agent-hub:runtime-pack";   // TODO: drop once no sessions still hold this
 const PACK_LIMIT = 4;             // how many robocats may share the screen
 const SPAWN_MS = 2400;   // pop in, hold so the user sees the new agent, then fly to the corner
 const AgentRuntimeContext = createContext<AgentRuntimeValue | undefined>(undefined);
@@ -33,7 +34,7 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     try {
-      const stored = sessionStorage.getItem(storageKey);
+      const stored = sessionStorage.getItem(storageKey) ?? sessionStorage.getItem(legacyStorageKey);
       if (stored) {
         const saved = JSON.parse(stored) as { pack: AgentUISpec[]; activeId?: string; view: AgentView };
         // Packs stored before colours were assigned get one now, so restored cats still differ.

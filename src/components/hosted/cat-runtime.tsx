@@ -14,17 +14,25 @@ import './cat.css';
 import {chatPosition} from '../../lib/agent-ui/chat-position';
 type Target={id:string;name:string;kind:'agent'|'workflow';createdAt:string;workflow?:HostedWorkflow};
 type Message={id:string;input:string;output:string;status:string};
-export default function HostedCatRuntime(){const account=useAccount();return account.session?<CatPack key={account.session.user.id} userId={account.session.user.id}/>:null;}
-function CatPack({userId}:{userId:string}){
+// Renders regardless of login: without a hosted account the saved agent/workflow list can't
+// load (needs an authenticated API call), but a cat you just created still shows via the
+// locally-tracked `createdLocally` list below, so the bar and creation feedback never depend
+// on Supabase auth actually being configured.
+export default function HostedCatRuntime(){const account=useAccount();return <CatPack key={account.session?.user.id??'anon'} userId={account.session?.user.id}/>;}
+function CatPack({userId}:{userId?:string}){
   const [targets,setTargets]=useState<Target[]>([]),[hidden,setHidden]=useState<string[]>([]),[selected,setSelected]=useState<string>();
   const [status,setStatus]=useState<Record<string,'idle'|'working'|'done'|'error'>>({});
-  useEffect(()=>{let active=true;const refresh=()=>{Promise.all([hostedApi<OwnedAgent[]>('agents'),hostedApi<HostedWorkflow[]>('workflows')]).then(([agents,workflows])=>{if(active)setTargets([...agents.map(a=>({id:a.id,name:a.name,kind:'agent' as const,createdAt:a.createdAt})),...workflows.map(w=>({id:w.id,name:w.definition.name,kind:'workflow' as const,createdAt:w.created_at,workflow:w}))].sort((a,b)=>b.createdAt.localeCompare(a.createdAt)));}).catch(()=>{/* Main workspace shows account/storage errors. */});};refresh();window.addEventListener('hosted-workspace-changed',refresh);return()=>{active=false;window.removeEventListener('hosted-workspace-changed',refresh);};},[]);
+  useEffect(()=>{let active=true;const refresh=()=>{Promise.all([hostedApi<OwnedAgent[]>('agents'),hostedApi<HostedWorkflow[]>('workflows')]).then(([agents,workflows])=>{if(active)setTargets([...agents.map(a=>({id:a.id,name:a.name,kind:'agent' as const,createdAt:a.createdAt})),...workflows.map(w=>({id:w.id,name:w.definition.name,kind:'workflow' as const,createdAt:w.created_at,workflow:w}))].sort((a,b)=>b.createdAt.localeCompare(a.createdAt)));}).catch(()=>{/* No account, or main workspace shows the storage error. */});};refresh();window.addEventListener('hosted-workspace-changed',refresh);return()=>{active=false;window.removeEventListener('hosted-workspace-changed',refresh);};},[]);
   const [hiddenReady,setHiddenReady]=useState(false),[spawn,setSpawn]=useState<{id:string;name:string;skills:string[]}[]>([]);
-  useEffect(()=>{try{const value=JSON.parse(localStorage.getItem(`hosted-hidden-cats:${userId}`)??'[]');if(Array.isArray(value))setHidden(value.filter(v=>typeof v==='string'));}catch{}setHiddenReady(true);},[userId]);
-  useEffect(()=>{if(hiddenReady)try{localStorage.setItem(`hosted-hidden-cats:${userId}`,JSON.stringify(hidden));}catch{}},[hidden,hiddenReady,userId]);
-  useEffect(()=>{const created=(e:Event)=>{const item=(e as CustomEvent).detail;if(item&&typeof item.id==='string'&&typeof item.name==='string'&&Array.isArray(item.skills))setSpawn(old=>[...old,{id:item.id,name:item.name,skills:item.skills.filter((s:unknown)=>typeof s==='string')}]);};window.addEventListener('hosted-agent-created',created);return()=>window.removeEventListener('hosted-agent-created',created);},[]);
+  // Cats created this session, kept independent of the authenticated list fetch above so a new
+  // cat still joins the bar when that fetch can't run (no session) or hasn't refreshed yet.
+  const [createdLocally,setCreatedLocally]=useState<Target[]>([]);
+  useEffect(()=>{try{const value=JSON.parse(localStorage.getItem(`hosted-hidden-cats:${userId??'anon'}`)??'[]');if(Array.isArray(value))setHidden(value.filter(v=>typeof v==='string'));}catch{}setHiddenReady(true);},[userId]);
+  useEffect(()=>{if(hiddenReady)try{localStorage.setItem(`hosted-hidden-cats:${userId??'anon'}`,JSON.stringify(hidden));}catch{}},[hidden,hiddenReady,userId]);
+  useEffect(()=>{const created=(e:Event)=>{const item=(e as CustomEvent).detail;if(item&&typeof item.id==='string'&&typeof item.name==='string'&&Array.isArray(item.skills)){setSpawn(old=>[...old,{id:item.id,name:item.name,skills:item.skills.filter((s:unknown)=>typeof s==='string')}]);setCreatedLocally(old=>old.some(t=>t.id===item.id)?old:[{id:item.id,name:item.name,kind:'agent',createdAt:new Date().toISOString()},...old]);}};window.addEventListener('hosted-agent-created',created);return()=>window.removeEventListener('hosted-agent-created',created);},[]);
   useEffect(()=>{if(!spawn.length)return;const timer=setTimeout(()=>setSpawn(old=>old.slice(1)),2400);return()=>clearTimeout(timer);},[spawn]);
-  const visible=hiddenReady?targets.filter(t=>!hidden.includes(t.id)&&!spawn.some(s=>s.id===t.id)):[];const target=targets.find(t=>t.id===selected);
+  const allTargets=targets.length||!createdLocally.length?[...targets,...createdLocally.filter(c=>!targets.some(t=>t.id===c.id))]:createdLocally;
+  const visible=hiddenReady?allTargets.filter(t=>!hidden.includes(t.id)&&!spawn.some(s=>s.id===t.id)):[];const target=allTargets.find(t=>t.id===selected);
   // Same index the bar cat uses for its color, so the chat header's mascot always matches the
   // cat you actually clicked instead of a second, unrelated hash-based color.
   const targetIndex=target?visible.findIndex(item=>item.id===target.id):-1;
