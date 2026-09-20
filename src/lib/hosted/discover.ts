@@ -4,7 +4,9 @@ import { workflowRowSchema } from './workflow-contracts.ts';
 import { profileRepository, type Profile } from './profile.ts';
 
 export type PublicOwner = Pick<Profile, 'userId' | 'username' | 'displayName' | 'avatarUrl'>;
-export type PublicAgent = { kind: 'template' | 'workflow'; id: string; name: string; description: string; createdAt: string; owner: PublicOwner };
+// `skill` is set only for template agents, whose single advertised skill is what a
+// workflow step needs; composite workflows are not themselves an A2A skill.
+export type PublicAgent = { kind: 'template' | 'workflow'; id: string; name: string; description: string; createdAt: string; owner: PublicOwner; skill?: { id: string; name: string } };
 const unknownOwner = (ownerId: string): PublicOwner => ({ userId: ownerId, username: 'unknown', displayName: '', avatarUrl: null });
 
 type Unowned = Omit<PublicAgent, 'owner'> & { ownerId: string };

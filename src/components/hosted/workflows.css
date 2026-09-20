@@ -21,3 +21,32 @@
 .hosted-discovery .registry-item h3,.hosted-discovery .registry-item p { overflow-wrap:anywhere; }
 .hosted-discovery .search-bar input { min-width:0; }
 @media(max-width:600px){.hosted-discovery .registry-item { gap:8px; padding:12px; }.hosted-discovery .registry-item .pill { font-size:9px; }}
+
+/* Find agents lives on the workflow graph. The trigger sits in the graph card's
+   header at the top right, and its panel drops from there over the graph, so
+   opening it never reflows the composer below. Translucency reuses panel tokens. */
+.workflow-graph-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.workflow-graph-head h2 { margin-bottom: 0; }
+.workflow-graph-actions { position: relative; display: flex; justify-content: flex-end; }
+/* One step up from the base button: this is the graph's primary action. */
+.workflow-graph-actions .btn { padding: 14px 22px; font-size: 13.5px; }
+.agent-finder {
+  position: absolute; right: 0; top: 100%; margin-top: 10px; z-index: 30;
+  width: min(430px, calc(100vw - 48px)); max-height: min(60vh, 460px);
+  display: flex; flex-direction: column; text-align: left;
+  background: var(--bg-panel); backdrop-filter: var(--blur-panel);
+  border: 1px solid var(--border-strong); border-radius: var(--radius-md);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.5);
+}
+.agent-finder-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+.agent-finder-body { padding: 0 16px 16px; overflow-y: auto; }
+.agent-finder .hosted-search { display: block; }
+.agent-finder .hosted-search button { margin-top: 12px; }
+/* The panel body owns the scrolling, so the result grid must not scroll inside it. */
+.agent-finder .hosted-candidates { grid-template-columns: 1fr; max-height: none; overflow: visible; margin-top: 16px; padding-right: 0; }
+.agent-finder article { padding: 16px; }
+@media(max-width:600px){
+  .agent-finder { right: -8px; width: min(430px, calc(100vw - 32px)); max-height: min(70vh, 420px); }
+  .agent-finder-head { flex-wrap: wrap; }
+  .agent-finder .segmented { flex-wrap: wrap; }
+}

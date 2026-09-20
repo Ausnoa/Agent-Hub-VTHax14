@@ -30,6 +30,8 @@ export function savedRepository(identity: Identity) {
         kind: 'template' as const, id: agent.id, name: agent.name,
         description: agent.instructions || templateFor(agent.template).description,
         createdAt: agent.createdAt, ownerId: agent.ownerId,
+        // Lets a bookmarked agent be added to a workflow without a second lookup.
+        skill: { id: templateFor(agent.template).skill, name: templateFor(agent.template).name },
       }));
       const workflowAgents = (workflows.data ?? []).map((row) => workflowRowSchema.parse(row)).map((workflow) => ({
         kind: 'workflow' as const, id: workflow.id, name: workflow.definition.name,
