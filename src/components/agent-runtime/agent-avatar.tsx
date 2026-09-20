@@ -26,12 +26,14 @@ export function slotCorner(index: number): Point {
 }
 
 // The persistent per-agent avatar: draggable, click to open the mini window.
-export default function AgentAvatar({ agentId, name, variant, status, slot, dimmed, onOpen, onRemove, onPositionChange, children }: {
+// `inline`: hosted inside a CatAgentBar, so this cat has no drag/position of its own — the bar lays it out.
+export default function AgentAvatar({ agentId, name, variant, status, slot = 0, inline = false, dimmed, onOpen, onRemove, onPositionChange, children }: {
   agentId: string;
   name: string;
   variant: Variant;
   status: RunStatus;
-  slot: number;                 // position in the pack, 0 = nearest the corner
+  slot?: number;                // position in the pack, 0 = nearest the corner; unused when inline
+  inline?: boolean;
   dimmed: boolean;              // another cat's window is open
   onOpen: () => void;
   onRemove: () => void;
@@ -39,33 +41,35 @@ export default function AgentAvatar({ agentId, name, variant, status, slot, dimm
   children?: React.ReactNode;   // the mini window renders alongside its own cat
 }) {
   const [position, setPosition] = useState<Point>();
-  useEffect(()=>{if(position)onPositionChange?.(agentId,position);},[position,agentId,onPositionChange]);
+  useEffect(()=>{if(!inline&&position)onPositionChange?.(agentId,position);},[position,agentId,onPositionChange,inline]);
   const [dragging, setDragging] = useState(false);
   const drag = useRef<{ dx: number; dy: number; moved: boolean }>(null);
 
   useEffect(() => {
+    if (inline) return;
     let start: Point | undefined;
     try {
       const stored = localStorage.getItem(positionKey(agentId));
       if (stored) start = JSON.parse(stored);
     } catch { /* best-effort only */ }
     setPosition(clamp(start ?? slotCorner(slot)));
-  }, [agentId, slot]);
+  }, [agentId, slot, inline]);
 
   useEffect(() => {
+    if (inline) return;
     const onResize = () => setPosition((current) => current && clamp(current));
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
-  }, []);
+  }, [inline]);
 
   const onPointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
-    if (!position) return;
+    if (inline || !position) return;
     event.currentTarget.setPointerCapture(event.pointerId);
     drag.current = { dx: event.clientX - position.x, dy: event.clientY - position.y, moved: false };
   };
 
   const onPointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
-    if (!drag.current || !position) return;
+    if (inline || !drag.current || !position) return;
     const next = clamp({ x: event.clientX - drag.current.dx, y: event.clientY - drag.current.dy });
     if (!drag.current.moved && (Math.abs(next.x - position.x) > DRAG_THRESHOLD || Math.abs(next.y - position.y) > DRAG_THRESHOLD)) {
       drag.current.moved = true;
@@ -75,6 +79,7 @@ export default function AgentAvatar({ agentId, name, variant, status, slot, dimm
   };
 
   const onPointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (inline) return;   // inline cats open via the plain click below, never via drag
     const moved = drag.current?.moved ?? false;
     drag.current = null;
     setDragging(false);
@@ -90,6 +95,7 @@ export default function AgentAvatar({ agentId, name, variant, status, slot, dimm
   };
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (inline) return;
     const step = event.shiftKey ? 40 : 12;
     const moves: Record<string, Point> = { ArrowUp: { x: 0, y: -step }, ArrowDown: { x: 0, y: step }, ArrowLeft: { x: -step, y: 0 }, ArrowRight: { x: step, y: 0 } };
     const move = moves[event.key];
@@ -103,8 +109,8 @@ export default function AgentAvatar({ agentId, name, variant, status, slot, dimm
   const statusLabel = { idle: "Ready", working: "Working", done: "Run complete", error: "Run failed" }[status];
 
   return <div
-    className={`agent-avatar-layer${dimmed ? " dimmed" : ""}`}
-    style={position ? { left: position.x, top: position.y } : { right: 24 + slot * (AVATAR_W + SLOT_GAP), bottom: 24 }}
+    className={`agent-avatar-layer${inline ? " inline" : ""}${dimmed ? " dimmed" : ""}`}
+    style={inline ? undefined : position ? { left: position.x, top: position.y } : { right: 24 + slot * (AVATAR_W + SLOT_GAP), bottom: 24 }}
   >
     {children}
     <button className="agent-dismiss" onClick={onRemove} aria-label={`Hide ${name}`} title={`Hide ${name} (the agent stays saved)`}>×</button>
@@ -115,9 +121,9 @@ export default function AgentAvatar({ agentId, name, variant, status, slot, dimm
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onKeyDown={onKeyDown}
-      onClick={event=>{if(event.detail===0)onOpen();}}
-      aria-label={`Open ${name}. Status: ${statusLabel}. Drag to move, or use arrow keys.`}
-      title={`${name} — ${statusLabel}. Click to open, drag to move.`}
+      onClick={event=>{if(inline||event.detail===0)onOpen();}}
+      aria-label={inline ? `Open ${name}. Status: ${statusLabel}.` : `Open ${name}. Status: ${statusLabel}. Drag to move, or use arrow keys.`}
+      title={inline ? `${name} — ${statusLabel}. Click to open.` : `${name} — ${statusLabel}. Click to open, drag to move.`}
     >
       <Mascot width={44} variant={variant} asleep={status === "idle"} />
     </button>
