@@ -1,9 +1,10 @@
 "use client";
-import { useEffect,useState } from 'react';
+import { useEffect,useMemo,useState } from 'react';
 import Link from 'next/link';
+import { Plus,Search } from 'lucide-react';
 import { useAccount } from '../../lib/hosted/use-account';
 import { hostedApi } from '../../lib/hosted/browser';
-import type { OwnedAgent } from '../../lib/owned-agent/templates';
+import { templateFor,type OwnedAgent } from '../../lib/owned-agent/templates';
 import PageShell from '../layout/page-shell';
 import PageHeader from '../layout/page-header';
 import Card from '../ui/card';
@@ -24,6 +25,7 @@ function AccountData({history}:{history:boolean}){
   const [agents,setAgents]=useState<OwnedAgent[]>([]),[runs,setRuns]=useState<Run[]>([]);
   const [loading,setLoading]=useState(true),[error,setError]=useState(''),[busy,setBusy]=useState('');
   const [saved,setSaved]=useState<Saved[]>(),[savedError,setSavedError]=useState(''),[savedBusy,setSavedBusy]=useState('');
+  const [query,setQuery]=useState(''),[templateFilter,setTemplateFilter]=useState('all');
   // Runs are always fetched (not just in history mode): the My Agents cards use them for a
   // real per-agent run count, the same way the local fleet cards show a run count from stats.
   useEffect(()=>{let active=true;Promise.all([hostedApi<OwnedAgent[]>('agents'),hostedApi<Run[]>('tests')]).then(([agents,runs])=>{if(active){setAgents(agents);setRuns(runs);}}).catch(e=>{if(active)setError(e.message);}).finally(()=>{if(active)setLoading(false);});return()=>{active=false;};},[history]);
@@ -47,11 +49,37 @@ function AccountData({history}:{history:boolean}){
     catch(reason){setSavedError(reason instanceof Error?reason.message:'Could not remove this bookmark');}
     finally{setSavedBusy('');}
   }
-  return <PageShell><PageHeader eyebrow="YOUR HOSTED WORKSPACE" title={history?'Agent test history':'My Agents'} description={history?'Your latest 20 template tests and their saved results.':'Your saved template agents. Publish one to make it discoverable to other members.'} action={<Link href="/agent-preview">Create agent →</Link>}/>
+  // Same search + capability-chip pattern as the local fleet page, but the "capability" here is
+  // one of the three fixed templates instead of an open-ended A2A capability set.
+  const usedTemplates=useMemo(()=>Array.from(new Set(agents.map(a=>a.template))),[agents]);
+  const filteredAgents=useMemo(()=>{
+    const term=query.trim().toLowerCase();
+    return agents.filter(agent=>{
+      const matchesTemplate=templateFilter==='all'||agent.template===templateFilter;
+      const t=templateFor(agent.template);
+      const matchesQuery=!term||agent.name.toLowerCase().includes(term)||agent.instructions.toLowerCase().includes(term)||t.name.toLowerCase().includes(term)||t.skill.toLowerCase().includes(term)||agent.id.toLowerCase().includes(term);
+      return matchesTemplate&&matchesQuery;
+    });
+  },[agents,query,templateFilter]);
+  return <PageShell><PageHeader eyebrow="YOUR HOSTED WORKSPACE" title={history?'Agent test history':'My Agents'} description={history?'Your latest 20 template tests and their saved results.':'Your saved template agents. Publish one to make it discoverable to other members.'} action={<Link href="/agent-preview"><Button variant="primary"><Plus size={14}/> Create agent</Button></Link>}/>
     {loading&&<p role="status">Loading {history?'tests':'agents'}…</p>}{error&&<p role="alert">{error}</p>}
+    {!history&&!loading&&!error&&!!agents.length&&<section className="fleet-toolbar" aria-label="Filter your agents">
+      <div className="search-bar fleet-search">
+        <Search size={16} aria-hidden="true"/>
+        <label className="sr-only" htmlFor="hosted-fleet-search">Search agents</label>
+        <input id="hosted-fleet-search" placeholder="Search by agent name, template, or id" value={query} onChange={e=>setQuery(e.target.value)}/>
+      </div>
+      <div className="filter-bar">
+        <button aria-pressed={templateFilter==='all'} className={`filter-chip${templateFilter==='all'?' active':''}`} onClick={()=>setTemplateFilter('all')}>All ({agents.length})</button>
+        {usedTemplates.map(id=><button aria-pressed={templateFilter===id} key={id} className={`filter-chip${templateFilter===id?' active':''}`} onClick={()=>setTemplateFilter(id)}>{templateFor(id).name}</button>)}
+      </div>
+    </section>}
     {!loading&&!error&&(history?runs.length?runs.map(run=><Card key={run.id}><h2>{agents.find(a=>a.id===run.agent_id)?.name??'Agent test'}</h2><p>{new Date(run.created_at).toLocaleString()} · {run.status==='running'?'Pending or interrupted':run.status}</p>{run.output&&<pre style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{run.output}</pre>}<Link href={`/agent-preview?agent=${run.agent_id}`}>Open agent →</Link></Card>):<p>No tests yet. Open an agent to run your first test.</p>:agents.length?
-      // Same fleet-grid + card layout as the local /agents page.
-      <div className="fleet-grid">{agents.map(agent=><HostedAgentCard key={agent.id} agent={agent} runs={runs} busy={busy} onToggleVisibility={toggleVisibility} onArchived={()=>void refreshAgents()}/>)}</div>
+      // Same fleet-grid + card layout, and the same search/filter behavior, as the local /agents page.
+      <>
+        <div className="fleet-grid">{filteredAgents.map(agent=><HostedAgentCard key={agent.id} agent={agent} runs={runs} busy={busy} onToggleVisibility={toggleVisibility} onArchived={()=>void refreshAgents()}/>)}</div>
+        {!filteredAgents.length&&<p className="empty">No agents match that search.</p>}
+      </>
       :<p>No agents yet. Choose a template to create your first agent.</p>)}
     {!history&&<ArchivedItems kind="agents" onChanged={()=>void refreshAgents()}/>}
     {!history&&<section id="saved" style={{marginTop:32}}>
