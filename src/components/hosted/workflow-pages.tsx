@@ -7,6 +7,7 @@ import { useAccount } from '../../lib/hosted/use-account';
 import { templateFor,type OwnedAgent } from '../../lib/owned-agent/templates';
 import type { Candidate,HostedWorkflow,HostedRun } from '../../lib/hosted/workflow-contracts';
 import type { Selection } from '../../lib/general/contracts';
+import HostedDiscover from "./discover-page";
 import WorkflowGraph from "./workflow-graph";
 import PageShell from '../layout/page-shell';
 import PageHeader from '../layout/page-header';
@@ -24,6 +25,7 @@ export default function WorkflowPages({mode}:{mode:Mode}){
 function Workspace({mode}:{mode:Mode}){
   const router=useRouter();const active=useRef(true);
   const [candidates,setCandidates]=useState<Candidate[]>([]),[workflows,setWorkflows]=useState<HostedWorkflow[]>([]),[runs,setRuns]=useState<HostedRun[]>([]);
+  const [hasSearched,setHasSearched]=useState(false);
   const [query,setQuery]=useState(''),[searched,setSearched]=useState(''),[nextPage,setNextPage]=useState<string>();
   const [name,setName]=useState('My workflow'),[description,setDescription]=useState(''),[summary,setSummary]=useState(''),[steps,setSteps]=useState<Selection[]>([]);
   const [selected,setSelected]=useState<HostedWorkflow>(),[run,setRun]=useState<HostedRun>();
@@ -65,7 +67,7 @@ function Workspace({mode}:{mode:Mode}){
     }catch(e){if(active.current)setSuggestionError(e instanceof Error?e.message:'Could not suggest a workflow. Please try again.');}
     finally{if(active.current){setBusy(false);setSuggesting(false);}}
   }
-  async function search(more=false){await task(async()=>{const result=await hostedApi<{candidates:Candidate[];nextPageToken?:string}>('registry/search',{query:more?searched:query,...(more?{pageToken:nextPage}:{})});if(active.current){setCandidates(old=>mergeCandidates([...(more?old:old.filter(a=>a.source==='template')),...result.candidates]));setSearched(query);setNextPage(result.nextPageToken);}});}
+  async function search(more=false){await task(async()=>{const result=await hostedApi<{candidates:Candidate[];nextPageToken?:string}>('registry/search',{query:more?searched:query,...(more?{pageToken:nextPage}:{})});if(active.current){setCandidates(old=>mergeCandidates([...(more?old:old.filter(a=>a.source==='template')),...result.candidates]));setHasSearched(true);setSearched(query);setNextPage(result.nextPageToken);}});}
   function add(candidate:Candidate,skill:string){
     if(mode==='discover'){sessionStorage.setItem('hosted-workflow-step',JSON.stringify({agentId:candidate.agentId,skill}));router.push('/create');return;}
     setSteps(old=>[...old,{agentId:candidate.agentId,skill,inputFrom:old.length?'previous':'original',format:'text',instruction:''}]);setSelected(undefined);setRun(undefined);setConfirmed(false);
@@ -85,8 +87,9 @@ function Workspace({mode}:{mode:Mode}){
     const current=await hostedApi<HostedRun>(`workflows/${selected.id}/invoke`,{requestId:requestKey.current.id,input,confirmExternalExecution:true});
     if(active.current){setRun(current);await advance(current);}
   });}
-  const title=mode==='discover'?'Discover agents':mode==='compose'?'Compose a workflow':'Workflow runs';
-  return <PageShell className="hosted-workflows"><PageHeader eyebrow="YOUR HOSTED WORKSPACE" title={title} description={mode==='discover'?'Search live ANS registrations or use your private template agents. Compatibility is checked before a workflow is saved.':mode==='compose'?'Connect up to eight agents, review the steps, then run them with your input.':'Your latest 20 workflow runs. Open a workflow to review its saved steps and continue between completed steps.'}/>
+  if(mode==='discover')return <HostedDiscover candidates={candidates} query={query} setQuery={setQuery} busy={busy} loading={loading} error={error} searched={hasSearched} hasMore={Boolean(nextPage)} search={search} add={add}/>;
+  const title=mode==='compose'?'Compose a workflow':'Workflow runs';
+  return <PageShell className="hosted-workflows"><PageHeader eyebrow="YOUR HOSTED WORKSPACE" title={title} description={mode==='compose'?'Connect up to eight agents, review the steps, then run them with your input.':'Your latest 20 workflow runs. Open a workflow to review its saved steps and continue between completed steps.'}/>
     {loading&&<p role="status">Loading your workspace…</p>}{error&&<div role="alert" className="alert">{error}</div>}
     {mode!=='history'&&<Card><h2>Find agents</h2><form className="hosted-search" onSubmit={e=>{e.preventDefault();void search();}}><label>ANS search<input value={query} maxLength={256} placeholder="e.g. Glorria or customer support" disabled={busy} onChange={e=>setQuery(e.target.value)}/></label><Button type="submit" disabled={busy}>Search ANS</Button></form><p className="hint">Live registry results are not identity-verified or guaranteed compatible. Your saved agents appear below without an ANS registration. Up to 100 searches per UTC day.</p>
       <div className="hosted-candidates">{candidates.map(candidate=><article key={candidate.agentId}><h3>{candidate.name}</h3><p className="hint">{candidate.source==='template'?'Your private template':'ANS registration · identity unverified'}</p><p>{candidate.description}</p>{candidate.skills.map(skill=><Button key={skill.id} disabled={busy||steps.length>=8} onClick={()=>add(candidate,skill.id)}>Use {skill.name}</Button>)}</article>)}</div>
@@ -116,7 +119,7 @@ function Workspace({mode}:{mode:Mode}){
       </Card>}
       <Card><h2>Your saved workflows</h2>{workflows.map(workflow=><article key={workflow.id}><h3>{workflow.definition.name}</h3><p>{workflow.definition.steps.length} steps · {workflow.visibility==='public'?'Public':'Private'} · {new Date(workflow.created_at).toLocaleString()}</p><Button disabled={busy} onClick={()=>open(workflow)}>Open workflow</Button> <Button disabled={busy} onClick={()=>void toggleVisibility(workflow)}>{workflow.visibility==='public'?'Make private':'Publish'}</Button> <Link href={`/agents/${workflow.id}`}>View detail page →</Link></article>)}{!loading&&!workflows.length&&<p>No saved workflows yet.</p>}</Card>
     </>}
-    {mode!=='discover'&&<Card><h2>Recent workflow runs</h2>{runs.map(savedRun=><article key={savedRun.id}><h3>{workflows.find(w=>w.id===savedRun.workflow_id)?.definition.name??'Workflow'}</h3><RunResult run={savedRun}/>{mode==='compose'?<Button disabled={busy} onClick={()=>{const w=workflows.find(w=>w.id===savedRun.workflow_id);if(w){open(w);setRun(savedRun);setSource(typeof savedRun.input.value==='string'?savedRun.input.value:JSON.stringify(savedRun.input.value));setInputFormat(savedRun.input.type);}}}>Review run</Button>:<Link href={`/create?workflow=${savedRun.workflow_id}`}>Open workflow →</Link>}</article>)}{!loading&&!runs.length&&<p>No workflow runs yet.</p>}</Card>}
+    {<Card><h2>Recent workflow runs</h2>{runs.map(savedRun=><article key={savedRun.id}><h3>{workflows.find(w=>w.id===savedRun.workflow_id)?.definition.name??'Workflow'}</h3><RunResult run={savedRun}/>{mode==='compose'?<Button disabled={busy} onClick={()=>{const w=workflows.find(w=>w.id===savedRun.workflow_id);if(w){open(w);setRun(savedRun);setSource(typeof savedRun.input.value==='string'?savedRun.input.value:JSON.stringify(savedRun.input.value));setInputFormat(savedRun.input.type);}}}>Review run</Button>:<Link href={`/create?workflow=${savedRun.workflow_id}`}>Open workflow →</Link>}</article>)}{!loading&&!runs.length&&<p>No workflow runs yet.</p>}</Card>}
   </PageShell>;
 }
 function RunResult({run}:{run:HostedRun}){return <div className="hosted-run"><details><summary>Saved run input</summary><pre>{typeof run.input.value==='string'?run.input.value:JSON.stringify(run.input.value,null,2)}</pre></details><p role="status">{run.status} · {run.outputs.length} completed steps · {new Date(run.created_at).toLocaleString()}</p>{run.status==='running'&&<p className="hint">A step is in progress or awaiting status confirmation. After five minutes, check status to mark an interrupted run failed. External effects may have occurred.</p>}{run.error&&<p role="alert">{run.error}</p>}{run.outputs.map((output,index)=><details key={index} open={index===run.outputs.length-1}><summary>Step {index+1} output</summary><pre>{typeof output.value==='string'?output.value:JSON.stringify(output.value,null,2)}</pre></details>)}</div>;}
