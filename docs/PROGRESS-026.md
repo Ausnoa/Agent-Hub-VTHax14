@@ -5,3 +5,5 @@ User reports brewery and bear searches fail on production. Direct ANS calls and 
 Registry base URL parsing now trims surrounding whitespace and uses a typed configuration error shared by discovery/resolution. Hosted search reports invalid ANS_BASE_URL explicitly rather than classifying it as a connection failure. Tests cover valid whitespace and rejection of malformed URLs, credential-bearing origins, and paths before any network call. The original production failure is not yet proven to be configuration-related.
 
 User approved URL correction. Vercel confirmed ANS_BASE_URL updated to https://api.godaddy.com for Production and Preview. Sixteen targeted tests and production build pass. Deploying this commit picks up the corrected variable. Authenticated production search verification is still required.
+
+Production verification completed after user sign-in: brewery returned 20 ANS agents including Woodstock Brewery, and bear returned 20 ANS agents including Choose The Bear and My Custom Bear. Both authenticated searches completed without an error on www.gloryforglorria.us/discover after the URL correction and deployment.
