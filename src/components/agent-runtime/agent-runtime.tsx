@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { variantFor } from "../../lib/agent-ui/variant";
 import { useAgentRuntime } from "./agent-provider";
 import { useRunFeed } from "./use-agent-runs";
@@ -14,6 +14,12 @@ const sampleNotes = "Northstar makes warehouse inventory software.\nRevenue grew
 // Host for every generated agent's interface. Mounted once in the root layout, so the pack of
 // robocats and their windows survive route changes.
 export default function AgentRuntime() {
+  const [local,setLocal]=useState(false);
+  useEffect(()=>{setLocal(['localhost','127.0.0.1'].includes(location.hostname) && !new URLSearchParams(location.search).has('hosted'));},[]);
+  // The report-pilot mascot uses SQLite APIs; do not mount its poller on Vercel.
+  return local ? <LocalAgentRuntime/> : null;
+}
+function LocalAgentRuntime() {
   const { pack, active, view, hydrated, open, setView, remove } = useAgentRuntime();
   const { runsFor, statusFor, invoke, busy } = useRunFeed();
   const [company, setCompany] = useState("Northstar (fictional)");
