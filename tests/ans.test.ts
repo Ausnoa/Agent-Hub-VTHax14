@@ -83,3 +83,14 @@ test("forwards an opaque page token and extracts the next one from the response"
   assert.equal(result.hasMore, true);
   assert.equal(result.nextPageToken, "next-token");
 });
+
+test('registry configuration trims whitespace and rejects malformed origins before fetching', async () => {
+  const {fetchRegistryPage,AnsConfigurationError}=await import('../src/lib/ans/client.ts');
+  let calls=0;
+  const fetcher=(async(url:URL)=>{calls++;assert.equal(url.origin,'https://api.godaddy.com');return Response.json({items:[]});}) as typeof fetch;
+  await fetchRegistryPage({query:'brewery',baseUrl:' https://api.godaddy.com/\n',fetcher});
+  for(const baseUrl of ['', '[https://api.godaddy.com/]', 'https://api.godaddy.com/v1/ans', 'https://secret@api.godaddy.com']){
+    await assert.rejects(fetchRegistryPage({query:'bear',baseUrl,fetcher}),AnsConfigurationError);
+  }
+  assert.equal(calls,1);
+});

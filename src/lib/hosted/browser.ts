@@ -18,6 +18,12 @@ export async function hostedApi<T>(path: string, value?: unknown, method?: 'DELE
     ...(value === undefined ? {} : { body: JSON.stringify(value) }),
   });
   const result = await response.json();
+  if(response.status===401){
+    // A revoked/expired session must not keep redirecting the login page into a broken workspace.
+    const current=await auth.auth.getSession();
+    if(current.data.session?.access_token===data.session.access_token)await auth.auth.signOut({scope:'local'});
+    throw new Error('Your session could not be verified. Please sign in again.');
+  }
   if (!response.ok) throw new Error(result.error ?? 'Request failed');
   return result as T;
 }

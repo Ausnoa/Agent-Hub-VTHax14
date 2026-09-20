@@ -2,7 +2,7 @@ import { z } from "zod";
 import { planSchema, type Plan } from "../contracts/index.ts";
 
 export class ModelServiceError extends Error {
-  code: 'not-configured' | 'incomplete' | 'output-limit' | 'invalid-output';
+  code: 'timeout' | 'connection-failed' | 'not-configured' | 'incomplete' | 'output-limit' | 'invalid-output';
   constructor(code: ModelServiceError['code']) { super(`Model generation unavailable (${code}).`); this.code=code; }
 }
 export class ModelProviderError extends Error {
@@ -16,13 +16,17 @@ export async function planDescription(description: string): Promise<Plan> {
 
 export async function structuredPlan<Schema extends z.ZodType>(input: string, instructions: string, schema: Schema, options: { maxOutputTokens?: number } = {}): Promise<z.output<Schema>> {
   if (!process.env.OPENAI_API_KEY || !process.env.OPENAI_MODEL) throw new ModelServiceError("not-configured");
-  const response = await fetch("https://api.openai.com/v1/responses", {
+  let response: Response;
+  try { response = await fetch("https://api.openai.com/v1/responses", {
     method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
     body: JSON.stringify({ model: process.env.OPENAI_MODEL, store: false,
       instructions, input, ...(options.maxOutputTokens ? { max_output_tokens: options.maxOutputTokens } : {}),
       text: { format: { type: "json_schema", name: "workflow_plan", strict: true, schema: z.toJSONSchema(schema) } },
     }), signal: AbortSignal.timeout(45_000),
   });
+  } catch (error) {
+    throw new ModelServiceError(error instanceof Error && error.name === 'TimeoutError' ? 'timeout' : 'connection-failed');
+  }
   if (!response.ok) {
     // Status is safe for diagnostics; never log the provider body, key, or user input.
     console.error(`[model-provider] HTTP ${response.status}`);

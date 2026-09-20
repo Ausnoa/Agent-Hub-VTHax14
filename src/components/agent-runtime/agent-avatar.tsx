@@ -113,6 +113,7 @@ export default function AgentAvatar({ agentId, name, variant, status, slot, dimm
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onKeyDown={onKeyDown}
+      onClick={event=>{if(event.detail===0)onOpen();}}
       aria-label={`Open ${name}. Status: ${statusLabel}. Drag to move, or use arrow keys.`}
       title={`${name} — ${statusLabel}. Click to open, drag to move.`}
     >
