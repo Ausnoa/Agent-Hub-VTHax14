@@ -646,6 +646,37 @@ input:focus, textarea:focus { outline: none; border-color: var(--accent); box-sh
 .agent-avatar-layer.dimmed .avatar-button { opacity: 0.55; }
 .agent-avatar-layer.dimmed:hover .avatar-button { opacity: 1; }
 
+/* ---------- cat agent bar : groups up to 4 avatars into one draggable strip ---------- */
+.cat-agent-bar {
+  position: fixed; z-index: 40; display: flex; align-items: flex-end; gap: 10px;
+  padding: 10px 34px 10px 10px; border-radius: var(--radius-full);
+  background: var(--nav-bg); backdrop-filter: var(--blur-panel); border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-card); cursor: grab; touch-action: none;
+}
+.cat-agent-bar.dragging { cursor: grabbing; }
+.cat-agent-bar.default-corner { right: 24px; bottom: 24px; }
+.cat-agent-bar-cats { display: flex; align-items: flex-end; gap: 14px; }
+.cat-agent-bar-slot { position: relative; }
+.agent-avatar-layer.inline { position: static; width: auto; height: auto; }
+.cat-agent-bar-manage {
+  position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; display: grid; place-items: center;
+  border-radius: 50%; border: 1px solid var(--border-strong); background: var(--bg-raised); color: var(--text-faint);
+  cursor: pointer;
+}
+.cat-agent-bar-manage:hover { color: var(--text); border-color: var(--accent); }
+.cat-agent-bar-manage-panel {
+  position: absolute; right: 0; bottom: calc(100% + 10px); width: 220px; max-height: 320px; overflow-y: auto;
+  padding: 14px; border-radius: var(--radius-lg); background: var(--bg-raised); border: 1px solid var(--border);
+  box-shadow: var(--shadow-card); cursor: default;
+}
+.cat-agent-bar-manage-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.cat-agent-bar-manage-head button { color: var(--text-faint); }
+.cat-agent-bar-manage-head button:hover { color: var(--text); }
+.cat-agent-bar-manage-list { list-style: none; margin: 10px 0; padding: 0; display: grid; gap: 8px; }
+.cat-agent-bar-manage-list label { display: flex; align-items: center; gap: 8px; font-size: 12px; cursor: pointer; }
+.cat-agent-bar-reset { width: 100%; font-size: 11px; color: var(--text-muted); }
+.cat-agent-bar-reset:hover { color: var(--text); }
+
 .agent-mini { position: absolute; width: min(330px, calc(100vw - 32px)); background: var(--bg-raised); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); overflow: hidden; animation: mini-in 0.18s ease; }
 .agent-mini.from-right { right: 0; } .agent-mini.from-left { left: 0; }
 .agent-mini.above { bottom: 78px; } .agent-mini.below { top: 78px; }

@@ -8,6 +8,7 @@ import type { HostedWorkflow,HostedRun } from '../../lib/hosted/workflow-contrac
 import type { OwnedAgent } from '../../lib/owned-agent/templates';
 import { variantFor } from '../../lib/agent-ui/variant';
 import AgentAvatar from '../agent-runtime/agent-avatar';
+import CatAgentBar from '../agent-runtime/cat-agent-bar';
 import Mascot from '../agent-runtime/mascot';
 import './cat.css';
 import {chatPosition} from '../../lib/agent-ui/chat-position';
@@ -15,20 +16,28 @@ type Target={id:string;name:string;kind:'agent'|'workflow';createdAt:string;work
 type Message={id:string;input:string;output:string;status:string};
 export default function HostedCatRuntime(){const account=useAccount();return account.session?<CatPack key={account.session.user.id} userId={account.session.user.id}/>:null;}
 function CatPack({userId}:{userId:string}){
-  const [positions,setPositions]=useState<Record<string,{x:number;y:number}>>({});
-  const onPositionChange=useCallback((id:string,position:{x:number;y:number})=>setPositions(old=>({...old,[id]:position})),[]);
   const [targets,setTargets]=useState<Target[]>([]),[hidden,setHidden]=useState<string[]>([]),[selected,setSelected]=useState<string>();
   const [status,setStatus]=useState<Record<string,'idle'|'working'|'done'|'error'>>({});
-  useEffect(()=>{let active=true;const refresh=()=>{Promise.all([hostedApi<OwnedAgent[]>('agents'),hostedApi<HostedWorkflow[]>('workflows')]).then(([agents,workflows])=>{if(active)setTargets([...agents.map(a=>({id:a.id,name:a.name,kind:'agent' as const,createdAt:a.createdAt})),...workflows.map(w=>({id:w.id,name:w.definition.name,kind:'workflow' as const,createdAt:w.created_at,workflow:w}))].sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).slice(0,4));}).catch(()=>{/* Main workspace shows account/storage errors. */});};refresh();window.addEventListener('hosted-workspace-changed',refresh);return()=>{active=false;window.removeEventListener('hosted-workspace-changed',refresh);};},[]);
+  useEffect(()=>{let active=true;const refresh=()=>{Promise.all([hostedApi<OwnedAgent[]>('agents'),hostedApi<HostedWorkflow[]>('workflows')]).then(([agents,workflows])=>{if(active)setTargets([...agents.map(a=>({id:a.id,name:a.name,kind:'agent' as const,createdAt:a.createdAt})),...workflows.map(w=>({id:w.id,name:w.definition.name,kind:'workflow' as const,createdAt:w.created_at,workflow:w}))].sort((a,b)=>b.createdAt.localeCompare(a.createdAt)));}).catch(()=>{/* Main workspace shows account/storage errors. */});};refresh();window.addEventListener('hosted-workspace-changed',refresh);return()=>{active=false;window.removeEventListener('hosted-workspace-changed',refresh);};},[]);
   const [hiddenReady,setHiddenReady]=useState(false),[spawn,setSpawn]=useState<{id:string;name:string;skills:string[]}[]>([]);
   useEffect(()=>{try{const value=JSON.parse(localStorage.getItem(`hosted-hidden-cats:${userId}`)??'[]');if(Array.isArray(value))setHidden(value.filter(v=>typeof v==='string'));}catch{}setHiddenReady(true);},[userId]);
   useEffect(()=>{if(hiddenReady)try{localStorage.setItem(`hosted-hidden-cats:${userId}`,JSON.stringify(hidden));}catch{}},[hidden,hiddenReady,userId]);
   useEffect(()=>{const created=(e:Event)=>{const item=(e as CustomEvent).detail;if(item&&typeof item.id==='string'&&typeof item.name==='string'&&Array.isArray(item.skills))setSpawn(old=>[...old,{id:item.id,name:item.name,skills:item.skills.filter((s:unknown)=>typeof s==='string')}]);};window.addEventListener('hosted-agent-created',created);return()=>window.removeEventListener('hosted-agent-created',created);},[]);
   useEffect(()=>{if(!spawn.length)return;const timer=setTimeout(()=>setSpawn(old=>old.slice(1)),2400);return()=>clearTimeout(timer);},[spawn]);
   const visible=hiddenReady?targets.filter(t=>!hidden.includes(t.id)&&!spawn.some(s=>s.id===t.id)):[];const target=targets.find(t=>t.id===selected);
-  return <>{spawn[0]&&<div key={spawn[0].id} className="agent-spawn" style={{zIndex:110}} aria-live="polite"><div className="agent-spawn-card"><span className="agent-spawn-halo"/><Mascot width={96} variant={variantFor(spawn[0].id,0)}/><span className="agent-spawn-kicker">Agent created</span><strong>{spawn[0].name}</strong><div className="agent-spawn-tags">{spawn[0].skills.slice(0,3).map((skill,i)=><span key={i}>{skill}</span>)}</div><small>Heading to the corner — click your cat to open its chat.</small></div></div>}{visible.map((item,index)=><AgentAvatar key={item.id} agentId={`hosted:${item.id}`} name={item.name} onPositionChange={onPositionChange} variant={variantFor(item.id,index)} status={status[item.id]??'idle'} slot={index} dimmed={Boolean(selected&&selected!==item.id)} onOpen={()=>{if(!Object.values(status).includes('working'))setSelected(item.id);}} onRemove={()=>{if(status[item.id]==='working')return;setHidden(old=>[...old,item.id]);if(selected===item.id)setSelected(undefined);}}/>)}
+  return <>{spawn[0]&&<div key={spawn[0].id} className="agent-spawn" style={{zIndex:110}} aria-live="polite"><div className="agent-spawn-card"><span className="agent-spawn-halo"/><Mascot width={96} variant={variantFor(spawn[0].id,0)}/><span className="agent-spawn-kicker">Agent created</span><strong>{spawn[0].name}</strong><div className="agent-spawn-tags">{spawn[0].skills.slice(0,3).map((skill,i)=><span key={i}>{skill}</span>)}</div><small>Heading to the corner — click your cat to open its chat.</small></div></div>}
+    <CatAgentBar
+      storageKey={`hosted:${userId}`}
+      candidates={visible.map(item=>({id:`hosted:${item.id}`,name:item.name}))}
+      renderCat={agentId=>{
+        const item=visible.find(candidate=>`hosted:${candidate.id}`===agentId);
+        if(!item)return null;
+        const index=visible.indexOf(item);
+        return <AgentAvatar key={item.id} agentId={agentId} name={item.name} variant={variantFor(item.id,index)} status={status[item.id]??'idle'} inline dimmed={Boolean(selected&&selected!==item.id)} onOpen={()=>{if(!Object.values(status).includes('working'))setSelected(item.id);}} onRemove={()=>{if(status[item.id]==='working')return;setHidden(old=>[...old,item.id]);if(selected===item.id)setSelected(undefined);}}/>;
+      }}
+    />
     {hidden.length>0&&<button className="restore-cats" onClick={()=>setHidden([])}>Show cats</button>}
-    {target&&<CatChat key={target.id} target={target} anchor={positions[`hosted:${target.id}`]} onClose={()=>setSelected(undefined)} onStatus={value=>setStatus(old=>({...old,[target.id]:value}))}/>}
+    {target&&<CatChat key={target.id} target={target} onClose={()=>setSelected(undefined)} onStatus={value=>setStatus(old=>({...old,[target.id]:value}))}/>}
   </>;
 }
 function CatChat({target,anchor,onClose,onStatus}:{target:Target;anchor?:{x:number;y:number};onClose:()=>void;onStatus:(status:'idle'|'working'|'done'|'error')=>void}){

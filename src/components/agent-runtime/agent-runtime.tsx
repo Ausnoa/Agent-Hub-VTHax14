@@ -9,6 +9,7 @@ import { useRunFeed } from "./use-agent-runs";
 import AgentAvatar from "./agent-avatar";
 import AgentMiniWindow from "./agent-mini-window";
 import AgentFullScreen from "./agent-fullscreen";
+import CatAgentBar from "./cat-agent-bar";
 import Mascot from "./mascot";
 
 const sampleNotes = "Northstar makes warehouse inventory software.\nRevenue grew 18% in this fictional example.\nThe business depends on one cloud supplier.\nTwo customers account for 45% of revenue.\nNew product delivery has been delayed.";
@@ -60,28 +61,34 @@ function LocalAgentRuntime() {
       onMinimize={() => setView("mini")} primitiveProps={propsFor(active.agentId)}
     />}
 
-    {pack.map((spec, index) => {
-      const isActive = spec.agentId === active?.agentId;
-      return <AgentAvatar
-        key={spec.agentId}
-        agentId={spec.agentId}
-        name={spec.name}
-        variant={variantFor(spec.variantSeed, spec.accentIndex)}
-        status={statusFor(spec.agentId)}
-        slot={index}
-        dimmed={view === "mini" && !isActive}
-        onOpen={() => (isActive && view === "mini" ? setView("avatar") : open(spec.agentId, "mini"))}
-        onRemove={() => remove(spec.agentId)}
-      >
-        {isActive && view === "mini" && <AgentMiniWindow
-          spec={spec}
-          runs={runsFor(spec.agentId)}
-          onExpand={() => setView("full")}
-          onClose={() => setView("avatar")}
-          side={{ horizontal: "right", vertical: "above" }}
-          primitiveProps={propsFor(spec.agentId)}
-        />}
-      </AgentAvatar>;
-    })}
+    <CatAgentBar
+      storageKey="local"
+      candidates={pack.map((spec) => ({ id: spec.agentId, name: spec.name }))}
+      renderCat={(agentId) => {
+        const spec = pack.find((item) => item.agentId === agentId);
+        if (!spec) return null;
+        const isActive = spec.agentId === active?.agentId;
+        return <AgentAvatar
+          key={spec.agentId}
+          agentId={spec.agentId}
+          name={spec.name}
+          variant={variantFor(spec.variantSeed, spec.accentIndex)}
+          status={statusFor(spec.agentId)}
+          inline
+          dimmed={view === "mini" && !isActive}
+          onOpen={() => (isActive && view === "mini" ? setView("avatar") : open(spec.agentId, "mini"))}
+          onRemove={() => remove(spec.agentId)}
+        >
+          {isActive && view === "mini" && <AgentMiniWindow
+            spec={spec}
+            runs={runsFor(spec.agentId)}
+            onExpand={() => setView("full")}
+            onClose={() => setView("avatar")}
+            side={{ horizontal: "right", vertical: "above" }}
+            primitiveProps={propsFor(spec.agentId)}
+          />}
+        </AgentAvatar>;
+      }}
+    />
   </>;
 }
