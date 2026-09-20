@@ -14,5 +14,5 @@ export const definitionSchema = z.object({
   if (value.template === "qa" && !value.reference) ctx.addIssue({ code:"custom", message:"Reference text is required for document Q&A", path:["reference"] });
 });
 export type Definition = z.infer<typeof definitionSchema>;
-export type OwnedAgent = Definition & { id: string; createdAt: string };
+export type OwnedAgent = Definition & { id: string; createdAt: string; visibility: "public" | "private"; ownerId: string };
 export const templateFor = (id: Definition["template"]) => templates.find(t => t.id === id)!;

@@ -43,6 +43,10 @@ export async function handleHostedApi(request: Request, path: string[], dependen
     }
     if (path[0] === 'agents' && path.length >= 2 && path.length <= 3) {
       const id = z.uuid().parse(path[1]);
+      if (path[2] === 'visibility' && request.method === 'POST') {
+        const { visibility } = z.object({ visibility: z.enum(['public', 'private']) }).parse(await readBody(request));
+        return respond(await store.setVisibility(id, visibility));
+      }
       const agent = await store.get(id);
       if (path.length === 2 && request.method === 'GET') return respond(agent);
       if (path[2] === 'tests' && request.method === 'GET') return respond(await store.history(id));

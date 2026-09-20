@@ -8,7 +8,7 @@ export class OwnedStore {
     this.db.exec("CREATE TABLE IF NOT EXISTS owned_agents (id TEXT PRIMARY KEY, body TEXT NOT NULL)");
   }
   create(input: unknown): OwnedAgent {
-    const agent = { ...definitionSchema.parse(input), id: `owned:${randomUUID()}`, createdAt:new Date().toISOString() };
+    const agent = { ...definitionSchema.parse(input), id: `owned:${randomUUID()}`, createdAt:new Date().toISOString(), visibility:"private" as const, ownerId:"local" };
     this.db.prepare("INSERT INTO owned_agents VALUES (?,?)").run(agent.id,JSON.stringify(agent)); return agent;
   }
   get(id: string): OwnedAgent | undefined {

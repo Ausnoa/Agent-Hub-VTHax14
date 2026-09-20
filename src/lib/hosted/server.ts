@@ -18,27 +18,37 @@ export async function authenticate(request: Request) {
   return { client, userId: data.user.id };
 }
 export type Identity = Awaited<ReturnType<typeof authenticate>>;
-const rowSchema = z.object({ id: z.uuid(), definition: definitionSchema, created_at: z.string() });
+const columns = 'id,definition,created_at,visibility,owner_id';
+const rowSchema = z.object({ id: z.uuid(), definition: definitionSchema, created_at: z.string(), visibility: z.enum(['public', 'private']), owner_id: z.uuid() });
 export function asAgent(row: unknown): OwnedAgent {
   const value = rowSchema.parse(row);
-  return { ...value.definition, id: value.id, createdAt: value.created_at };
+  return { ...value.definition, id: value.id, createdAt: value.created_at, visibility: value.visibility, ownerId: value.owner_id };
 }
 export function repository({ client, userId }: Identity) {
   return {
     async list() {
-      const { data, error } = await client.from('template_agents').select('id,definition,created_at').eq('owner_id', userId).order('created_at', { ascending: false }).limit(100);
+      const { data, error } = await client.from('template_agents').select(columns).eq('owner_id', userId).order('created_at', { ascending: false }).limit(100);
       if (error) throw new HostedError(503, 'Agent storage is unavailable');
       return (data ?? []).map(asAgent);
     },
     async create(input: unknown) {
       const definition = definitionSchema.parse(input);
-      const { data, error } = await client.from('template_agents').insert({ owner_id: userId, definition }).select('id,definition,created_at').single();
+      const { data, error } = await client.from('template_agents').insert({ owner_id: userId, definition }).select(columns).single();
       if (error) throw new HostedError(503, 'Could not save the agent');
       return asAgent(data);
     },
     async get(id: string) {
-      const { data, error } = await client.from('template_agents').select('id,definition,created_at').eq('owner_id', userId).eq('id', id).maybeSingle();
+      // Not scoped to owner_id: RLS already allows the owner or any signed-in
+      // user when the agent is public, which is what makes launching another
+      // user's public agent possible.
+      const { data, error } = await client.from('template_agents').select(columns).eq('id', id).maybeSingle();
       if (error) throw new HostedError(503, 'Agent storage is unavailable');
+      if (!data) throw new HostedError(404, 'Agent not found');
+      return asAgent(data);
+    },
+    async setVisibility(id: string, visibility: 'public' | 'private') {
+      const { data, error } = await client.from('template_agents').update({ visibility }).eq('owner_id', userId).eq('id', id).select(columns).maybeSingle();
+      if (error) throw new HostedError(503, 'Could not update visibility');
       if (!data) throw new HostedError(404, 'Agent not found');
       return asAgent(data);
     },

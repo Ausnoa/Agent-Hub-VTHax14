@@ -8,6 +8,7 @@ import { templateFor } from '../../lib/owned-agent/templates';
 import PageShell from '../layout/page-shell';
 import PageHeader from '../layout/page-header';
 import Card from '../ui/card';
+import Button from '../ui/button';
 type Run={id:string;agent_id:string;status:string;output:string|null;created_at:string};
 export default function AccountPages({history=false}:{history?:boolean}){
   const account=useAccount();
@@ -17,10 +18,22 @@ export default function AccountPages({history=false}:{history?:boolean}){
 }
 function AccountData({history}:{history:boolean}){
   const [agents,setAgents]=useState<OwnedAgent[]>([]),[runs,setRuns]=useState<Run[]>([]);
-  const [loading,setLoading]=useState(true),[error,setError]=useState('');
+  const [loading,setLoading]=useState(true),[error,setError]=useState(''),[busy,setBusy]=useState('');
   useEffect(()=>{let active=true;Promise.all([hostedApi<OwnedAgent[]>('agents'),history?hostedApi<Run[]>('tests'):Promise.resolve([])]).then(([agents,runs])=>{if(active){setAgents(agents);setRuns(runs);}}).catch(e=>{if(active)setError(e.message);}).finally(()=>{if(active)setLoading(false);});return()=>{active=false;};},[history]);
-  return <PageShell><PageHeader eyebrow="YOUR HOSTED WORKSPACE" title={history?'Agent test history':'My Agents'} description={history?'Your latest 20 template tests and their saved results.':'Your private saved template agents. Open an agent to test it or create a new version.'} action={<Link href="/agent-preview">Create agent →</Link>}/>
+  async function toggleVisibility(agentId:string,next:'public'|'private'){
+    setBusy(agentId);
+    try{const updated=await hostedApi<OwnedAgent>(`agents/${agentId}/visibility`,{visibility:next});setAgents(old=>old.map(a=>a.id===agentId?updated:a));}
+    catch(e){setError(e instanceof Error?e.message:'Could not update visibility');}
+    finally{setBusy('');}
+  }
+  return <PageShell><PageHeader eyebrow="YOUR HOSTED WORKSPACE" title={history?'Agent test history':'My Agents'} description={history?'Your latest 20 template tests and their saved results.':'Your saved template agents. Publish one to make it discoverable to other members.'} action={<Link href="/agent-preview">Create agent →</Link>}/>
     {loading&&<p role="status">Loading {history?'tests':'agents'}…</p>}{error&&<p role="alert">{error}</p>}
-    {!loading&&!error&&(history?runs.length?runs.map(run=><Card key={run.id}><h2>{agents.find(a=>a.id===run.agent_id)?.name??'Agent test'}</h2><p>{new Date(run.created_at).toLocaleString()} · {run.status==='running'?'Pending or interrupted':run.status}</p>{run.output&&<pre style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{run.output}</pre>}<Link href={`/agent-preview?agent=${run.agent_id}`}>Open agent →</Link></Card>):<p>No tests yet. Open an agent to run your first test.</p>:agents.length?agents.map(agent=><Card key={agent.id}><h2>{agent.name}</h2><p>{templateFor(agent.template).name} · Private · Not ANS registered</p><p>{agent.instructions||templateFor(agent.template).description}</p><Link href={`/agent-preview?agent=${agent.id}`}>Open and test →</Link></Card>):<p>No saved agents yet. Choose a template to create your first agent.</p>)}
+    {!loading&&!error&&(history?runs.length?runs.map(run=><Card key={run.id}><h2>{agents.find(a=>a.id===run.agent_id)?.name??'Agent test'}</h2><p>{new Date(run.created_at).toLocaleString()} · {run.status==='running'?'Pending or interrupted':run.status}</p>{run.output&&<pre style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{run.output}</pre>}<Link href={`/agent-preview?agent=${run.agent_id}`}>Open agent →</Link></Card>):<p>No tests yet. Open an agent to run your first test.</p>:agents.length?agents.map(agent=><Card key={agent.id}><h2>{agent.name}</h2><p>{templateFor(agent.template).name} · {agent.visibility==='public'?'Public':'Private'} · Not ANS registered</p><p>{agent.instructions||templateFor(agent.template).description}</p>
+      <div style={{display:'flex',gap:8,flexWrap:'wrap',marginTop:8}}>
+        <Link href={`/agent-preview?agent=${agent.id}`}>Open and test →</Link>
+        <Link href={`/agents/${agent.id}`}>View detail page →</Link>
+        <Button size="sm" disabled={busy===agent.id} onClick={()=>void toggleVisibility(agent.id,agent.visibility==='public'?'private':'public')}>{busy===agent.id?'Saving…':agent.visibility==='public'?'Make private':'Publish'}</Button>
+      </div>
+    </Card>):<p>No saved agents yet. Choose a template to create your first agent.</p>)}
   </PageShell>;
 }
