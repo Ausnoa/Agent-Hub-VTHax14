@@ -1,4 +1,5 @@
 "use client";
+import { useState } from 'react';
 import Link from 'next/link';
 import {ArrowRight,Cpu,Radar,Search} from 'lucide-react';
 import type {Candidate} from '../../lib/hosted/workflow-contracts';
@@ -13,6 +14,10 @@ import PublicAgentCard, {type PublicAgentSummary} from './public-agent-card';
 type Props={candidates:Candidate[];query:string;setQuery:(value:string)=>void;busy:boolean;loading:boolean;error:string;searched:boolean;hasMore:boolean;search:(more?:boolean)=>Promise<void>;add:(candidate:Candidate,skill:string)=>void;publicAgents?:PublicAgentSummary[];publicAgentsError?:string};
 export default function HostedDiscover({candidates,query,setQuery,busy,loading,error,searched,hasMore,search,add,publicAgents,publicAgentsError}:Props){
   const saved=candidates.filter(c=>c.source==='template'),external=candidates.filter(c=>c.source==='ans');
+  // Client-side filter over the already-loaded saved templates — no request, so no submit button.
+  const [savedQuery,setSavedQuery]=useState('');
+  const savedTerm=savedQuery.trim().toLowerCase();
+  const visibleSaved=saved.filter(c=>!savedTerm||c.name.toLowerCase().includes(savedTerm)||(c.description||'').toLowerCase().includes(savedTerm)||c.skills.some(s=>s.name.toLowerCase().includes(savedTerm)||s.id.toLowerCase().includes(savedTerm))||c.agentId.toLowerCase().includes(savedTerm));
   function row(candidate:Candidate){return <article className="registry-item" key={candidate.agentId}>
     <span className="registry-item-icon">{candidate.source==='template'?<Cpu size={15}/>:<Radar size={15}/>}</span>
     <div style={{minWidth:0,flex:1}}><h3>{candidate.name}</h3><p>{candidate.description||'No description provided by the agent owner.'}</p>
@@ -33,8 +38,17 @@ export default function HostedDiscover({candidates,query,setQuery,busy,loading,e
       <Card className="registry-panel"><CardHead badge={<Radar size={16}/>}>ANS capability resolution</CardHead>
         {error&&<div role="alert" className="alert"><strong>Something needs attention</strong><p>{error}</p></div>}
         <section aria-label="Your saved agents"><p className="notice">{saved.length} private agents · Live ANS results are not identity-verified. Compatibility is checked when you save a workflow.</p><h3 className="discover-section-title">Your saved agents</h3>
-          {loading?<p role="status">Loading your agents…</p>:<div className="registry-list">{saved.map(row)}</div>}
+          {!loading&&!!saved.length&&<div className="search-bar fleet-search" style={{marginBottom:10}}>
+            <Search size={16} aria-hidden="true"/>
+            <label className="sr-only" htmlFor="hosted-saved-query">Search your saved agents</label>
+            <input id="hosted-saved-query" placeholder="Search by name, capability, or id" value={savedQuery} onChange={e=>setSavedQuery(e.target.value)}/>
+          </div>}
+          {loading?<p role="status">Loading your agents…</p>:
+            // Capped to roughly three rows so a growing saved list scrolls in place instead of
+            // pushing "Search the live ANS registry" further down the page.
+            <div className="registry-list registry-list-scroll">{visibleSaved.map(row)}</div>}
           {!loading&&!saved.length&&<p className="hint">No saved agents yet. <Link href="/agent-preview">Create an agent</Link> to use it in a workflow.</p>}
+          {!loading&&!!saved.length&&!visibleSaved.length&&<p className="hint">No saved agents match that search.</p>}
         </section>
         <h3 className="discover-section-title">Search the live ANS registry</h3><p className="hint" style={{marginBottom:10}}>Queries the registry directly — no LLM key required. Up to 100 searches per UTC day.</p>
         <form className="search-bar" onSubmit={event=>{event.preventDefault();void search();}}><label className="sr-only" htmlFor="hosted-registry-query">Search ANS</label><input id="hosted-registry-query" value={query} maxLength={256} disabled={busy} onChange={e=>setQuery(e.target.value)} placeholder="Search for a capability"/><Button type="submit" variant="primary" disabled={busy}>{busy?'Searching…':<><Search size={14}/> Search</>}</Button></form>
