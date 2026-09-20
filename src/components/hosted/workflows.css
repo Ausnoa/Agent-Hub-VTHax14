@@ -16,3 +16,8 @@
 .hosted-run pre { white-space: pre-wrap; overflow-wrap: anywhere; padding: 16px; background: var(--bg-inset); }
 @media(max-width:600px){.hosted-search {display:block;} .hosted-search button {margin-top:12px;} .hosted-step-controls{grid-template-columns:1fr;} }
 .hosted-candidates { max-height: 520px; overflow-y: auto; padding-right: 8px; }
+.hosted-discovery .discover-section-title { font-size:12px; color:var(--text-muted); margin:18px 0 10px; }
+.hosted-discovery .discover-skill-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+.hosted-discovery .registry-item h3,.hosted-discovery .registry-item p { overflow-wrap:anywhere; }
+.hosted-discovery .search-bar input { min-width:0; }
+@media(max-width:600px){.hosted-discovery .registry-item { gap:8px; padding:12px; }.hosted-discovery .registry-item .pill { font-size:9px; }}
