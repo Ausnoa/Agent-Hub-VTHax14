@@ -23,7 +23,7 @@ export default function HostedDiscover({candidates,query,setQuery,busy,loading,e
       </dl></details>
     </div><StatusPill tone={candidate.source==='template'?'accent':'violet'}>{candidate.source==='template'?'Private':'A2A'}</StatusPill>
   </article>;}
-  return <PageShell className="screen-discovery hosted-discovery"><PageHeader eyebrow="AUTONOMOUS PIPELINE DISCOVERY" title="Browse the ANS registry" description="Explore your saved agents and search the live ANS registry. Search needs no LLM key; workflow suggestions use AI to plan the steps."/>
+  return <PageShell className="screen-discovery hosted-discovery"><PageHeader eyebrow="AUTONOMOUS PIPELINE DISCOVERY" title="Browse the dashboard" description="See your agents, discover what other members have published, and manage your account — all in one place." action={<Link className="btn btn-primary" href="/dashboard">Open dashboard <ArrowRight size={14}/></Link>}/>
     <div className="split-layout">
       <Card className="mesh-panel"><CardHead>Compose an agent</CardHead><p className="hint" style={{marginBottom:16}}>Have an outcome in mind? Describe it and Agent Hub will suggest a workflow using your saved agents and this registry.</p>
         <TopologyGraph coreLabel="ANS Discovery" coreSublabel="Capability resolution" nodes={[{id:'directive',label:'Your directive',sublabel:'Describe an outcome',angle:225,radius:0.8},{id:'registry',label:'Agent registry',sublabel:'Browse capabilities',angle:45,radius:0.8,tone:'violet'}]}/>
