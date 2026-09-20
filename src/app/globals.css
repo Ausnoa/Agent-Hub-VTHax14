@@ -563,14 +563,6 @@ input:focus, textarea:focus { outline: none; border-color: var(--accent); box-sh
 
 /* ---------- agent avatar : draggable assistant that floats over every page ---------- */
 .agent-avatar-layer { position: fixed; z-index: 40; width: 64px; height: 64px; }
-/* numbered badge tells the cats apart at rest; the name appears on hover or focus */
-.avatar-badge {
-  position: absolute; right: -2px; bottom: -2px; min-width: 18px; height: 18px; padding: 0 4px;
-  display: grid; place-items: center; border-radius: var(--radius-full);
-  background: var(--mascot-accent); color: var(--accent-ink);
-  font-family: var(--font-mono); font-size: 10px; font-weight: 700; line-height: 1;
-  border: 2px solid var(--bg-raised); pointer-events: none;
-}
 .avatar-name {
   position: absolute; top: 70px; left: 50%; transform: translate(-50%, -4px);
   max-width: 132px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;

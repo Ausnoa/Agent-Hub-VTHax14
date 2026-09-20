@@ -118,7 +118,6 @@ export default function AgentAvatar({ agentId, name, variant, status, slot, dimm
       title={`${name} — ${statusLabel}. Click to open, drag to move.`}
     >
       <Mascot width={44} variant={variant} asleep={status === "idle"} />
-      <span className="avatar-badge">{slot + 1}</span>
     </button>
     <span className="avatar-name">{name}</span>
   </div>;
