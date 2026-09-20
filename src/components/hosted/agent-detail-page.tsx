@@ -47,8 +47,11 @@ function Detail({ id, myId }: { id: string; myId: string }) {
         catch { found = { kind: 'workflow', value: await hostedApi<HostedWorkflow>(`workflows/${id}`) }; }
         if (!active) return;
         setAgent(found);
+        // The owner byline is decoration, and an account that predates the profile
+        // trigger has no profile row. Keep its lookup out of the agent's own failure
+        // path so a missing profile cannot hide an agent that loaded fine.
         const ownerId = found.kind === 'template' ? found.value.ownerId : found.value.owner_id;
-        setOwner(await hostedApi<Owner>(`profiles/by-id/${ownerId}`));
+        try { const profile = await hostedApi<Owner>(`profiles/by-id/${ownerId}`); if (active) setOwner(profile); } catch { /* render without the byline */ }
       } catch (reason) { if (active) setError(reason instanceof Error ? reason.message : 'Could not load this agent'); }
       finally { if (active) setLoading(false); }
     })();

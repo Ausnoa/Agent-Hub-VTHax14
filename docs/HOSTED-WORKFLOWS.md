@@ -8,6 +8,8 @@ The hosted backend runs as Node.js route handlers on the existing Vercel project
 - `supabase/migrations/202609190002_hosted_workflows.sql`
 
 - `supabase/migrations/202609190003_profiles_and_visibility.sql` (profiles, agent visibility, saved agents — see `DECISION-005`)
+- `supabase/migrations/202609200004_archive_agents_workflows.sql` (reversible archiving — see `PROGRESS-031`)
+- `supabase/migrations/202609200005_backfill_profiles.sql` (profiles for accounts predating the signup trigger — see `PROGRESS-033`)
 
 Existing environment variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `HOSTED_AGENT_TESTS_ENABLED=true`, `OPENAI_API_KEY`, `OPENAI_MODEL`. No service-role secret is required. Keep GoDaddy registration credentials off the browser. Discovery uses the existing public ANS API by default; `ANS_BASE_URL` defaults to `https://api.godaddy.com`.
 

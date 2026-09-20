@@ -21,8 +21,12 @@ export function profileRepository({ client, userId }: Identity) {
     async me() {
       const { data, error } = await client.from('profiles').select(columns).eq('user_id', userId).maybeSingle();
       if (error) throw new HostedError(503, 'Profile is unavailable');
-      if (!data) throw new HostedError(404, 'Profile not found');
-      return asProfile(data);
+      if (data) return asProfile(data);
+      // An account created before the profile trigger existed has no row yet. The
+      // caller cannot insert one (no insert grant), so ask the definer function.
+      const created = await client.rpc('ensure_profile');
+      if (created.error || !created.data) throw new HostedError(404, 'Profile not found');
+      return asProfile(created.data);
     },
     async update(input: unknown) {
       const value = profileUpdateSchema.parse(input);
