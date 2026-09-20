@@ -36,7 +36,6 @@ function CatPack({userId}:{userId:string}){
         return <AgentAvatar key={item.id} agentId={agentId} name={item.name} variant={variantFor(item.id,index)} status={status[item.id]??'idle'} inline {...drag} dimmed={Boolean(selected&&selected!==item.id)} onOpen={()=>{if(!Object.values(status).includes('working'))setSelected(item.id);}} onRemove={()=>{if(status[item.id]==='working')return;setHidden(old=>[...old,item.id]);if(selected===item.id)setSelected(undefined);}}/>;
       }}
     />
-    {hidden.length>0&&<button className="restore-cats" onClick={()=>setHidden([])}>Show cats</button>}
     {target&&<CatChat key={target.id} target={target} onClose={()=>setSelected(undefined)} onStatus={value=>setStatus(old=>({...old,[target.id]:value}))}/>}
   </>;
 }
