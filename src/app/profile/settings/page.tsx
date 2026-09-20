@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAccount } from '../../../lib/hosted/use-account';
-import { hostedApi } from '../../../lib/hosted/browser';
+import { browserAuth, hostedApi } from '../../../lib/hosted/browser';
 import PageShell from '../../../components/layout/page-shell';
 import PageHeader from '../../../components/layout/page-header';
 import Card from '../../../components/ui/card';
@@ -14,13 +14,20 @@ type Profile = { userId: string; username: string; displayName: string; avatarUr
 
 export default function ProfileSettingsPage() {
   const account = useAccount();
+  const [signOutBusy, setSignOutBusy] = useState(false), [signOutError, setSignOutError] = useState('');
+  async function signOut() {
+    setSignOutBusy(true); setSignOutError('');
+    try { const result = await browserAuth()!.auth.signOut(); if (result.error) throw result.error; }
+    catch { setSignOutError('Could not sign out. Please try again.'); }
+    finally { setSignOutBusy(false); }
+  }
   if (!account.ready) return <PageShell><p role="status">Loading…</p></PageShell>;
   if (!account.configured) return <PageShell narrow><PageHeader eyebrow="YOUR PROFILE" title="Profile settings" description="Hosted accounts are not configured yet." /></PageShell>;
   if (!account.session) return <PageShell narrow><PageHeader eyebrow="YOUR PROFILE" title="Profile settings" description="Sign in to edit your public profile." /><Link href="/login?next=/profile/settings">Sign in or create an account →</Link>{account.error && <p role="alert">{account.error}</p>}</PageShell>;
-  return <SettingsForm key={account.session.user.id} />;
+  return <SettingsForm key={account.session.user.id} email={account.session.user.email ?? ''} signOut={signOut} signOutBusy={signOutBusy} signOutError={signOutError || account.error} />;
 }
 
-function SettingsForm() {
+function SettingsForm({ email, signOut, signOutBusy, signOutError }: { email: string; signOut: () => void; signOutBusy: boolean; signOutError: string }) {
   const [profile, setProfile] = useState<Profile>();
   const [username, setUsername] = useState(''), [displayName, setDisplayName] = useState(''), [avatarUrl, setAvatarUrl] = useState(''), [bio, setBio] = useState('');
   const [loading, setLoading] = useState(true), [busy, setBusy] = useState(false), [error, setError] = useState(''), [saved, setSaved] = useState(false);
@@ -40,6 +47,14 @@ function SettingsForm() {
   return <PageShell narrow>
     <PageHeader eyebrow="YOUR PROFILE" title="Profile settings" description="Choose how other members see you in Discover and on your public agents."
       action={profile && <Link href={`/profile/${profile.username}`}>View your public profile →</Link>} />
+    <div className="account-bar">
+      <p className="account-bar-user">Signed in as <strong>{email}</strong></p>
+      <div className="account-bar-links">
+        <Link href="/agents">My agents</Link>
+        <Button variant="ghost" size="sm" disabled={signOutBusy} onClick={signOut}>Sign out</Button>
+      </div>
+    </div>
+    {signOutError && <p role="alert">{signOutError}</p>}
     {loading && <p role="status">Loading your profile…</p>}
     {!loading && <Card>
       <div className="profile-header"><Avatar url={avatarUrl} name={displayName || username} /><div><strong>{displayName || username}</strong><p className="hint" style={{ margin: 0 }}>@{username}</p></div></div>
