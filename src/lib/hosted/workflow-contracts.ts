@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { selectionSchema, valueSchema } from '../general/contracts.ts';
 export const hostedWorkflowSchema = z.object({
   name:z.string().trim().min(1).max(100),
+  description:z.string().trim().max(300).default(''),
   steps:z.array(selectionSchema.extend({name:z.string().max(200),endpoint:z.string().max(2000),metadataUrl:z.string().max(2000)})).min(1).max(8),
 }).refine(value=>value.steps[0].inputFrom==='original','First step needs original input');
 export const workflowRowSchema=z.object({id:z.uuid(),definition:hostedWorkflowSchema,created_at:z.string(),visibility:z.enum(['public','private']),owner_id:z.uuid()});

@@ -11,3 +11,7 @@
 
 .profile-header { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
 .profile-header h1 { margin: 0; }
+
+.discover-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,280px),1fr)); gap: 16px; }
+.discover-card-owner { display: flex; align-items: center; gap: 8px; margin: 12px 0; color: var(--text); text-decoration: none; }
+.discover-card-owner:hover { text-decoration: underline; }

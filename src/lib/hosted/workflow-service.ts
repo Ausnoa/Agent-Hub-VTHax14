@@ -18,8 +18,10 @@ export async function searchHosted(query:string,pageToken:string|undefined,agent
   const external:Candidate[]=page.agents.filter(agent=>agent.metadataUrl && agent.skills?.length).map(agent=>({agentId:agent.ansId,name:agent.name,description:agent.description,skills:agent.skills!,source:'ans',endpoint:agent.endpoint}));
   return {candidates:[...templates.filter(a=>!query||`${a.name} ${a.description} ${a.skills.map(s=>s.id)}`.toLowerCase().includes(query.toLowerCase())),...external],hasMore:page.hasMore,nextPageToken:page.nextPageToken,skippedRecords:page.skippedRecords,source:'live-ans' as const};
 }
+const descriptionSchema=z.object({description:z.string().trim().max(300).default('')});
 export async function prepareHosted(input:unknown,agents:Agents,services=workflowServices){
   const draft=draftSchema.parse(input);
+  const {description}=descriptionSchema.parse(input);
   const steps=await Promise.all(draft.steps.map(async selection=>{
     if(selection.format==='json'&&selection.instruction)throw new HostedError(400,'JSON mappings must have empty instructions');
     if(selection.agentId.startsWith('template:')){
@@ -35,7 +37,7 @@ export async function prepareHosted(input:unknown,agents:Agents,services=workflo
     }
     throw new HostedError(422,`No compatible A2A 0.3 JSON-RPC endpoint for skill ${selection.skill}. No execution started.`);
   }));
-  return {name:draft.name,steps};
+  return {name:draft.name,description,steps};
 }
 export async function suggestHosted(description:string,candidates:Candidate[],services=workflowServices){
   const schema=z.object({name:z.string().max(100),steps:z.array(selectionSchema).max(8),unsupported:z.array(z.string()).max(8)});
