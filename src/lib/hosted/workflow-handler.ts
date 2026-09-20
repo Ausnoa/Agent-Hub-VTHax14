@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ModelProviderError,ModelServiceError } from '../planner/index.ts';
 import { authenticate,repository,HostedError } from './server.ts';
 import { readBody,respond,checkOrigin } from './handler.ts';
 import { workflowRepository } from './workflow-store.ts';
@@ -46,6 +47,7 @@ export async function handleWorkflowApi(request:Request,path:string[],deps=hoste
     }
     throw new HostedError(404,'Route not found');
   }catch(error){
+    if(error instanceof ModelProviderError || error instanceof ModelServiceError)return respond({error:error.message},503);
     if(error instanceof HostedError)return respond({error:error.message},error.status);
     if(error instanceof z.ZodError)return respond({error:'Invalid workflow input or incompatible response'},400);
     return respond({error:'Workflow request failed. Check ANS availability and server configuration; no automatic retry.'},502);

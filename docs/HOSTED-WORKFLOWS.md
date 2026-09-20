@@ -41,3 +41,7 @@ Shared Supabase budgets: 100 ANS searches, 10 suggestions, and 10 new workflow r
 ## Validation
 
 Automated PostgreSQL tests cover owner isolation, forbidden direct run writes, atomic claims, idempotency, budget exhaustion, and interruption. Service tests cover external registration changes, ownership, endpoint injection, execution confirmation, quota reservation, and persistence failure without re-invocation. Browser smoke testing against real Supabase completed an invoice-extraction workflow and reloaded its saved result.
+
+### Deployment troubleshooting
+
+`Model generation unavailable (not-configured)` means at least one of OPENAI_API_KEY / OPENAI_MODEL is missing or empty in that deployment. Local `.env.local` is not uploaded. Set both in the correct Vercel project's **Production** environment, remove unintended branch restrictions, and redeploy. `model provider HTTP ...` exposes only a status code; inspect the provider account/configuration without posting keys. Incomplete or invalid model output is reported separately. A healthy agent card only verifies routing and advertised capabilities, not inference configuration.

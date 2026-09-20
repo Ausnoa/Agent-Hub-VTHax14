@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { authenticate, repository, HostedError } from './server.ts';
+import { ModelProviderError,ModelServiceError } from '../planner/index.ts';
 import { runDefinition } from '../owned-agent/run.ts';
 
 export async function readBody(request: Request) {
@@ -51,9 +52,10 @@ export async function handleHostedApi(request: Request, path: string[], dependen
         const runId = await store.reserve(id, text);
         let output: string;
         try { output = z.string().max(24000).parse(await dependencies.run(agent, text)); }
-        catch {
-          await store.finish(runId, 'failed', 'Generation failed; no result was produced.');
-          return respond({ error: 'Generation failed; no result was produced.', runId }, 502);
+        catch (error) {
+          const message=error instanceof ModelProviderError || error instanceof ModelServiceError ? error.message : 'Generation failed; no result was produced.';
+          await store.finish(runId, 'failed', message);
+          return respond({ error: message, runId }, 502);
         }
         await store.finish(runId, 'completed', output);
         return respond({ output, runId });

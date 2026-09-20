@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { discoverAgents,discoveryAuthorization,resolveAgent } from '../ans/client.ts';
 import { inspectGeneral,invokeGeneral } from '../general/client.ts';
 import { draftSchema,selectionSchema,mapInput,valueSchema,type GeneralStep } from '../general/contracts.ts';
-import { structuredPlan } from '../planner/index.ts';
+import { structuredPlan,ModelProviderError,ModelServiceError } from '../planner/index.ts';
 import { templateFor } from '../owned-agent/templates.ts';
 import { runDefinition } from '../owned-agent/run.ts';
 import { repository,HostedError } from './server.ts';
@@ -69,7 +69,7 @@ export async function advanceHosted(run:HostedRun,expectedStep:number,store:Work
       output=valueSchema.parse(await services.invoke(step,input));
     }
   }catch(error){
-    const failure=error instanceof HostedError?error.message:'Step failed or was interrupted. External effects may have occurred; no automatic retry.';
+    const failure=error instanceof HostedError || error instanceof ModelProviderError || error instanceof ModelServiceError ? error.message:'Step failed or was interrupted. External effects may have occurred; no automatic retry.';
     await store.finish(run.id,token,null,failure);return store.run(run.id);
   }
   // Persistence failures must not be mislabeled as execution failures or cause re-invocation.
