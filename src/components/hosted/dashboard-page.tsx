@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from 'react';
+import WorkspaceIntro from "./workspace-intro";
 import AnsShowcase from "./ans-showcase";
 import Link from 'next/link';
 import { useAccount } from '../../lib/hosted/use-account';
@@ -16,7 +17,7 @@ import './hosted.css';
 export default function DashboardPage() {
   const account = useAccount();
   if (!account.ready) return <PageShell><p role="status">Loading…</p></PageShell>;
-  if (!account.configured) return <PageShell narrow><PageHeader eyebrow="DASHBOARD" title="Dashboard" description="Hosted accounts are not configured yet." /></PageShell>;
+  if (!account.configured) return <PageShell className="screen-dashboard"><WorkspaceIntro /><p className="notice">You are exploring the local workspace. Hosted account features are not configured.</p><AnsShowcase /></PageShell>;
   if (!account.session) return <PageShell narrow><PageHeader eyebrow="DASHBOARD" title="Dashboard" description="Sign in to see your agents and discover what others have published." /><Link href="/login?next=/dashboard">Sign in or create an account →</Link>{account.error && <p role="alert">{account.error}</p>}</PageShell>;
   return <DashboardBody key={account.session.user.id} />;
 }
@@ -39,8 +40,8 @@ function DashboardBody() {
   ].slice(0, 4);
   const publicCount = (templates?.filter((agent) => agent.visibility === 'public').length ?? 0) + (workflows?.filter((workflow) => workflow.visibility === 'public').length ?? 0);
 
-  return <PageShell>
-    <PageHeader eyebrow="DASHBOARD" title="Your dashboard" description="Manage your agents and discover what other members have published." />
+  return <PageShell className="screen-dashboard">
+    <WorkspaceIntro authenticated />
     <AnsShowcase />
     {error && <div role="alert" className="alert"><strong>Something needs attention</strong><p>{error}</p></div>}
     <div className="metric-row">

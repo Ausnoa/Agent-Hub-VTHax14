@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, JetBrains_Mono, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import "./stitch-ui.css";
+import "./atelier-ui.css";
 import WorkspaceFooter from "../components/layout/workspace-footer";
 import TopNav from "../components/layout/top-nav";
 import WorkspaceAccess from "../components/layout/workspace-access";

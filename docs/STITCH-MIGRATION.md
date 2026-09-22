@@ -39,3 +39,12 @@ Stitch MCP is already configured and authenticated. Project and screen reads suc
 - Kept the latest Agent Glorria branding and companion-bar changes from main. Shared celestial components now live in `src/components/agent-glorria`.
 - Authenticated hosted end-to-end checks remain pending: this checkout has no Supabase URL or publishable key configured. Local demo checks do not establish hosted authentication, persistence, or remote execution success.
 - No production deployment performed. Local preview remains at http://127.0.0.1:3000/agents.
+## Expanded UI integration (2026-09-22)
+
+- Added the authenticated-workspace reference's atelier rail, hero, process cards and navigation to the dashboard, retaining the existing real agent data and ANS showcase. The unconfigured local dashboard now offers this overview with explicit local status.
+- Replaced the fleet's static guide with the celestial screen's desired-outcome form and example prompt. Drafts transfer through session storage into local and hosted composers; submitting never runs or publishes a workflow.
+- Added accessible zoom, zoom-out and reset controls to local review and hosted pipeline graphs. These alter presentation only.
+- Unified discovery registry items, review nodes, execution/recovery panels, runtime reports, template configuration, login, profile and empty states with navy glass surfaces and cyan accents. Retained light-mode variables and existing motion preferences.
+- Preserved the existing companion dock and its user-controlled placement rather than introducing a second companion interface.
+- Browser validation: desktop dashboard layout, phone template selection (including Q&A reference fields), fleet draft handoff, offline draft through discovery/review, graph zoom/reset and mobile overflow checks passed. Existing suite: 84/84 passed; typecheck passed.
+- Fidelity boundary: this is a functional adaptation of all applicable screen families, not an exact import of every artboard. Standalone shader/Three.js experiments are represented by the existing celestial orbit treatment; alternate warm palettes, invented identities, fabricated telemetry, and prototype-only actions are not shown as real application features. Authenticated hosted QA still requires local Supabase configuration.

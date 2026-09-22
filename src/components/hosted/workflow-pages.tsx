@@ -58,6 +58,8 @@ function Workspace({mode}:{mode:Mode}){
       const params=new URLSearchParams(location.search),workflow=saved.find(w=>w.id===params.get('workflow'));
       if(workflow)open(workflow);
       if(mode==='compose'){
+        const directive=sessionStorage.getItem('stitch-workflow-directive');
+        if(directive){setDescription(directive.slice(0,2000));sessionStorage.removeItem('stitch-workflow-directive');}
         const demo=showcaseDraft(params.get('showcase')??'');
         if(demo){setName(demo.name);setSteps(demo.steps);setSource(params.has('blank')?'':demo.input);setCandidates(old=>mergeCandidates([...old,...showcaseAgents.map(a=>({agentId:a.id,name:a.name,description:a.purpose,source:'ans' as const,endpoint:`${a.origin}/a2a`,skills:[{id:a.skill,name:a.name,tags:[]}]}))]));setSelected(undefined);setRun(undefined);setConfirmed(false);return;}
 

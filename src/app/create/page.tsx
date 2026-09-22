@@ -33,6 +33,11 @@ export default function CreateAgentPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    const draft = sessionStorage.getItem("stitch-workflow-directive");
+    if (draft) {
+      setDescription(draft.slice(0, 2000));
+      sessionStorage.removeItem("stitch-workflow-directive");
+    }
     api<{ plannerConfigured: boolean }>("status").then((status) => setPlannerConfigured(status.plannerConfigured)).catch(() => {});
   }, []);
 

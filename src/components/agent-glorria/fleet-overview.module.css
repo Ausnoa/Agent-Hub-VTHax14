@@ -24,5 +24,11 @@
 .guide li p { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
 .guide > a { margin-top: auto; }
 .guide .note { text-align: center; font-size: 10px; margin-top: 12px; }
+.directive { display: grid; gap: 14px; margin-top: 24px; }
+.directive label { font: 10px var(--font-mono); color: var(--text-muted); }
+.directive textarea { width: 100%; min-height: 135px; padding: 14px; resize: vertical; font-size: 12px; line-height: 1.8; background: var(--bg-inset); }
+.suggestion { display: flex; text-align: left; align-items: start; gap: 10px; padding: 14px; background: var(--accent-soft); border: 1px solid var(--border); border-radius: 10px; color: var(--accent); font-size: 10px; }
+.suggestion strong { display: block; color: var(--text); margin-top: 6px; font-size: 11px; }
+.directive > p { font-size: 11px; color: var(--red); }
 @media(max-width: 1000px) { .workspace { grid-template-columns: 1fr; } .guide { border-left: 0; border-top: 1px solid var(--border); } .guide ol { grid-template-columns: repeat(3, 1fr); } }
 @media(max-width: 600px) { .hero { padding-top: 8px; } .heroBottom { align-items: start; flex-direction: column; } .graph, .guide { padding: 18px; } .graphHead { flex-wrap: wrap; } .guide ol { grid-template-columns: 1fr; } .hero h1 em { display: block; } }

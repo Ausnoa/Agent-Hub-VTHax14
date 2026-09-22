@@ -1,5 +1,6 @@
 "use client";
 import "./login.css";
+import Image from "next/image";
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -26,7 +27,7 @@ export default function LoginPage(){
     }catch{setError(signup?'Could not create the account. Check your details and try again.':'Could not sign in. Check your email, password, and email confirmation.');}
     finally{setBusy(false);}
   }
-  return <PageShell narrow className="login-page"><PageHeader eyebrow="YOUR AGENT WORKSPACE" title={signup?'Create your account':'Welcome back'} description="Save your agents, test them, and keep your results in one private workspace."/>
+  return <PageShell narrow className="login-page"><Image className="login-emblem" src="/agent-emblem.svg" alt="" width={64} height={64}/><PageHeader eyebrow="YOUR AGENT WORKSPACE" title={signup?'Create your account':'Welcome back'} description="Save your agents, test them, and keep your results in one private workspace."/>
     <Card>{!account.ready?<p role="status">Loading sign-in…</p>:!account.configured?<p>Hosted accounts are not configured yet.</p>:account.session?<p role="status">Opening your workspace…</p>:<form onSubmit={event=>{event.preventDefault();void submit();}}>
       <label>Email<input type="email" autoComplete="email" required value={email} disabled={busy} onChange={event=>setEmail(event.target.value)}/></label>
       <label>Password<input type="password" autoComplete={signup?'new-password':'current-password'} minLength={8} required value={password} disabled={busy} onChange={event=>setPassword(event.target.value)}/></label>

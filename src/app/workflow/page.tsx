@@ -15,6 +15,7 @@ import Card, { CardHead } from "../../components/ui/card";
 import Button from "../../components/ui/button";
 import StatusPill from "../../components/ui/status-pill";
 import PipelineStepCard, { PipelineConnector } from "../../components/agent-glorria/pipeline-step-card";
+import GraphViewport from "../../components/agent-glorria/graph-viewport";
 import PipelineSummary from "../../components/agent-glorria/pipeline-summary";
 
 const modeNotice = {
@@ -65,7 +66,7 @@ export default function WorkflowReviewPage() {
 
     <Card className="pipeline-canvas">
       <CardHead badge={<StatusPill tone="accent">A2A 0.3.0</StatusPill>}>Composed pipeline</CardHead>
-      <div className="pipeline-row">
+      <GraphViewport><div className="pipeline-row">
         {proposal.steps.map((step, index) => <Fragment key={step.capability}>
           {index > 0 && <PipelineConnector />}
           <PipelineStepCard
@@ -87,6 +88,7 @@ export default function WorkflowReviewPage() {
         </Fragment>)}
       </div>
 
+      </GraphViewport>
       <div className="metric-row">
         <div className="metric-tile"><div className="metric-tile-label">Pipeline steps</div><div className="metric-tile-value">{proposal.steps.length}</div></div>
         <div className="metric-tile"><div className="metric-tile-label">Protocol</div><div className="metric-tile-value" style={{ fontSize: 14 }}>A2A 0.3.0</div></div>
