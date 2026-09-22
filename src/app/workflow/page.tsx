@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { Fragment, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -18,9 +18,9 @@ import PipelineStepCard, { PipelineConnector } from "../../components/agent-glor
 import PipelineSummary from "../../components/agent-glorria/pipeline-summary";
 
 const modeNotice = {
-  pilot: "Pilot catalog Â· Real LLM plan Â· Local test agents Â· Not registered with ANS",
-  demo: "Offline demo Â· Fixed template Â· Fixture agents Â· Not registered with ANS",
-  live: "Indexed ANS results Â· Real LLM plan Â· Identity has not been independently verified",
+  pilot: "Pilot catalog · Real LLM plan · Local test agents · Not registered with ANS",
+  demo: "Offline demo · Fixed template · Fixture agents · Not registered with ANS",
+  live: "Indexed ANS results · Real LLM plan · Identity has not been independently verified",
 };
 
 export default function WorkflowReviewPage() {
@@ -36,7 +36,7 @@ export default function WorkflowReviewPage() {
     if (hydrated && !proposal && !busy) router.replace("/create");
   }, [hydrated, proposal, busy, router]);
 
-  if (!hydrated || !proposal) return <PageShell><p className="hint">Loadingâ€¦</p></PageShell>;
+  if (!hydrated || !proposal) return <PageShell><p className="hint">Loading…</p></PageShell>;
 
   async function approve(current: Proposal) {
     setBusy(true); setError("");
@@ -103,7 +103,7 @@ export default function WorkflowReviewPage() {
     <div className="screen-actionbar">
       <Button variant="secondary" onClick={() => router.push("/discovery")}><ArrowLeft size={14} /> Back to discovery</Button>
       <Button variant="primary" disabled={busy || !!proposal.blockers.length || !proposal.steps.length} onClick={() => approve(proposal)}>
-        {busy ? "Deployingâ€¦" : <><Rocket size={14} /> Deploy & Generate Agent Interface <ArrowRight size={14} /></>}
+        {busy ? "Deploying…" : <><Rocket size={14} /> Deploy & Generate Agent Interface <ArrowRight size={14} /></>}
       </Button>
     </div>
   </PageShell>;

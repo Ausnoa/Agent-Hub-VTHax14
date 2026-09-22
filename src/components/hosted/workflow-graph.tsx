@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useId } from 'react';
 import type { Selection } from '../../lib/general/contracts';
 import type { HostedRun } from '../../lib/hosted/workflow-contracts';
@@ -15,7 +15,7 @@ export default function WorkflowGraph({steps,names,run}:{steps:Selection[];names
       <a href={`#hosted-step-${index}`} aria-label={`Edit step ${index+1}: ${names[index]}. Input: ${steps[index].inputFrom}. ${node.status}`}>
         <rect x="240" y={y} width="400" height="76" rx="14" fill="var(--bg-panel)" stroke={node.status==='completed'?'var(--green)':node.status==='failed'?'var(--red)':'var(--accent)'} strokeWidth="1.5"/>
         <text x="258" y={y+26} fill="var(--text)" fontSize="14">{index+1}. {(names[index]??steps[index].skill).slice(0,42)}</text>
-        <text x="258" y={y+49} fill="var(--text-muted)" fontSize="12">{steps[index].skill.slice(0,36)} Â· {steps[index].format}</text>
+        <text x="258" y={y+49} fill="var(--text-muted)" fontSize="12">{steps[index].skill.slice(0,36)} · {steps[index].format}</text>
         <text x="625" y={y+65} textAnchor="end" fill="var(--text-muted)" fontSize="11">{node.status}</text>
       </a>
     </g>;})}

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useEffect,useMemo,useState } from 'react';
 import Link from 'next/link';
 import { Plus,Search } from 'lucide-react';
@@ -18,8 +18,8 @@ type Run={id:string;agent_id:string;status:string;output:string|null;created_at:
 type Saved = PublicAgentSummary & { owner: { username: string; displayName: string; avatarUrl: string | null } };
 export default function AccountPages({history=false}:{history?:boolean}){
   const account=useAccount();
-  if(!account.ready)return <PageShell><p role="status">Loading accountâ€¦</p></PageShell>;
-  if(!account.session)return <PageShell narrow><PageHeader headingLevel={history?1:2} eyebrow="YOUR HOSTED WORKSPACE" title={history?'Your test history':'Your agents'} description="Sign in to access your private hosted workspace."/><Link href={`/login?next=${history?'/execution':'/agents'}`}>Sign in or create an account â†’</Link>{account.error&&<p role="alert">{account.error}</p>}</PageShell>;
+  if(!account.ready)return <PageShell><p role="status">Loading account…</p></PageShell>;
+  if(!account.session)return <PageShell narrow><PageHeader eyebrow="YOUR HOSTED WORKSPACE" title={history?'Your test history':'Your agents'} description="Sign in to access your private hosted workspace."/><Link href={`/login?next=${history?'/execution':'/agents'}`}>Sign in or create an account →</Link>{account.error&&<p role="alert">{account.error}</p>}</PageShell>;
   return <AccountData key={`${account.session.user.id}:${history}`} history={history}/>;
 }
 function AccountData({history}:{history:boolean}){
@@ -63,7 +63,7 @@ function AccountData({history}:{history:boolean}){
     });
   },[agents,query,templateFilter]);
   return <PageShell>{!history&&<FleetOverview hosted/>}<PageHeader headingLevel={history?1:2} eyebrow="YOUR HOSTED WORKSPACE" title={history?'Agent test history':'Your agent fleet'} description={history?'Your latest 20 template tests and their saved results.':'Your saved template agents. Publish one to make it discoverable to other members.'} action={<Link href="/agent-preview"><Button variant="primary"><Plus size={14}/> Create agent</Button></Link>}/>
-    {loading&&<p role="status">Loading {history?'tests':'agents'}â€¦</p>}{error&&<p role="alert">{error}</p>}
+    {loading&&<p role="status">Loading {history?'tests':'agents'}…</p>}{error&&<p role="alert">{error}</p>}
     {!history&&!loading&&!error&&!!agents.length&&<section className="fleet-toolbar" aria-label="Filter your agents">
       <div className="search-bar fleet-search">
         <Search size={16} aria-hidden="true"/>
@@ -75,7 +75,7 @@ function AccountData({history}:{history:boolean}){
         {usedTemplates.map(id=><button aria-pressed={templateFilter===id} key={id} className={`filter-chip${templateFilter===id?' active':''}`} onClick={()=>setTemplateFilter(id)}>{templateFor(id).name}</button>)}
       </div>
     </section>}
-    {!loading&&!error&&(history?runs.length?runs.map(run=><Card key={run.id}><h2>{agents.find(a=>a.id===run.agent_id)?.name??'Agent test'}</h2><p>{new Date(run.created_at).toLocaleString()} Â· {run.status==='running'?'Pending or interrupted':run.status}</p>{run.output&&<pre style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{run.output}</pre>}<Link href={`/agent-preview?agent=${run.agent_id}`}>Open agent â†’</Link></Card>):<p>No tests yet. Open an agent to run your first test.</p>:agents.length?
+    {!loading&&!error&&(history?runs.length?runs.map(run=><Card key={run.id}><h2>{agents.find(a=>a.id===run.agent_id)?.name??'Agent test'}</h2><p>{new Date(run.created_at).toLocaleString()} · {run.status==='running'?'Pending or interrupted':run.status}</p>{run.output&&<pre style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{run.output}</pre>}<Link href={`/agent-preview?agent=${run.agent_id}`}>Open agent →</Link></Card>):<p>No tests yet. Open an agent to run your first test.</p>:agents.length?
       // Same fleet-grid + card layout, and the same search/filter behavior, as the local /agents page.
       <>
         <div className="fleet-grid">{filteredAgents.map(agent=><HostedAgentCard key={agent.id} agent={agent} runs={runs} busy={busy} onToggleVisibility={toggleVisibility} onArchived={()=>void refreshAgents()}/>)}</div>
@@ -87,12 +87,12 @@ function AccountData({history}:{history:boolean}){
       <h2>Saved agents</h2>
       <p className="hint">Public agents you&apos;ve bookmarked from Discover.</p>
       {savedError&&<div role="alert" className="alert"><strong>Something needs attention</strong><p>{savedError}</p></div>}
-      {!saved&&!savedError&&<p className="hint">Loadingâ€¦</p>}
-      {saved&&!saved.length&&<p className="empty">Nothing saved yet. <Link href="/discover">Browse Discover â†’</Link></p>}
+      {!saved&&!savedError&&<p className="hint">Loading…</p>}
+      {saved&&!saved.length&&<p className="empty">Nothing saved yet. <Link href="/discover">Browse Discover →</Link></p>}
       {!!saved?.length&&<div className="discover-grid">
         {saved.map(agent=><PublicAgentCard key={`${agent.kind}:${agent.id}`} agent={agent} footer={
           <p className="discover-card-owner"><span>By {agent.owner.displayName||`@${agent.owner.username}`}</span></p>
-        } aside={<Button size="sm" disabled={savedBusy===`${agent.kind}:${agent.id}`} onClick={()=>void removeSaved(agent)}>{savedBusy===`${agent.kind}:${agent.id}`?'Removingâ€¦':'Remove'}</Button>}/>)}
+        } aside={<Button size="sm" disabled={savedBusy===`${agent.kind}:${agent.id}`} onClick={()=>void removeSaved(agent)}>{savedBusy===`${agent.kind}:${agent.id}`?'Removing…':'Remove'}</Button>}/>)}
       </div>}
     </section>}
   </PageShell>;

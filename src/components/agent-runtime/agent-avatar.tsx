@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useRef, useState } from "react";
 import type { Variant } from "../../lib/agent-ui/variant";
@@ -26,7 +26,7 @@ export function slotCorner(index: number): Point {
 }
 
 // The persistent per-agent avatar: draggable, click to open the mini window.
-// `inline`: hosted inside a CatAgentBar, so this cat has no free position of its own â€” grabbing it
+// `inline`: hosted inside a CatAgentBar, so this cat has no free position of its own — grabbing it
 // instead drags the whole bar (via onDragStart/onDragMove/onDragEnd), same click-vs-drag threshold as before.
 export default function AgentAvatar({ agentId, name, variant, status, slot = 0, inline = false, dimmed, onOpen, onRemove, onPositionChange, onDragStart, onDragMove, onDragEnd, elementRef, children }: {
   agentId: string;
@@ -43,8 +43,8 @@ export default function AgentAvatar({ agentId, name, variant, status, slot = 0, 
   onDragMove?: (dx: number, dy: number) => void;   // inline only: delta since the drag started
   onDragEnd?: () => void;               // inline only: drag finished, bar should persist its position
   // Inline mode has no position state of its own (the bar owns it via raw DOM style updates a
-  // caller can't subscribe to), so a caller that needs this cat's live screen position â€” to
-  // anchor a chat window to it â€” reads it straight from the DOM via this ref.
+  // caller can't subscribe to), so a caller that needs this cat's live screen position — to
+  // anchor a chat window to it — reads it straight from the DOM via this ref.
   elementRef?: (element: HTMLDivElement | null) => void;
   children?: React.ReactNode;   // the mini window renders alongside its own cat
 }) {
@@ -143,7 +143,7 @@ export default function AgentAvatar({ agentId, name, variant, status, slot = 0, 
     style={inline ? undefined : position ? { left: position.x, top: position.y } : { right: 24 + slot * (AVATAR_W + SLOT_GAP), bottom: 24 }}
   >
     {children}
-    <button className="agent-dismiss" onClick={onRemove} aria-label={`Hide ${name}`} title={`Hide ${name} (the agent stays saved)`}>Ã—</button>
+    <button className="agent-dismiss" onClick={onRemove} aria-label={`Hide ${name}`} title={`Hide ${name} (the agent stays saved)`}>×</button>
     <button
       className={`avatar-button status-${status}${dragging ? " dragging" : ""}`}
       style={{ "--mascot-accent": variant.accent } as React.CSSProperties}
@@ -153,7 +153,7 @@ export default function AgentAvatar({ agentId, name, variant, status, slot = 0, 
       onKeyDown={onKeyDown}
       onClick={event=>{if(event.detail===0)onOpen();}}
       aria-label={inline ? `Open ${name}. Status: ${statusLabel}. Drag to move the bar.` : `Open ${name}. Status: ${statusLabel}. Drag to move, or use arrow keys.`}
-      title={inline ? `${name} â€” ${statusLabel}. Click to open, drag to move the bar.` : `${name} â€” ${statusLabel}. Click to open, drag to move.`}
+      title={inline ? `${name} — ${statusLabel}. Click to open, drag to move the bar.` : `${name} — ${statusLabel}. Click to open, drag to move.`}
     >
       <Mascot width={44} variant={variant} asleep={status === "idle"} />
     </button>

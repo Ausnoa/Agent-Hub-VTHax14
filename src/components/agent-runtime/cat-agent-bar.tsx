@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SlidersHorizontal, X } from "lucide-react";
@@ -34,7 +34,7 @@ function loadSelection(key: string): Selection {
 
 // Groups the existing cat avatars into one persistent, draggable strip instead of each
 // floating independently. Cats themselves (AgentAvatar) are unchanged, just laid out here.
-// Bottom-right is only the starting position each time the app opens â€” dragging the bar,
+// Bottom-right is only the starting position each time the app opens — dragging the bar,
 // or dragging any cat in it, moves the whole group and that position is remembered.
 export default function CatAgentBar({ storageKey, candidates, renderCat }: {
   storageKey: string;                                    // namespaces this bar's saved position + selection ("local" or "hosted:<userId>")

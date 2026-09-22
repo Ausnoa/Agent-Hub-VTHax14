@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -23,7 +23,7 @@ export default function DiscoveryPage() {
     if (hydrated && !proposal) router.replace("/discover");
   }, [hydrated, proposal, router]);
 
-  if (!hydrated || !proposal) return <PageShell><p className="hint">Loadingâ€¦</p></PageShell>;
+  if (!hydrated || !proposal) return <PageShell><p className="hint">Loading…</p></PageShell>;
 
   const nodes: TopologyNode[] = proposal.steps.map((step, index) => ({
     id: step.capability,

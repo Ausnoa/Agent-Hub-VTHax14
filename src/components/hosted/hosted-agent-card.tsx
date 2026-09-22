@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { FileText, FileSearch, HelpCircle, Network, Play } from "lucide-react";
 import type { OwnedAgent } from "../../lib/owned-agent/templates";
 import { templateFor } from "../../lib/owned-agent/templates";
@@ -52,7 +52,7 @@ export default function HostedAgentCard({ agent, runs, busy, onToggleVisibility,
       <div className="agent-card-actions">
         <Link href={`/agents/${agent.id}`}><Button variant="ghost" size="sm"><Network size={14} /> View detail page</Button></Link>
         <Button variant="ghost" size="sm" disabled={busy === agent.id} onClick={() => onToggleVisibility(agent.id, agent.visibility === "public" ? "private" : "public")}>
-          {busy === agent.id ? "Savingâ€¦" : agent.visibility === "public" ? "Make private" : "Publish"}
+          {busy === agent.id ? "Saving…" : agent.visibility === "public" ? "Make private" : "Publish"}
         </Button>
         <ArchiveButton kind="agents" id={agent.id} name={agent.name} onChanged={onArchived} />
       </div>

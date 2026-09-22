@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -46,7 +46,7 @@ export default function MyAgentsPage() {
     <FleetOverview />
     <PageHeader
       headingLevel={2}
-      eyebrow="A2A DEPLOYMENT REGISTRY Â· LOCAL WORKSPACE"
+      eyebrow="A2A DEPLOYMENT REGISTRY · LOCAL WORKSPACE"
       title="Your agent fleet"
       description="Supervise, monitor, and invoke your multi-agent workflows. One workspace for your entire fleet."
       action={<div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -55,10 +55,10 @@ export default function MyAgentsPage() {
     />
     {error && <div role="alert" className="alert"><strong>Something needs attention</strong><p>{error}</p></div>}
     <div className="metric-row">
-      <MetricTile label="Fleet nodes" value={agents ? String(agents.length) : "â€”"} delta="Saved ensembles" icon={<Boxes size={16} />} />
-      <MetricTile label="Connected agents" value={agents ? String(totalSteps) : "â€”"} delta="Across your pipelines" icon={<Network size={16} />} />
-      <MetricTile label="Distinct capabilities" value={agents ? String(distinctCapabilities) : "â€”"} delta="Available in your fleet" icon={<Sparkles size={16} />} />
-      <MetricTile label="Registry presence" value={agents ? String(ansResolvedSteps) : "â€”"} delta="ANS-resolved steps Â· identity unverified" icon={<ShieldCheck size={16} />} />
+      <MetricTile label="Fleet nodes" value={agents ? String(agents.length) : "—"} delta="Saved ensembles" icon={<Boxes size={16} />} />
+      <MetricTile label="Connected agents" value={agents ? String(totalSteps) : "—"} delta="Across your pipelines" icon={<Network size={16} />} />
+      <MetricTile label="Distinct capabilities" value={agents ? String(distinctCapabilities) : "—"} delta="Available in your fleet" icon={<Sparkles size={16} />} />
+      <MetricTile label="Registry presence" value={agents ? String(ansResolvedSteps) : "—"} delta="ANS-resolved steps · identity unverified" icon={<ShieldCheck size={16} />} />
     </div>
     <section className="fleet-toolbar" aria-label="Filter your fleet">
     <div className="search-bar fleet-search">
@@ -71,11 +71,11 @@ export default function MyAgentsPage() {
       {capabilities.map((cap) => <button aria-pressed={capability === cap} key={cap} className={`filter-chip${capability === cap ? " active" : ""}`} onClick={() => setCapability(cap)}>{cap}</button>)}
     </div>}
     </section>
-    {filtered === undefined && !error && <p role="status" className="hint">Loading your fleetâ€¦</p>}
+    {filtered === undefined && !error && <p role="status" className="hint">Loading your fleet…</p>}
     {filtered && <div className="fleet-grid">
       {filtered.map((agent) => <AgentCard agent={agent} key={agent.id} />)}
       <Link href="/create" className="card add-agent-card">
-        <span>ï¼‹</span>
+        <span>＋</span>
         <h2>Compose something new</h2>
         <p className="hint">Start with an outcome.</p>
       </Link>

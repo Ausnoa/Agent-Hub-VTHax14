@@ -1,10 +1,10 @@
-﻿"use client";
+"use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { AgentUISpec } from "../../lib/agent-ui/spec";
 import { paletteCount } from "../../lib/agent-ui/variant";
 
-// avatar â†’ mini â†’ full are the view states of the *active* agent; "spawning" is the brief
+// avatar → mini → full are the view states of the *active* agent; "spawning" is the brief
 // entrance animation played right after an agent is generated, before it joins the pack.
 export type AgentView = "hidden" | "spawning" | "avatar" | "mini" | "full";
 

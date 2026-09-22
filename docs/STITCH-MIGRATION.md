@@ -27,3 +27,15 @@ Stitch MCP is already configured and authenticated. Project and screen reads suc
 - Decorative orbit motion must be pausable and respect reduced-motion preferences. Text and actual workflow edges remain stationary.
 - Existing suite before changes: 84 passed, 0 failed.
 - Next 16.3.5 bundled CSS guide reviewed: shared tokens in root CSS; component-specific layout in CSS Modules; check production build ordering.
+
+## Validation checkpoint (2026-09-22)
+
+- `npm test`: 84 passed, 0 failed.
+- `npm run typecheck`: passed.
+- `npm run build`: passed. The sandbox initially blocked Google Fonts; the network-enabled retry completed successfully.
+- Browser checks covered desktop and 390px mobile layouts, fleet search and empty results, light/dark themes, topology pause/resume, and the local compose/discovery/review/save/runtime journey.
+- The local fictional Northstar briefing completed successfully; its rendered report and saved run history were verified again on September 22.
+- Corrected the review-save redirect race, garbled Unicode punctuation, and the signed-out hosted workspace's primary heading level.
+- Kept the latest Agent Glorria branding and companion-bar changes from main. Shared celestial components now live in `src/components/agent-glorria`.
+- Authenticated hosted end-to-end checks remain pending: this checkout has no Supabase URL or publishable key configured. Local demo checks do not establish hosted authentication, persistence, or remote execution success.
+- No production deployment performed. Local preview remains at http://127.0.0.1:3000/agents.
