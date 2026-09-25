@@ -13,7 +13,7 @@ import { useAccount } from "../../lib/hosted/use-account";
 const tabs = [
   { key: "discover", label: "Discover", href: "/discover", paths: ["/discover", "/available"] },
   { key: "agents", label: "My Agents", href: "/agents", paths: ["/agents"] },
-  { key: "agent-preview", label: "Create agent", href: "/agent-preview", paths: ["/agent-preview"] },
+  { key: "agent-preview", label: "Create agent", href: "/studio", paths: ["/studio", "/agent-preview"] },
   { key: "compose", label: "Compose", href: "/create", paths: ["/create", "/discovery", "/workflow", "/general"] },
 ] as const;
 

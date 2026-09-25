@@ -66,6 +66,7 @@ export default function CreateAgentPage() {
       <h1>Orchestrate Autonomous Intelligence</h1>
       <p>Describe the outcome. Find the right capabilities. Compose an agent that gets the whole job done.</p>
       <Link href="/general">Build a general workflow with arbitrary skills →</Link>
+      <p><Link href="/studio">Create a purpose-built agent with ANS and Gemini →</Link></p>
     </div>
 
     {error && <div role="alert" className="alert"><strong>Something needs attention</strong><p>{error}</p></div>}

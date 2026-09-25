@@ -129,10 +129,11 @@ function Workspace({mode}:{mode:Mode}){
     if(active.current){setRun(current);await advance(current);}
   });}
   if(mode==='discover')return <HostedDiscover candidates={candidates} query={query} setQuery={setQuery} busy={busy} loading={loading} error={error} searched={hasSearched} hasMore={Boolean(nextPage)} search={search} add={add} publicAgents={publicAgents} publicAgentsError={publicAgentsError}/>;
+  if(mode==='compose'&&selected?.definition.capability)return <PageShell><Card><h1>{selected.definition.name}</h1><p>This agent has a generated interface bound to its saved capabilities.</p><Link href={`/studio?agent=${selected.definition.revision?.rootId??selected.id}`}>Open / enhance this agent →</Link><Button onClick={()=>setSelected(undefined)}>Back to manual builder</Button></Card></PageShell>;
   const title=mode==='compose'?'Compose a workflow':'Workflow runs';
   return <PageShell className="hosted-workflows"><PageHeader eyebrow="YOUR HOSTED WORKSPACE" title={title} description={mode==='compose'?'Connect up to eight agents, review the steps, then run them with your input.':'Your latest 20 workflow runs. Open a workflow to review its saved steps and continue between completed steps.'}/>
     {loading&&<p role="status">Loading your workspace…</p>}{error&&<div role="alert" className="alert">{error}</div>}
-    {mode==='compose'&&<>
+    {mode==='compose'&&<><Card><h2>Create a purpose-built agent</h2><p>Discover capabilities, resolve supported gaps with Gemini, and generate a functional workspace.</p><Link href="/studio">Open capability studio →</Link></Card>
       <div className="celestial-composer-grid">
       <Card id="suggested-workflow" tabIndex={-1} style={{scrollMarginTop:90}}>
         <div className="workflow-graph-head"><h2>Workflow graph</h2>
@@ -165,7 +166,7 @@ function Workspace({mode}:{mode:Mode}){
       </Card>}
       <ArchivedItems kind="workflows" onChanged={()=>void hostedApi<HostedWorkflow[]>('workflows').then(setWorkflows)}/><Card><h2>Your saved workflows</h2>{workflows.map(workflow=><article key={workflow.id}><h3>{workflow.definition.name}</h3><p>{workflow.definition.steps.length} steps · {workflow.visibility==='public'?'Public':'Private'} · {new Date(workflow.created_at).toLocaleString()}</p><Button disabled={busy} onClick={()=>open(workflow)}>Open workflow</Button><ArchiveButton kind="workflows" id={workflow.id} name={workflow.definition.name} onChanged={()=>{if(selected?.id===workflow.id){setSelected(undefined);setRun(undefined);setSteps([]);}void hostedApi<HostedWorkflow[]>('workflows').then(setWorkflows);}}/> <Button disabled={busy} onClick={()=>void toggleVisibility(workflow)}>{workflow.visibility==='public'?'Make private':'Publish'}</Button> <Link href={`/agents/${workflow.id}`}>View detail page →</Link></article>)}{!loading&&!workflows.length&&<p>No saved workflows yet.</p>}</Card>
     </>}
-    {<Card><h2>Recent workflow runs</h2>{runs.map(savedRun=><article key={savedRun.id}><h3>{workflows.find(w=>w.id===savedRun.workflow_id)?.definition.name??'Workflow'}</h3><RunResult run={savedRun}/>{mode==='compose'?<Button disabled={busy} onClick={()=>{const w=workflows.find(w=>w.id===savedRun.workflow_id);if(w){open(w);setRun(savedRun);setSource(typeof savedRun.input.value==='string'?savedRun.input.value:JSON.stringify(savedRun.input.value));setInputFormat(savedRun.input.type);}}}>Review run</Button>:<Link href={`/create?workflow=${savedRun.workflow_id}`}>Open workflow →</Link>}</article>)}{!loading&&!runs.length&&<p>No workflow runs yet.</p>}</Card>}
+    {<Card><h2>Recent workflow runs</h2>{runs.map(savedRun=><article key={savedRun.id}><h3>{workflows.find(w=>w.id===savedRun.workflow_id)?.definition.name??'Workflow'}</h3><RunResult run={savedRun}/>{mode==='compose'?<Button disabled={busy} onClick={()=>{const w=workflows.find(w=>w.id===savedRun.workflow_id);if(w){open(w);setRun(savedRun);setSource(typeof savedRun.input.value==='string'?savedRun.input.value:JSON.stringify(savedRun.input.value));setInputFormat(savedRun.input.type === 'audio' ? 'text' : savedRun.input.type);}}}>Review run</Button>:<Link href={`/create?workflow=${savedRun.workflow_id}`}>Open workflow →</Link>}</article>)}{!loading&&!runs.length&&<p>No workflow runs yet.</p>}</Card>}
   </PageShell>;
 }
 type FinderProps={

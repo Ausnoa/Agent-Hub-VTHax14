@@ -22,7 +22,7 @@ export default function HostedCatRuntime(){const account=useAccount();return <Ca
 function CatPack({userId}:{userId?:string}){
   const [targets,setTargets]=useState<Target[]>([]),[hidden,setHidden]=useState<string[]>([]),[selected,setSelected]=useState<string>();
   const [status,setStatus]=useState<Record<string,'idle'|'working'|'done'|'error'>>({});
-  useEffect(()=>{let active=true;const refresh=()=>{Promise.all([hostedApi<OwnedAgent[]>('agents'),hostedApi<HostedWorkflow[]>('workflows')]).then(([agents,workflows])=>{if(active)setTargets([...agents.map(a=>({id:a.id,name:a.name,kind:'agent' as const,createdAt:a.createdAt})),...workflows.map(w=>({id:w.id,name:w.definition.name,kind:'workflow' as const,createdAt:w.created_at,workflow:w}))].sort((a,b)=>b.createdAt.localeCompare(a.createdAt)));}).catch(()=>{/* No account, or main workspace shows the storage error. */});};refresh();window.addEventListener('hosted-workspace-changed',refresh);return()=>{active=false;window.removeEventListener('hosted-workspace-changed',refresh);};},[]);
+  useEffect(()=>{let active=true;const refresh=()=>{Promise.all([hostedApi<OwnedAgent[]>('agents'),hostedApi<HostedWorkflow[]>('workflows')]).then(([agents,workflows])=>{if(active)setTargets([...agents.map(a=>({id:a.id,name:a.name,kind:'agent' as const,createdAt:a.createdAt})),...[...new Map([...workflows].sort((a,b)=>(a.definition.revision?.number??1)-(b.definition.revision?.number??1)).map(w=>[w.definition.revision?.rootId??w.id,w])).values()].map(w=>({id:w.id,name:w.definition.name,kind:'workflow' as const,createdAt:w.created_at,workflow:w}))].sort((a,b)=>b.createdAt.localeCompare(a.createdAt)));}).catch(()=>{/* No account, or main workspace shows the storage error. */});};refresh();window.addEventListener('hosted-workspace-changed',refresh);return()=>{active=false;window.removeEventListener('hosted-workspace-changed',refresh);};},[]);
   const [hiddenReady,setHiddenReady]=useState(false),[spawn,setSpawn]=useState<{id:string;name:string;skills:string[]}[]>([]);
   // Cats created this session, kept independent of the authenticated list fetch above so a new
   // cat still joins the bar when that fetch can't run (no session) or hasn't refreshed yet.
@@ -84,7 +84,7 @@ function CatChat({target,anchor,variantIndex,onClose,onStatus}:{target:Target;an
       if(active.current)setMessages(tests.slice().reverse().map(t=>({id:t.id,input:t.input??'Saved agent test',output:t.output??'No result yet.',status:t.status})));
     }else{
       const runs=await hostedApi<HostedRun[]>('workflows/runs');
-      if(active.current)setMessages(runs.filter(r=>r.workflow_id===target.id).reverse().map(r=>({id:r.id,input:typeof r.input.value==='string'?r.input.value:JSON.stringify(r.input.value),output:r.error??(r.outputs.length?String(typeof r.outputs.at(-1)!.value==='string'?r.outputs.at(-1)!.value:JSON.stringify(r.outputs.at(-1)!.value,null,2)):'No output yet.'),status:r.status})));
+      if(active.current)setMessages(runs.filter(r=>r.workflow_id===target.id).reverse().map(r=>({id:r.id,input:r.input.type==='audio'?'Audio recording':typeof r.input.value==='string'?r.input.value:JSON.stringify(r.input.value),output:r.error??(r.outputs.length?String(typeof r.outputs.at(-1)!.value==='string'?r.outputs.at(-1)!.value:JSON.stringify(r.outputs.at(-1)!.value,null,2)):'No output yet.'),status:r.status})));
     }
   },[target.id,target.kind]);
   useEffect(()=>{active.current=true;refresh().catch(()=>{if(active.current)setError('Could not load saved results.');});dialog.current?.focus();return()=>{active.current=false;};},[refresh]);
@@ -111,17 +111,17 @@ function CatChat({target,anchor,variantIndex,onClose,onStatus}:{target:Target;an
   return <section className={`hosted-cat-chat${expanded?' expanded':''}`} style={!expanded&&placement?{left:placement.left,top:placement.top,maxHeight:placement.maxHeight,right:'auto',bottom:'auto'}:undefined} role="dialog" aria-label={`${target.name} cat chat`} tabIndex={-1} ref={dialog}>
     <header><Mascot width={34} variant={variantFor(target.id,variantIndex)}/><div><strong>{target.name}</strong><small>{target.kind==='workflow'?'Workflow companion':'Agent companion'}</small></div><button onClick={()=>setExpanded(!expanded)} aria-label={expanded?'Minimize cat chat':'Expand cat chat'}>{expanded?<Minimize2 size={16}/>:<Maximize2 size={16}/>}</button><button disabled={busy} onClick={onClose} aria-label="Close cat chat"><X size={16}/></button></header>
     <div className="cat-chat-body"><p className="hint">Each message starts an independent {target.kind==='workflow'?'workflow run':'agent test'}. Previous messages are not sent as context.</p>
-      <Link href={target.kind==='workflow'?`/create?workflow=${target.id}`:`/agent-preview?agent=${target.id}`}>Open {target.kind==='workflow'?'workflow':'agent'} →</Link>
+      <Link href={target.kind==='workflow'?(target.workflow?.definition.capability?`/studio?agent=${target.workflow.definition.revision?.rootId??target.id}`:`/create?workflow=${target.id}`):`/agent-preview?agent=${target.id}`}>Open {target.kind==='workflow'?'workflow':'agent'} →</Link>
       {target.workflow&&<details><summary>Review {target.workflow.definition.steps.length} steps</summary><ol>{target.workflow.definition.steps.map((s,i)=><li key={i}>{s.name} · {s.skill}<br/>{s.agentId.startsWith('template:')?'Your private template':s.endpoint}</li>)}</ol></details>}
       <div className="cat-messages" aria-live="polite">{!messages.length&&<p>No saved messages yet. Send a task to get started.</p>}{messages.map(m=><article key={m.id}><p className="cat-user">{m.input}</p><pre>{m.output}</pre><small>{m.status}</small></article>)}</div>
       {error&&<p role="alert" className="alert">{error}</p>}
       {pending&&<p role="status">{pending.status} · {pending.outputs.length} steps completed</p>}
-      <form onSubmit={e=>{e.preventDefault();void execute();}}>
+      {!target.workflow?.definition.capability&&<form onSubmit={e=>{e.preventDefault();void execute();}}>
         {target.kind==='workflow'&&<label className="cat-confirm"><input type="checkbox" checked={json} disabled={busy} onChange={e=>{setJson(e.target.checked);setConfirmed(false);}}/>Send a JSON object</label>}
         <label>Message to {target.name}<textarea value={text} maxLength={12000} disabled={busy} onChange={e=>{setText(e.target.value);setConfirmed(false);}} placeholder="Give this agent a task…"/></label>
         <label className="cat-confirm"><input type="checkbox" disabled={busy} checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/>{target.kind==='workflow'?'I reviewed the steps and authorize sending this message and outputs to the selected agents and OpenAI, including their actions.':'Send this message to OpenAI to run my saved template.'}</label>
         <div className="cat-actions"><button type="submit" className="btn btn-primary" disabled={busy||!confirmed||!text.trim()}>{busy?'Working…':'Send task'}</button><button type="button" disabled={busy} onClick={()=>void refresh().catch(()=>setError('Could not refresh history.'))}>Refresh history</button></div>
-      </form>
+      </form>}
     </div>
   </section>;
 }

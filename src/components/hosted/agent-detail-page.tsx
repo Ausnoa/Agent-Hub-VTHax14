@@ -73,7 +73,7 @@ function Detail({ id, myId }: { id: string; myId: string }) {
     <PageHeader eyebrow={agent.kind === 'workflow' ? 'COMPOSITE WORKFLOW' : 'TEMPLATE AGENT'} title={name} description={description}
       action={<div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <StatusPill tone={visibility === 'public' ? 'green' : 'neutral'}>{visibility === 'public' ? 'Public' : 'Private'}</StatusPill>
-        {mine && <Link href={agent.kind === 'template' ? `/agent-preview?agent=${id}` : `/create?workflow=${id}`}>Edit →</Link>}
+        {mine && <Link href={agent.kind === 'template' ? `/agent-preview?agent=${id}` : `/studio?agent=${agent.value.definition.revision?.rootId??id}`}>Enhance →</Link>}
         {!mine && <Button size="sm" disabled={saved} onClick={() => void save()}>{saved ? 'Saved' : 'Save'}</Button>}
       </div>} />
     {owner && <Link href={`/profile/${owner.username}`} className="discover-card-owner">
@@ -85,14 +85,14 @@ function Detail({ id, myId }: { id: string; myId: string }) {
         {agent.value.definition.steps.map((step, index) => <div className="registry-item" key={index}>
           <span className="registry-item-icon">{index + 1}</span>
           <div style={{ minWidth: 0, flex: 1 }}><h3>{step.name}</h3><p className="mono">{step.skill}</p></div>
-          <StatusPill tone={step.agentId.startsWith('template:') ? 'accent' : 'violet'}>{step.agentId.startsWith('template:') ? 'Platform template' : 'Discovered via ANS'}</StatusPill>
+          <StatusPill tone={step.agentId.startsWith('template:') ? 'accent' : 'violet'}>{step.geminiTask?'Gemini':step.agentId.startsWith('template:') ? 'Platform template' : 'Discovered via ANS'}</StatusPill>
         </div>)}
       </div>
     </Card>}
     {mine
       ? <p className="hint">This is one of your agents. Edit it from your own workspace using the link above.</p>
       : <p className="hint">Launching this agent does not give you ownership or edit access — it stays {owner?.displayName || (owner ? `@${owner.username}` : 'its owner')}&rsquo;s agent.</p>}
-    {agent.kind === 'template' ? <TemplateLaunch id={id} template={agent.value.template} /> : <WorkflowLaunch workflow={agent.value} />}
+    {agent.kind === 'template' ? <TemplateLaunch id={id} template={agent.value.template} /> : agent.value.definition.capability ? <Card><h2>Your agent workspace</h2><Link href={`/studio?agent=${id}`}>Open the generated interface →</Link></Card> : <WorkflowLaunch workflow={agent.value} />}
   </PageShell>;
 }
 

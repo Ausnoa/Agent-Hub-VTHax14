@@ -1,0 +1,17 @@
+.capability-workspace { max-width: 1120px; margin: 0 auto; }
+.capability-workspace > .card, .capability-workspace > section { margin-block: 20px; }
+.capability-workspace textarea { min-height: 130px; width: 100%; }
+.capability-workspace label { display: grid; gap: 8px; margin-block: 14px; }
+.capability-workspace input:not([type=checkbox]) { width: 100%; }
+.capability-steps { display: grid; gap: 16px; padding-left: 24px; }
+.capability-steps span { display: block; margin-top: 4px; color: var(--text-muted, #999); font-size: .85rem; }
+.capability-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-block: 14px; }
+.capability-workspace .capability-confirm { display: flex; align-items: flex-start; }
+.capability-columns { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,320px),1fr)); gap: 18px; }
+.capability-output { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; line-height: 1.65; }
+.capability-saved { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding-block: 14px; }
+.study-card { padding: 18px; margin-block: 12px; border: 1px solid var(--border, #7775); border-radius: 14px; }
+.study-card summary { cursor: pointer; font-weight: 600; }
+.study-card button { margin: 6px; }
+.capability-workspace table { width: 100%; overflow-wrap: anywhere; }
+.capability-workspace td, .capability-workspace th { padding: 10px; text-align: left; }

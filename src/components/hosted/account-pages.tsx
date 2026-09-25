@@ -12,6 +12,7 @@ import Button from '../ui/button';
 import PublicAgentCard, { type PublicAgentSummary } from './public-agent-card';
 import HostedAgentCard from './hosted-agent-card';
 import FleetOverview from '../agent-glorria/fleet-overview';
+import CapabilityAgentList from '../agent-runtime/capability-agent-list';
 import './hosted.css';
 import {ArchiveButton,ArchivedItems} from './archive-controls';
 type Run={id:string;agent_id:string;status:string;output:string|null;created_at:string};
@@ -63,6 +64,7 @@ function AccountData({history}:{history:boolean}){
     });
   },[agents,query,templateFilter]);
   return <PageShell>{!history&&<FleetOverview hosted/>}<PageHeader headingLevel={history?1:2} eyebrow="YOUR HOSTED WORKSPACE" title={history?'Agent test history':'Your agent fleet'} description={history?'Your latest 20 template tests and their saved results.':'Your saved template agents. Publish one to make it discoverable to other members.'} action={<Link href="/agent-preview"><Button variant="primary"><Plus size={14}/> Create agent</Button></Link>}/>
+    {!history&&<CapabilityAgentList/>}
     {loading&&<p role="status">Loading {history?'tests':'agents'}…</p>}{error&&<p role="alert">{error}</p>}
     {!history&&!loading&&!error&&!!agents.length&&<section className="fleet-toolbar" aria-label="Filter your agents">
       <div className="search-bar fleet-search">

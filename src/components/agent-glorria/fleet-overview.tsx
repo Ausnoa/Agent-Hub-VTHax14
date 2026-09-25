@@ -18,7 +18,7 @@ export default function FleetOverview({ hosted = false }: { hosted?: boolean }) 
       <h1 id="fleet-overview-title">Your purpose. <em>Your agent.</em></h1>
       <div className={styles.heroBottom}>
         <p>Bring the right capabilities together. Discover agents, compose a workflow, and turn your next idea into something useful.</p>
-        <Link className="btn btn-primary" href="/agent-preview"><Plus size={16} /> Create agent</Link>
+        <Link className="btn btn-primary" href="/studio"><Plus size={16} /> Create agent</Link>
       </div>
     </div>
     <div className={styles.workspace}>
@@ -40,7 +40,7 @@ export default function FleetOverview({ hosted = false }: { hosted?: boolean }) 
           if (directive.trim().length < 10) return;
           try {
             sessionStorage.setItem("stitch-workflow-directive", directive.trim());
-            router.push("/create");
+            router.push("/studio");
           } catch { setError("Your browser could not keep this draft. Open the composer and paste your outcome there."); }
         }}>
           <label htmlFor="fleet-directive">Desired outcome</label>

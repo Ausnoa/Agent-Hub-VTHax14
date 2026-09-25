@@ -82,6 +82,7 @@ async function handle(request: Request, context: { params: Promise<{ path: strin
       const general = new GeneralStore();
       try {
         if (request.method === "GET" && path.length === 1) return json(general.list());
+        if(request.method==='GET'&&path.length===2&&z.uuid().safeParse(path[1]).success){const agent=general.get(path[1],true);return agent?json(agent):json({error:'Agent not found'},404);}
         if (request.method === "GET" && path[1] === "available" && path.length === 2) {
           const params = new URL(request.url).searchParams;
           const query = z.string().max(256).parse(params.get("query") ?? "");

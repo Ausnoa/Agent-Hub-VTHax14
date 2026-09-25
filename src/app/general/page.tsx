@@ -49,6 +49,7 @@ export default function GeneralPage() {
     <div className="compose-hero"><div className="eyebrow">GENERAL A2A · EXPERIMENTAL</div><h1>Connect skills. Build a workflow.</h1>
       <p>One to eight steps. Arbitrary advertised skills. Text or JSON—not a fixed company report.</p>
       <Link href="/create">Back to report demo</Link></div>
+    <Card><h2>Build from your intent</h2><p>Resolve capabilities with ANS and Gemini, then generate a functional interface.</p><Link href="/studio">Open capability studio →</Link></Card>
     <Link href="/available">Browse available agents & check compatibility →</Link>
     <Card><h2>Your created agents</h2><Link href="/agent-preview">Create an agent from a template →</Link>
       {owned.map(agent => <div key={agent.id}><strong>{agent.name}</strong><p>{templateFor(agent.template).name} · Local execution · Not ANS registered</p><Button disabled={busy || steps.length >= 8} onClick={() => {setSteps([...steps, {agentId:agent.id,skill:templateFor(agent.template).skill,inputFrom:steps.length ? "previous" : "original",format:"text",instruction:""}]);setProposal(undefined);}}>Add {agent.name}</Button></div>)}

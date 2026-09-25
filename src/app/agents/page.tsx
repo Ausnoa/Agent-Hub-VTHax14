@@ -11,6 +11,7 @@ import Button from "../../components/ui/button";
 import MetricTile from "../../components/ui/metric-tile";
 import AgentCard from "../../components/agent-glorria/agent-card";
 import FleetOverview from "../../components/agent-glorria/fleet-overview";
+import CapabilityAgentList from '../../components/agent-runtime/capability-agent-list';
 
 export default function MyAgentsPage() {
   const [agents, setAgents] = useState<Composite[]>();
@@ -44,6 +45,7 @@ export default function MyAgentsPage() {
 
   return <PageShell className="screen-fleet">
     <FleetOverview />
+    <CapabilityAgentList local/>
     <PageHeader
       headingLevel={2}
       eyebrow="A2A DEPLOYMENT REGISTRY · LOCAL WORKSPACE"
