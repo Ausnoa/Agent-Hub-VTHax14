@@ -11,7 +11,8 @@ export const gemini: StructuredModel = async (input, instructions, schema, optio
   const key = process.env.GEMINI_API_KEY, models = (process.env.GEMINI_MODEL ?? '').split(',').map(m => m.trim()).filter(Boolean);
   if (!key || !models.length || models.some(model => !/^[a-zA-Z0-9._-]+$/.test(model))) throw new ModelServiceError('not-configured');
   let response: Response | undefined;
-  const deadline = AbortSignal.timeout(90_000);
+  // Audio transcription is the slowest call; it gets more time per attempt and overall.
+  const deadline = AbortSignal.timeout(options.audio ? 150_000 : 90_000), perAttempt = options.audio ? 75_000 : 40_000;
   const body = JSON.stringify({ systemInstruction: { parts: [{ text: instructions }] },
     contents: [{ role: 'user', parts: [{ text: input }, ...(options.audio ? [{ inlineData: options.audio }] : [])] }],
     generationConfig: { responseMimeType: 'application/json', responseJsonSchema: z.toJSONSchema(schema), maxOutputTokens: options.maxOutputTokens ?? 4096 },
@@ -25,7 +26,7 @@ export const gemini: StructuredModel = async (input, instructions, schema, optio
         try {
           response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
             method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key }, body,
-            signal: AbortSignal.any([deadline, AbortSignal.timeout(40_000)]),
+            signal: AbortSignal.any([deadline, AbortSignal.timeout(perAttempt)]),
           });
         } catch (error) {
           if (!(error instanceof Error && error.name === 'TimeoutError') || deadline.aborted || last) throw error;

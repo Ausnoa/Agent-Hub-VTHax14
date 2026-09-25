@@ -16,5 +16,22 @@ export function validateUI(input: unknown, steps: GeneralStep[]): CapabilityUI {
   if (ui.extras && new Set(ui.extras).size !== ui.extras.length) throw new Error('UI repeats a supporting section');
   return ui;
 }
+/** Components a step's real output can be shown with. Flashcards and quizzes need their structured Gemini contract. */
+export function allowedComponents(step: GeneralStep): CapabilityUI['panels'][number]['component'][] {
+  return step.geminiTask === 'flashcards' ? ['flashcards', 'text'] : step.geminiTask === 'quiz' ? ['quiz', 'text'] : ['text', 'table'];
+}
+/**
+ * Keeps a specialist design when it only mislabels how an output is displayed: an unsupported
+ * component becomes plain text and a dangling primary panel is dropped. Bindings to missing or
+ * duplicated steps are not repaired; validateUI still rejects those.
+ */
+export function repairUI(input: unknown, steps: GeneralStep[]): CapabilityUI {
+  const ui = interfaceSchema.parse(input);
+  return validateUI({ ...ui,
+    panels: ui.panels.map(panel => steps[panel.step] && !allowedComponents(steps[panel.step]).includes(panel.component) ? { ...panel, component: 'text' as const } : panel),
+    primaryPanel: ui.primaryPanel !== undefined && steps[ui.primaryPanel] ? ui.primaryPanel : undefined,
+    extras: ui.extras && [...new Set(ui.extras)],
+  }, steps);
+}
 /** Interfaces saved before `extras` existed show every supporting section. */
 export const uiExtras = (ui: CapabilityUI | undefined) => new Set(ui?.extras ?? extraKinds);
