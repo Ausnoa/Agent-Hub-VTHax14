@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { gemini } from '../models/gemini.ts';
 import { readBody, respond } from '../hosted/handler.ts';
 import { HostedError } from '../hosted/server.ts';
-import { resolveCapabilities, defaultUI, validateUI, type CapabilityDraft, type PipelineServices } from './pipeline.ts';
+import { resolveCapabilities, designInterface, defaultUI, validateUI, type CapabilityDraft, type PipelineServices } from './pipeline.ts';
 import type { CapabilityProposal } from './store.ts';
 import { draftSchema, type GeneralStep } from '../general/contracts.ts';
 
@@ -31,6 +31,18 @@ export async function handleCapabilities(request: Request, path: string[], conte
     const base = proposal ? asCapabilityDraft(proposal.definition) : input.baseId ? await context.getAgent(input.baseId) : undefined;
     const result = await resolveCapabilities(input.description, { generate: context.generate ?? gemini, search: context.search, prepare: context.prepare }, base);
     return respond(await context.put(result, proposal?.parentId ?? input.baseId), 201);
+  }
+  // A hand-built (or pre-capability) workflow keeps its steps; the specialists design its
+  // interface, and it is published as a revision of the saved workflow.
+  if (path[1] === 'adopt' && path.length === 2 && request.method === 'POST') {
+    if (!context.enabled) throw new HostedError(503, 'Capability generation is not enabled');
+    const { workflowId } = z.object({ workflowId: z.uuid() }).parse(await readBody(request));
+    await context.budget();
+    const base = await context.getAgent(workflowId);
+    const design = await designInterface({ intent: base.capability.intent, name: base.name, steps: base.steps, generate: context.generate ?? gemini });
+    const draft: CapabilityDraft = { ...base, description: base.description || design.ui.description, capability: { ...base.capability, ui: design.ui, suggestions: design.suggestions, generation: design.generation, unresolved: [] } };
+    draftSchema.parse(draft); validateUI(draft.capability.ui, draft.steps);
+    return respond(await context.publish((await context.put(draft, workflowId)).id), 201);
   }
   if (path[1] === 'save' && path.length === 2 && request.method === 'POST') {
     const { proposalId } = z.object({ proposalId: z.uuid() }).parse(await readBody(request));

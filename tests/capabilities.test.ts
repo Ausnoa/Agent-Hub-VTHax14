@@ -93,6 +93,16 @@ test('registry outage never becomes fallback; invalid UI falls back to executabl
   const draft=await resolveCapabilities('Summarize supplied text',deps);
   assert.equal(draft.capability.generation,'fallback');assert.equal(draft.capability.ui.panels[0].step,0);
 });
+test('interface supporting sections and primary panel must refer to real outputs',()=>{
+  const step:GeneralStep={agentId:'gemini:summarize',geminiTask:'summarize',skill:'summarize',name:'Summary',endpoint:'gemini:summarize',metadataUrl:'gemini:summarize',format:'text',inputFrom:'original',instruction:''};
+  const ui=defaultUI('Study',[step]);
+  assert.deepEqual(ui.extras,['history','export','capabilities']);assert.equal(ui.primaryPanel,0);
+  assert.throws(()=>validateUI({...ui,primaryPanel:3},[step]),/primary panel/);
+  assert.throws(()=>validateUI({...ui,extras:['history','history']},[step]),/repeats/);
+  assert.throws(()=>validateUI({...ui,extras:['payments']},[step]));
+  const {extras:_extras,primaryPanel:_primary,...legacy}=ui;
+  assert.doesNotThrow(()=>validateUI(legacy,[step]),'interfaces saved before supporting sections existed remain valid');
+});
 test('bindings reject cycles, forged Gemini skills and invented UI actions',()=>{
   const step:GeneralStep={agentId:'gemini:summarize',geminiTask:'summarize',skill:'summarize',name:'Summary',endpoint:'gemini:summarize',metadataUrl:'gemini:summarize',format:'text',inputFrom:'original',instruction:''};
   assert.throws(()=>draftSchema.parse({name:'Bad',steps:[{...step,inputFrom:'previous',inputStep:0}]}));
