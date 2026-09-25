@@ -15,3 +15,22 @@
 .study-card button { margin: 6px; }
 .capability-workspace table { width: 100%; overflow-wrap: anywhere; }
 .capability-workspace td, .capability-workspace th { padding: 10px; text-align: left; }
+.capability-profile-head { display: flex; gap: 24px; align-items: center; padding-block: 28px 8px; }
+.capability-profile-head h1 { margin: 6px 0 8px; }
+.capability-profile-head p { max-width: 720px; }
+.capability-profile-mascot { flex: none; display: grid; place-items: center; width: 104px; height: 104px; border-radius: 50%; border: 1px solid var(--border, #7775); background: radial-gradient(circle, color-mix(in srgb, var(--mascot-accent) 22%, transparent), transparent 70%); }
+.capability-runner > .card, .capability-runner > section { margin-block: 20px; }
+.capability-runner textarea { min-height: 130px; width: 100%; }
+.capability-runner label { display: grid; gap: 8px; margin-block: 14px; }
+.capability-runner .capability-confirm { display: flex; align-items: flex-start; }
+.capability-runner.compact > .card, .capability-runner.compact > section { margin-block: 10px; padding: 12px; }
+.capability-runner.compact h2 { font-size: 14px; }
+.capability-runner.compact textarea { min-height: 80px; }
+.capability-runner.compact .capability-confirm { font-size: 12px; }
+.capability-advanced { margin-block: 28px; text-align: center; }
+@media (max-width: 640px) { .capability-profile-head { flex-direction: column; align-items: flex-start; } }
+.agent-mini.capability-cat { width: min(400px, calc(100vw - 32px)); }
+.agent-mini.capability-cat .agent-mini-body { max-height: min(560px, calc(100vh - 160px)); }
+.capability-cat-full .agent-full-main { max-width: none; }
+.capability-cat-full { display: flex; flex-direction: column; }
+.capability-cat-full > .agent-full-main { flex: 1; }

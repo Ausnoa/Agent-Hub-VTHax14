@@ -18,7 +18,7 @@ export default function FleetOverview({ hosted = false }: { hosted?: boolean }) 
       <h1 id="fleet-overview-title">Your purpose. <em>Your agent.</em></h1>
       <div className={styles.heroBottom}>
         <p>Bring the right capabilities together. Discover agents, compose a workflow, and turn your next idea into something useful.</p>
-        <Link className="btn btn-primary" href="/studio"><Plus size={16} /> Create agent</Link>
+        <Link className="btn btn-primary" href="/create"><Plus size={16} /> Create agent</Link>
       </div>
     </div>
     <div className={styles.workspace}>
@@ -40,14 +40,14 @@ export default function FleetOverview({ hosted = false }: { hosted?: boolean }) 
           if (directive.trim().length < 10) return;
           try {
             sessionStorage.setItem("stitch-workflow-directive", directive.trim());
-            router.push("/studio");
+            router.push("/create");
           } catch { setError("Your browser could not keep this draft. Open the composer and paste your outcome there."); }
         }}>
           <label htmlFor="fleet-directive">Desired outcome</label>
           <textarea id="fleet-directive" value={directive} onChange={event => setDirective(event.target.value)} maxLength={2000} placeholder="e.g. Summarize meeting notes, extract action items, and prepare a weekly briefing." />
           <button type="button" className={styles.suggestion} onClick={() => setDirective("Summarize meeting notes, extract action items, and prepare a weekly briefing.")}><Sparkles size={14}/><span>Try a starting point<strong>Meeting brief + action items</strong></span></button>
-          <button className="btn btn-primary btn-block" disabled={directive.trim().length < 10} type="submit">Compose a workflow <ArrowUpRight size={16}/></button>
-          {error && <p role="alert">{error} <Link href="/create">Open composer</Link></p>}
+          <button className="btn btn-primary btn-block" disabled={directive.trim().length < 10} type="submit">Create this agent <ArrowUpRight size={16}/></button>
+          {error && <p role="alert">{error} <Link href="/create">Open agent creation</Link></p>}
         </form>
         <p className={styles.note}>You review the steps before execution.</p>
       </aside>

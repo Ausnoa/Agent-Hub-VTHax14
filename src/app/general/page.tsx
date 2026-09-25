@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { templateFor, type OwnedAgent } from "../../lib/owned-agent/templates";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAnnounceAgent } from "../../components/agent-runtime/capability-profile";
+import { localAgent } from "../../components/agent-runtime/capability-runner";
 import PageShell from "../../components/layout/page-shell";
 import Card from "../../components/ui/card";
 import Button from "../../components/ui/button";
@@ -11,6 +14,8 @@ import type { RegistryCandidate } from "../../lib/gateways/registry";
 import type { Selection, GeneralWorkflow, GeneralRun } from "../../lib/general/contracts";
 
 export default function GeneralPage() {
+  const router = useRouter();
+  const announce = useAnnounceAgent(true);
   const [owned, setOwned] = useState<OwnedAgent[]>([]);
   useEffect(() => { api<OwnedAgent[]>("owned").then(setOwned).catch(reason => setError(reason.message)); }, []);
   const [ansId, setAnsId] = useState("");
@@ -48,8 +53,8 @@ export default function GeneralPage() {
   return <PageShell narrow className="screen-general">
     <div className="compose-hero"><div className="eyebrow">GENERAL A2A · EXPERIMENTAL</div><h1>Connect skills. Build a workflow.</h1>
       <p>One to eight steps. Arbitrary advertised skills. Text or JSON—not a fixed company report.</p>
-      <Link href="/create">Back to report demo</Link></div>
-    <Card><h2>Build from your intent</h2><p>Resolve capabilities with ANS and Gemini, then generate a functional interface.</p><Link href="/studio">Open capability studio →</Link></Card>
+      <Link href="/create">Describe an agent instead →</Link></div>
+    <Card><h2>Hand-pick your agents</h2><p>Choose each step yourself. When you save, Glorria designs the agent’s interface with its product, frontend, and backend specialists, pops out its cat, and adds it to your fleet.</p></Card>
     <Link href="/available">Browse available agents & check compatibility →</Link>
     <Card><h2>Your created agents</h2><Link href="/agent-preview">Create an agent from a template →</Link>
       {owned.map(agent => <div key={agent.id}><strong>{agent.name}</strong><p>{templateFor(agent.template).name} · Local execution · Not ANS registered</p><Button disabled={busy || steps.length >= 8} onClick={() => {setSteps([...steps, {agentId:agent.id,skill:templateFor(agent.template).skill,inputFrom:steps.length ? "previous" : "original",format:"text",instruction:""}]);setProposal(undefined);}}>Add {agent.name}</Button></div>)}
@@ -69,8 +74,8 @@ export default function GeneralPage() {
     </Card>
     <Card><h2>Supported subset</h2><p>Created agents run locally through saved templates. External agents require public HTTPS, unauthenticated A2A 0.3 JSON-RPC. No files, streaming, or automatic retries. Identity is unverified. A compatible card does not guarantee useful outputs or safe behavior.</p></Card>
     {error && <div role="alert" className="alert">{error}</div>}
-    <Card><h2>Optional: suggest steps with the LLM</h2><label>Desired outcome<textarea value={description} maxLength={2000} onChange={(event) => setDescription(event.target.value)} /></label><p>Sends this description and indexed skill IDs to the configured planner. Suggestions do not execute agents or prove compatibility.</p>
-      <Button disabled={busy || description.length < 10} onClick={() => work(async () => { const draft = await api<{ name: string; steps: Selection[] }>("general/suggest", { description }); setName(draft.name); setSteps(draft.steps); setProposal(undefined); })}>Suggest workflow</Button></Card>
+    <Card><h2>Or describe the outcome</h2><label>Desired outcome<textarea value={description} maxLength={2000} onChange={(event) => setDescription(event.target.value)} /></label><p>Opens agent creation with this description: ANS discovery first, Gemini for supported gaps, and a specialist-designed interface. Nothing is saved until you review it.</p>
+      <Button disabled={busy || description.length < 10} onClick={() => { sessionStorage.setItem("general-workflow-description", description); router.push("/create"); }}>Create from this description</Button></Card>
     <Card><h2>1. Find skills in the local index</h2><label>Search<input value={query} maxLength={256} onChange={(event) => setQuery(event.target.value)} /></label>
       <Button disabled={busy || !query.trim()} onClick={() => work(async () => { const result = await api<{ candidates: RegistryCandidate[] }>("registry/search", { query, limit: 20 }); setCandidates(result.candidates); })}>Search agents</Button>
       <p>Results are discoveries, not verified connections. Card checks happen when you build the proposal.</p>
@@ -87,7 +92,14 @@ export default function GeneralPage() {
       <Button disabled={busy || !steps.length} onClick={() => work(async () => { setProposal(await api<GeneralWorkflow>("general/proposals", { name, steps })); })}>Validate steps & build proposal</Button>
       {proposal && <div><h3>Review execution steps</h3><ol>{proposal.steps.map((step, index) => <li key={index}>{step.name} · {step.skill} · {step.inputFrom} → {step.format}<br />{step.agentId.startsWith("owned:") ? "Local template execution · OpenAI" : step.endpoint}</li>)}</ol>
         <p>Saved only on this site. No ANS registration or identity verification.</p>
-        <Button disabled={busy} onClick={() => work(async () => { const approved = await api<GeneralWorkflow>(`general/${proposal.id}/approve`, {}); setSelected(approved); setConfirmed(false); setSaved(await api<GeneralWorkflow[]>("general")); })}>Approve & save workflow</Button></div>}
+        <Button disabled={busy} onClick={() => work(async () => {
+          const approved = await api<GeneralWorkflow>(`general/${proposal.id}/approve`, {});
+          // The specialists design the saved workflow's interface; it then opens as an agent with its cat.
+          let agent = approved;
+          try { agent = await api<GeneralWorkflow>("capabilities/adopt", { workflowId: approved.id }); } catch { /* Gemini unavailable: keep the standard interface. */ }
+          announce(localAgent(agent));
+          router.push(`/agents/${agent.id}`);
+        })}>Approve & save agent</Button></div>}
     </Card>
     <Card><h2>3. Saved workflows & execution</h2>{saved.map((workflow) => <Button key={workflow.id} onClick={() => { setSelected(workflow); setConfirmed(false); setRun(undefined); }}>{workflow.name}</Button>)}
       {selected && <div><h3>{selected.name}</h3><ol>{selected.steps.map((step, index) => <li key={index}>{step.skill} → {step.agentId.startsWith("owned:") ? "Local template execution · OpenAI" : step.endpoint}</li>)}</ol>

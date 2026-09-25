@@ -7,7 +7,10 @@ import type { Composite, Run } from "../../../lib/contracts/index";
 import { reportForm } from "../../../lib/contracts/ui";
 import { api } from "../../../lib/api-client";
 import { useAgentRuntime } from "../../../components/agent-runtime/agent-provider";
-import { specForComposite } from "../../../lib/agent-ui/derive";
+import { specForCapability, specForComposite } from "../../../lib/agent-ui/derive";
+import type { GeneralWorkflow } from "../../../lib/general/contracts";
+import { localAgent, type CapabilityAgent } from "../../../components/agent-runtime/capability-runner";
+import { CapabilityHeader, CapabilityProfileBody } from "../../../components/agent-runtime/capability-profile";
 import PageShell from "../../../components/layout/page-shell";
 import PageHeader from "../../../components/layout/page-header";
 import Card, { CardHead } from "../../../components/ui/card";
@@ -30,6 +33,7 @@ export default function RuntimeInterfacePage({ params }: { params: Promise<{ id:
   const router = useRouter();
   const { spawn } = useAgentRuntime();
   const [agent, setAgent] = useState<Composite>();
+  const [workflow, setWorkflow] = useState<CapabilityAgent>();
   const [history, setHistory] = useState<Run[]>([]);
   const [company, setCompany] = useState("Northstar (fictional)");
   const [notes, setNotes] = useState("Northstar makes warehouse inventory software.\nRevenue grew 18% in this fictional example.\nThe business depends on one cloud supplier.\nTwo customers account for 45% of revenue.\nNew product delivery has been delayed.");
@@ -39,6 +43,8 @@ export default function RuntimeInterfacePage({ params }: { params: Promise<{ id:
   useEffect(() => {
     api<{ agent: Composite; runs: Run[] }>(`agents/${id}`)
       .then((data) => { setAgent(data.agent); setHistory(data.runs); spawn(specForComposite(data.agent)); })
+      // Not a report composite: agents created or hand-built through the capability pipeline.
+      .catch(() => api<GeneralWorkflow>(`general/${id}`).then((found) => { setWorkflow(localAgent(found)); spawn(specForCapability(found)); }))
       .catch(() => setError("Could not load this agent"));
   }, [id, spawn]);
 
@@ -53,6 +59,7 @@ export default function RuntimeInterfacePage({ params }: { params: Promise<{ id:
     }
   }
 
+  if (workflow) return <PageShell className="capability-workspace"><CapabilityHeader agent={workflow} /><CapabilityProfileBody agent={workflow} local canEnhance /></PageShell>;
   if (error && !agent) return <PageShell><div role="alert" className="alert"><strong>Something needs attention</strong><p>{error}</p></div></PageShell>;
   if (!agent) return <PageShell><p className="hint">Loading agent…</p></PageShell>;
 

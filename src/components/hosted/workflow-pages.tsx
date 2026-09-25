@@ -26,7 +26,7 @@ function mergeCandidates(items:Candidate[]){const map=new Map<string,Candidate>(
 export default function WorkflowPages({mode}:{mode:Mode}){
   const account=useAccount();
   if(!account.ready)return <PageShell><p role="status">Loading account…</p></PageShell>;
-  if(!account.session)return <PageShell narrow><PageHeader eyebrow="HOSTED WORKSPACE" title={mode==='discover'?'Discover agents':mode==='compose'?'Compose a workflow':'Workflow history'} description="Sign in to discover agents, compose workflows, and keep your runs private."/><Link href={`/login?next=${mode==='discover'?'/discover':mode==='compose'?'/create':'/execution'}`}>Sign in or create an account →</Link>{account.error&&<p role="alert">{account.error}</p>}</PageShell>;
+  if(!account.session)return <PageShell narrow><PageHeader eyebrow="HOSTED WORKSPACE" title={mode==='discover'?'Discover agents':mode==='compose'?'Compose a workflow':'Workflow history'} description="Sign in to discover agents, compose workflows, and keep your runs private."/><Link href={`/login?next=${mode==='discover'?'/discover':mode==='compose'?'/general':'/execution'}`}>Sign in or create an account →</Link>{account.error&&<p role="alert">{account.error}</p>}</PageShell>;
   return <Workspace key={`${account.session.user.id}:${mode}`} mode={mode}/>;
 }
 function Workspace({mode}:{mode:Mode}){
@@ -91,22 +91,15 @@ function Workspace({mode}:{mode:Mode}){
     const updated=await hostedApi<HostedWorkflow>(`workflows/${workflow.id}/visibility`,{visibility:workflow.visibility==='public'?'private':'public'});
     if(active.current){setWorkflows(old=>old.map(w=>w.id===updated.id?updated:w));if(selected?.id===updated.id)setSelected(updated);}
   });}
-  async function suggest(){
-    if(busy)return;
-    setBusy(true);setSuggesting(true);setError('');setSuggestionError('');setSuggestionNotice('');
-    try{
-      const result=await hostedApi<{draft:{name:string;steps:Selection[]};candidates:Candidate[]}>('workflows/suggest',{description,query});
-      if(!active.current)return;
-      if(!result.draft.steps.length)throw new Error('No suitable workflow was found. Try a more specific outcome or add a matching agent.');
-      setName(result.draft.name);setSteps(result.draft.steps);setCandidates(old=>mergeCandidates([...old,...result.candidates]));setSelected(undefined);setRun(undefined);setConfirmed(false);
-      setSuggestionNotice(`Suggested ${result.draft.steps.length} steps for “${result.draft.name}”. Review the graph and steps below, then save.`);
-      requestAnimationFrame(()=>{if(active.current){const graph=document.getElementById('suggested-workflow');graph?.focus({preventScroll:true});graph?.scrollIntoView({block:'start'});}});
-    }catch(e){if(active.current)setSuggestionError(e instanceof Error?e.message:'Could not suggest a workflow. Please try again.');}
-    finally{if(active.current){setBusy(false);setSuggesting(false);}}
+  // Describing an outcome goes through the same creation flow as everywhere else:
+  // ANS discovery, Gemini for supported gaps, and specialist interface design.
+  function suggest(){
+    try{sessionStorage.setItem('general-workflow-description',description.trim());}catch{/* the create page starts empty */}
+    router.push('/create');
   }
   async function search(more=false){await task(async()=>{const result=await hostedApi<{candidates:Candidate[];nextPageToken?:string}>('registry/search',{query:more?searched:query,...(more?{pageToken:nextPage}:{})});if(active.current){setCandidates(old=>mergeCandidates([...(more?old:old.filter(a=>a.source==='template')),...result.candidates]));setHasSearched(true);setSearched(query);setNextPage(result.nextPageToken);}});}
   function add(candidate:Candidate,skill:string){
-    if(mode==='discover'){sessionStorage.setItem('hosted-workflow-step',JSON.stringify({agentId:candidate.agentId,skill}));router.push('/create');return;}
+    if(mode==='discover'){sessionStorage.setItem('hosted-workflow-step',JSON.stringify({agentId:candidate.agentId,skill}));router.push('/general');return;}
     setSteps(old=>[...old,{agentId:candidate.agentId,skill,inputFrom:old.length?'previous':'original',format:'text',instruction:''}]);setSelected(undefined);setRun(undefined);setConfirmed(false);
   }
   // Every finder source funnels into add(); merging the candidate first keeps a
@@ -129,11 +122,11 @@ function Workspace({mode}:{mode:Mode}){
     if(active.current){setRun(current);await advance(current);}
   });}
   if(mode==='discover')return <HostedDiscover candidates={candidates} query={query} setQuery={setQuery} busy={busy} loading={loading} error={error} searched={hasSearched} hasMore={Boolean(nextPage)} search={search} add={add} publicAgents={publicAgents} publicAgentsError={publicAgentsError}/>;
-  if(mode==='compose'&&selected?.definition.capability)return <PageShell><Card><h1>{selected.definition.name}</h1><p>This agent has a generated interface bound to its saved capabilities.</p><Link href={`/studio?agent=${selected.definition.revision?.rootId??selected.id}`}>Open / enhance this agent →</Link><Button onClick={()=>setSelected(undefined)}>Back to manual builder</Button></Card></PageShell>;
+  if(mode==='compose'&&selected?.definition.capability)return <PageShell><Card><h1>{selected.definition.name}</h1><p>This agent has a generated interface bound to its saved capabilities.</p><Link href={`/agents/${selected.id}`}>Open this agent →</Link><Button onClick={()=>setSelected(undefined)}>Back to manual builder</Button></Card></PageShell>;
   const title=mode==='compose'?'Compose a workflow':'Workflow runs';
   return <PageShell className="hosted-workflows"><PageHeader eyebrow="YOUR HOSTED WORKSPACE" title={title} description={mode==='compose'?'Connect up to eight agents, review the steps, then run them with your input.':'Your latest 20 workflow runs. Open a workflow to review its saved steps and continue between completed steps.'}/>
     {loading&&<p role="status">Loading your workspace…</p>}{error&&<div role="alert" className="alert">{error}</div>}
-    {mode==='compose'&&<><Card><h2>Create a purpose-built agent</h2><p>Discover capabilities, resolve supported gaps with Gemini, and generate a functional workspace.</p><Link href="/studio">Open capability studio →</Link></Card>
+    {mode==='compose'&&<><Card><h2>Hand-pick agents</h2><p>Choose each step yourself. When you save, Glorria designs the agent’s interface, pops out its cat, and adds it to your fleet. Prefer to describe it instead? <Link href="/create">Create an agent →</Link></p></Card>
       <div className="celestial-composer-grid">
       <Card id="suggested-workflow" tabIndex={-1} style={{scrollMarginTop:90}}>
         <div className="workflow-graph-head"><h2>Workflow graph</h2>
@@ -144,11 +137,11 @@ function Workspace({mode}:{mode:Mode}){
         <WorkflowGraph steps={steps} names={steps.map((s,i)=>selected?.definition.steps[i]?.name??candidates.find(c=>c.agentId===s.agentId)?.name??s.skill)} run={run}/>
       </Card>
       <Card className="celestial-directive" aria-busy={suggesting}><p className="eyebrow">DESCRIBE YOUR WORKFLOW</p><h2>Start with an outcome.</h2><label>Desired outcome<textarea value={description} maxLength={2000} disabled={busy} onChange={e=>{setDescription(e.target.value);setSuggestionNotice('');setSuggestionError('');}} placeholder="Summarize my meeting notes, then extract owners and deadlines."/></label>
-        <Button variant="primary" block disabled={busy||loading||description.trim().length<10} onClick={()=>void suggest()}>{suggesting?'Suggesting workflow…':'Suggest workflow'}</Button>
+        <Button variant="primary" block disabled={busy||loading||description.trim().length<10} onClick={()=>void suggest()}>Create from this description</Button>
         {description.trim().length<10&&<p className="hint">Describe your desired outcome in at least 10 characters to get a suggestion.</p>}
         <p role="status" aria-live="polite">{suggesting?'Finding agents and drafting your workflow. This can take up to a minute.':suggestionNotice}</p>
         {suggestionError&&<p role="alert" className="alert">{suggestionError}</p>}
-        <p className="hint">Uses your saved templates and the first page of ANS results for the query in Find agents. Sends the description and candidate details to OpenAI. Up to 10 suggestions per UTC day; review every proposed step.</p>
+        <p className="hint">Opens agent creation with this description: ANS discovery first, Gemini for supported gaps, and a specialist-designed interface. Nothing is saved until you review it.</p>
       </Card>
       </div>
       <Card><h2>Review the steps</h2><label>Workflow name<input value={name} maxLength={100} disabled={busy} onChange={e=>{setName(e.target.value);setSelected(undefined);setRun(undefined);setConfirmed(false);}}/></label>
@@ -159,14 +152,18 @@ function Workspace({mode}:{mode:Mode}){
           <label>Step instruction<textarea disabled={busy||step.format==='json'} value={step.instruction} maxLength={2000} onChange={e=>edit(index,{instruction:e.target.value})}/></label><Button disabled={busy} onClick={()=>{setSteps(old=>old.filter((_,i)=>i!==index).map((s,i)=>i===0?{...s,inputFrom:'original'}:s));setSelected(undefined);setRun(undefined);setConfirmed(false);}}>Remove step</Button>
         </article>)}
         {!steps.length&&<p>Add agents with Find agents on the workflow graph, or request a suggested workflow.</p>}
-        <Button variant="primary" disabled={busy||!steps.length||!name.trim()} onClick={()=>void task(async()=>{const saved=await hostedApi<HostedWorkflow>('workflows',{name,steps,description:summary});if(active.current){setSelected(saved);setSteps(saved.definition.steps);setSummary(saved.definition.description);setRun(undefined);setConfirmed(false);setWorkflows(await hostedApi<HostedWorkflow[]>('workflows'));window.dispatchEvent(new CustomEvent('hosted-agent-created',{detail:{id:saved.id,name:saved.definition.name,kind:'workflow',skills:saved.definition.steps.map(s=>s.skill)}}));window.dispatchEvent(new Event('hosted-workspace-changed'));}})}>Check compatibility and save</Button><p className="hint">Saving checks current ANS endpoints and skill compatibility. Existing workflows remain unchanged when you save a new version.</p>
+        <Button variant="primary" disabled={busy||!steps.length||!name.trim()} onClick={()=>void task(async()=>{const saved=await hostedApi<HostedWorkflow>('workflows',{name,steps,description:summary});
+          // The specialists design the saved workflow's interface; it then opens as an agent with its cat.
+          let agent=saved;try{agent=await hostedApi<HostedWorkflow>('capabilities/adopt',{workflowId:saved.id});}catch{/* Gemini unavailable: keep the saved workflow with the standard interface. */}
+          window.dispatchEvent(new CustomEvent('hosted-agent-created',{detail:{id:agent.id,name:agent.definition.capability?.ui.title??agent.definition.name,kind:'workflow',skills:agent.definition.steps.map(s=>s.geminiTask??s.skill)}}));window.dispatchEvent(new Event('hosted-workspace-changed'));
+          if(active.current)router.push(`/agents/${agent.id}`);})}>Check compatibility and save</Button><p className="hint">Saving checks current ANS endpoints and skill compatibility. Existing workflows remain unchanged when you save a new version.</p>
       </Card>
       {selected&&<Card><h2>Run {selected.definition.name}</h2><label>Input type<select disabled={busy} value={inputFormat} onChange={e=>{setInputFormat(e.target.value as 'text'|'json');setConfirmed(false);}}><option value="text">Text</option><option value="json">JSON object</option></select></label><label>Workflow input<textarea disabled={busy} value={source} maxLength={12000} onChange={e=>{setSource(e.target.value);setConfirmed(false);}}/></label><label className="hosted-confirm"><input type="checkbox" checked={confirmed} disabled={busy} onChange={e=>setConfirmed(e.target.checked)}/>I reviewed these steps and authorize sending this input and intermediate outputs to the selected agents (and OpenAI for my templates), including any actions they perform.</label><Button variant="primary" disabled={busy||!source.trim()||!confirmed||Boolean(run)} onClick={()=>void start()}>{busy?'Working…':'Run workflow'}</Button><p className="hint">Up to 10 new runs per UTC day. Private templates share the 20-test daily limit. Keep this page open to advance through the steps. Refreshing never automatically repeats a step.</p>
         {run&&<RunResult run={run}/>} {run&&['completed','failed'].includes(run.status)&&<Button disabled={busy} onClick={()=>{requestKey.current=undefined;setRun(undefined);setConfirmed(false);}}>Prepare a new run</Button>} {run&&['ready','running'].includes(run.status)&&<Button disabled={busy||!confirmed} onClick={()=>void task(async()=>{const fresh=await hostedApi<HostedRun>(`workflows/runs/${run.id}`);setRun(fresh);if(fresh.status==='ready')await advance(fresh);else if(fresh.status==='running')setRun(await hostedApi<HostedRun>(`workflows/runs/${fresh.id}/advance`,{expectedStep:fresh.outputs.length,confirmExternalExecution:true}));})}>Refresh status / continue</Button>}
       </Card>}
       <ArchivedItems kind="workflows" onChanged={()=>void hostedApi<HostedWorkflow[]>('workflows').then(setWorkflows)}/><Card><h2>Your saved workflows</h2>{workflows.map(workflow=><article key={workflow.id}><h3>{workflow.definition.name}</h3><p>{workflow.definition.steps.length} steps · {workflow.visibility==='public'?'Public':'Private'} · {new Date(workflow.created_at).toLocaleString()}</p><Button disabled={busy} onClick={()=>open(workflow)}>Open workflow</Button><ArchiveButton kind="workflows" id={workflow.id} name={workflow.definition.name} onChanged={()=>{if(selected?.id===workflow.id){setSelected(undefined);setRun(undefined);setSteps([]);}void hostedApi<HostedWorkflow[]>('workflows').then(setWorkflows);}}/> <Button disabled={busy} onClick={()=>void toggleVisibility(workflow)}>{workflow.visibility==='public'?'Make private':'Publish'}</Button> <Link href={`/agents/${workflow.id}`}>View detail page →</Link></article>)}{!loading&&!workflows.length&&<p>No saved workflows yet.</p>}</Card>
     </>}
-    {<Card><h2>Recent workflow runs</h2>{runs.map(savedRun=><article key={savedRun.id}><h3>{workflows.find(w=>w.id===savedRun.workflow_id)?.definition.name??'Workflow'}</h3><RunResult run={savedRun}/>{mode==='compose'?<Button disabled={busy} onClick={()=>{const w=workflows.find(w=>w.id===savedRun.workflow_id);if(w){open(w);setRun(savedRun);setSource(typeof savedRun.input.value==='string'?savedRun.input.value:JSON.stringify(savedRun.input.value));setInputFormat(savedRun.input.type === 'audio' ? 'text' : savedRun.input.type);}}}>Review run</Button>:<Link href={`/create?workflow=${savedRun.workflow_id}`}>Open workflow →</Link>}</article>)}{!loading&&!runs.length&&<p>No workflow runs yet.</p>}</Card>}
+    {<Card><h2>Recent workflow runs</h2>{runs.map(savedRun=><article key={savedRun.id}><h3>{workflows.find(w=>w.id===savedRun.workflow_id)?.definition.name??'Workflow'}</h3><RunResult run={savedRun}/>{mode==='compose'?<Button disabled={busy} onClick={()=>{const w=workflows.find(w=>w.id===savedRun.workflow_id);if(w){open(w);setRun(savedRun);setSource(typeof savedRun.input.value==='string'?savedRun.input.value:JSON.stringify(savedRun.input.value));setInputFormat(savedRun.input.type === 'audio' ? 'text' : savedRun.input.type);}}}>Review run</Button>:<Link href={`/agents/${savedRun.workflow_id}`}>Open agent →</Link>}</article>)}{!loading&&!runs.length&&<p>No workflow runs yet.</p>}</Card>}
   </PageShell>;
 }
 type FinderProps={

@@ -22,6 +22,10 @@ export type AgentUISpec = {
   variantSeed: string;
   /** Palette slot assigned when the agent joins the pack, so neighbours differ. */
   accentIndex?: number;
+  /** Workflow agents render their specialist-designed interface instead of these primitives. */
+  kind?: "composite" | "capability";
+  /** For capability agents: the latest revision to run. agentId stays the stable root id. */
+  workflowId?: string;
 };
 
 export const primitiveLabels: Record<PrimitiveKind, string> = {

@@ -1,6 +1,7 @@
 import type { Composite } from "../contracts/index";
 import type { GeneralWorkflow } from "../general/contracts";
 import type { AgentUISpec, Primitive, PrimitiveKind } from "./spec";
+import { uiExtras } from "./capability.ts";
 
 // The execution layer carries text and JSON only, so these primitives are shown but disabled
 // rather than pretending to work. See docs/STATUS.md for the runtime's real limits.
@@ -59,5 +60,33 @@ export function specForGeneralWorkflow(workflow: GeneralWorkflow): AgentUISpec {
     primitives,
     capabilities: workflow.steps.map((step) => step.skill),
     variantSeed: workflow.id,
+  };
+}
+
+/**
+ * Workflow agents created or adopted through the capability pipeline. The cat is keyed by the
+ * revision family, so enhancing an agent updates its cat instead of adding another one.
+ */
+export function specForCapability(agent: Pick<GeneralWorkflow, "id" | "name" | "steps" | "capability" | "revision"> & { description?: string }): AgentUISpec {
+  const ui = agent.capability?.ui, extras = uiExtras(ui);
+  const audio = agent.steps.some((step) => step.inputFrom === "original" && step.format === "audio");
+  const primitives: Primitive[] = [
+    ...(audio ? [{ kind: "audio_recording" as const, label: "Record" }, { kind: "file_upload" as const, label: "Upload audio" }] : [{ kind: "text_input" as const, label: ui?.inputLabel ?? "Input" }]),
+    { kind: "results", label: "Outputs" },
+    ...(ui?.panels.some((panel) => panel.component === "table") ? [{ kind: "table" as const, label: "Structured output" }] : []),
+    ...(extras.has("export") ? [{ kind: "download" as const, label: "Export" }] : []),
+  ];
+  const rootId = agent.revision?.rootId ?? agent.id;
+  return {
+    agentId: rootId,
+    workflowId: agent.id,
+    kind: "capability",
+    name: ui?.title ?? agent.name,
+    description: ui?.description ?? agent.description ?? "",
+    primary: audio ? "audio_recording" : "text_input",
+    primaryAction: ui?.actionLabel ?? "Run agent",
+    primitives,
+    capabilities: agent.steps.map((step) => step.geminiTask ?? step.skill),
+    variantSeed: rootId,
   };
 }

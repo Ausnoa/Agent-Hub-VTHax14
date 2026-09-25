@@ -12,7 +12,10 @@ import Button from '../ui/button';
 import PublicAgentCard, { type PublicAgentSummary } from './public-agent-card';
 import HostedAgentCard from './hosted-agent-card';
 import FleetOverview from '../agent-glorria/fleet-overview';
-import CapabilityAgentList from '../agent-runtime/capability-agent-list';
+import WorkflowAgentCard, { workflowAgentTags } from '../agent-glorria/workflow-agent-card';
+import StatusPill from '../ui/status-pill';
+import { hostedAgent, latestRevisions } from '../agent-runtime/capability-runner';
+import type { HostedWorkflow } from '../../lib/hosted/workflow-contracts';
 import './hosted.css';
 import {ArchiveButton,ArchivedItems} from './archive-controls';
 type Run={id:string;agent_id:string;status:string;output:string|null;created_at:string};
@@ -24,13 +27,19 @@ export default function AccountPages({history=false}:{history?:boolean}){
   return <AccountData key={`${account.session.user.id}:${history}`} history={history}/>;
 }
 function AccountData({history}:{history:boolean}){
-  const [agents,setAgents]=useState<OwnedAgent[]>([]),[runs,setRuns]=useState<Run[]>([]);
+  const [agents,setAgents]=useState<OwnedAgent[]>([]),[runs,setRuns]=useState<Run[]>([]),[workflows,setWorkflows]=useState<HostedWorkflow[]>([]);
   const [loading,setLoading]=useState(true),[error,setError]=useState(''),[busy,setBusy]=useState('');
   const [saved,setSaved]=useState<Saved[]>(),[savedError,setSavedError]=useState(''),[savedBusy,setSavedBusy]=useState('');
   const [query,setQuery]=useState(''),[templateFilter,setTemplateFilter]=useState('all');
   // Runs are always fetched (not just in history mode): the My Agents cards use them for a
   // real per-agent run count, the same way the local fleet cards show a run count from stats.
-  useEffect(()=>{let active=true;Promise.all([hostedApi<OwnedAgent[]>('agents'),hostedApi<Run[]>('tests')]).then(([agents,runs])=>{if(active){setAgents(agents);setRuns(runs);}}).catch(e=>{if(active)setError(e.message);}).finally(()=>{if(active)setLoading(false);});return()=>{active=false;};},[history]);
+  useEffect(()=>{let active=true;Promise.all([hostedApi<OwnedAgent[]>('agents'),hostedApi<Run[]>('tests'),hostedApi<HostedWorkflow[]>('workflows')]).then(([agents,runs,workflows])=>{if(active){setAgents(agents);setRuns(runs);setWorkflows(workflows);}}).catch(e=>{if(active)setError(e.message);}).finally(()=>{if(active)setLoading(false);});return()=>{active=false;};},[history]);
+  async function refreshWorkflows(){setWorkflows(await hostedApi<HostedWorkflow[]>('workflows'));window.dispatchEvent(new Event('hosted-workspace-changed'));}
+  // Workflow agents (created, enhanced, or hand-built) share the fleet grid with template agents.
+  const workflowAgents=useMemo(()=>{
+    const term=query.trim().toLowerCase();
+    return latestRevisions(workflows.map(row=>({...hostedAgent(row),visibility:row.visibility}))).filter(agent=>templateFilter==='all'&&(!term||[agent.name,agent.capability?.ui.title??'',agent.description??'',agent.id,...workflowAgentTags(agent)].some(text=>text.toLowerCase().includes(term))));
+  },[workflows,query,templateFilter]);
   useEffect(()=>{
     if(history)return;
     let active=true;
@@ -63,28 +72,28 @@ function AccountData({history}:{history:boolean}){
       return matchesTemplate&&matchesQuery;
     });
   },[agents,query,templateFilter]);
-  return <PageShell>{!history&&<FleetOverview hosted/>}<PageHeader headingLevel={history?1:2} eyebrow="YOUR HOSTED WORKSPACE" title={history?'Agent test history':'Your agent fleet'} description={history?'Your latest 20 template tests and their saved results.':'Your saved template agents. Publish one to make it discoverable to other members.'} action={<Link href="/agent-preview"><Button variant="primary"><Plus size={14}/> Create agent</Button></Link>}/>
-    {!history&&<CapabilityAgentList/>}
+  return <PageShell>{!history&&<FleetOverview hosted/>}<PageHeader headingLevel={history?1:2} eyebrow="YOUR HOSTED WORKSPACE" title={history?'Agent test history':'Your agent fleet'} description={history?'Your latest 20 template tests and their saved results.':'Every agent you have created. Launch one to use its interface, or publish it to make it discoverable to other members.'} action={<Link href="/create"><Button variant="primary"><Plus size={14}/> Create agent</Button></Link>}/>
     {loading&&<p role="status">Loading {history?'tests':'agents'}…</p>}{error&&<p role="alert">{error}</p>}
-    {!history&&!loading&&!error&&!!agents.length&&<section className="fleet-toolbar" aria-label="Filter your agents">
+    {!history&&!loading&&!error&&!!(agents.length+workflowAgents.length)&&<section className="fleet-toolbar" aria-label="Filter your agents">
       <div className="search-bar fleet-search">
         <Search size={16} aria-hidden="true"/>
         <label className="sr-only" htmlFor="hosted-fleet-search">Search agents</label>
         <input id="hosted-fleet-search" placeholder="Search by agent name, template, or id" value={query} onChange={e=>setQuery(e.target.value)}/>
       </div>
       <div className="filter-bar">
-        <button aria-pressed={templateFilter==='all'} className={`filter-chip${templateFilter==='all'?' active':''}`} onClick={()=>setTemplateFilter('all')}>All ({agents.length})</button>
+        <button aria-pressed={templateFilter==='all'} className={`filter-chip${templateFilter==='all'?' active':''}`} onClick={()=>setTemplateFilter('all')}>All ({agents.length+workflowAgents.length})</button>
         {usedTemplates.map(id=><button aria-pressed={templateFilter===id} key={id} className={`filter-chip${templateFilter===id?' active':''}`} onClick={()=>setTemplateFilter(id)}>{templateFor(id).name}</button>)}
       </div>
     </section>}
-    {!loading&&!error&&(history?runs.length?runs.map(run=><Card key={run.id}><h2>{agents.find(a=>a.id===run.agent_id)?.name??'Agent test'}</h2><p>{new Date(run.created_at).toLocaleString()} · {run.status==='running'?'Pending or interrupted':run.status}</p>{run.output&&<pre style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{run.output}</pre>}<Link href={`/agent-preview?agent=${run.agent_id}`}>Open agent →</Link></Card>):<p>No tests yet. Open an agent to run your first test.</p>:agents.length?
+    {!loading&&!error&&(history?runs.length?runs.map(run=><Card key={run.id}><h2>{agents.find(a=>a.id===run.agent_id)?.name??'Agent test'}</h2><p>{new Date(run.created_at).toLocaleString()} · {run.status==='running'?'Pending or interrupted':run.status}</p>{run.output&&<pre style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{run.output}</pre>}<Link href={`/agent-preview?agent=${run.agent_id}`}>Open agent →</Link></Card>):<p>No tests yet. Open an agent to run your first test.</p>:agents.length||workflowAgents.length?
       // Same fleet-grid + card layout, and the same search/filter behavior, as the local /agents page.
       <>
-        <div className="fleet-grid">{filteredAgents.map(agent=><HostedAgentCard key={agent.id} agent={agent} runs={runs} busy={busy} onToggleVisibility={toggleVisibility} onArchived={()=>void refreshAgents()}/>)}</div>
-        {!filteredAgents.length&&<p className="empty">No agents match that search.</p>}
+        <div className="fleet-grid">{workflowAgents.map(agent=><WorkflowAgentCard key={agent.id} agent={agent} badge={<StatusPill tone={agent.visibility==='public'?'violet':'neutral'}>{agent.visibility==='public'?'PUBLIC':'PRIVATE'}</StatusPill>} actions={<ArchiveButton kind="workflows" id={agent.id} name={agent.name} onChanged={()=>void refreshWorkflows()}/>}/>)}{filteredAgents.map(agent=><HostedAgentCard key={agent.id} agent={agent} runs={runs} busy={busy} onToggleVisibility={toggleVisibility} onArchived={()=>void refreshAgents()}/>)}</div>
+        {!filteredAgents.length&&!workflowAgents.length&&<p className="empty">No agents match that search.</p>}
       </>
-      :<p>No agents yet. Choose a template to create your first agent.</p>)}
+      :<p>No agents yet. <Link href="/create">Create your first agent →</Link></p>)}
     {!history&&<ArchivedItems kind="agents" onChanged={()=>void refreshAgents()}/>}
+    {!history&&<ArchivedItems kind="workflows" onChanged={()=>void refreshWorkflows()}/>}
     {!history&&<section id="saved" style={{marginTop:32}}>
       <h2>Saved agents</h2>
       <p className="hint">Public agents you&apos;ve bookmarked from Discover.</p>

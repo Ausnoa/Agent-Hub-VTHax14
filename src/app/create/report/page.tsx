@@ -4,23 +4,23 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Search, ClipboardCheck, PlayCircle, ArrowRight, Sparkles, Radio } from "lucide-react";
-import type { Proposal } from "../../lib/contracts/index";
-import { api } from "../../lib/api-client";
-import { useComposerFlow } from "../../lib/composer-flow";
-import PageShell from "../../components/layout/page-shell";
-import ComposeSteps from "../../components/layout/compose-steps";
-import Card, { CardHead } from "../../components/ui/card";
-import Button from "../../components/ui/button";
-import StatusPill from "../../components/ui/status-pill";
-import SegmentedControl from "../../components/ui/segmented-control";
-import TopologyGraph from "../../components/agent-glorria/topology-graph";
+import type { Proposal } from "../../../lib/contracts/index";
+import { api } from "../../../lib/api-client";
+import { useComposerFlow } from "../../../lib/composer-flow";
+import PageShell from "../../../components/layout/page-shell";
+import ComposeSteps from "../../../components/layout/compose-steps";
+import Card, { CardHead } from "../../../components/ui/card";
+import Button from "../../../components/ui/button";
+import StatusPill from "../../../components/ui/status-pill";
+import SegmentedControl from "../../../components/ui/segmented-control";
+import TopologyGraph from "../../../components/agent-glorria/topology-graph";
 
 const example = "Research a company, identify important risks, and write an executive summary.";
 const supportedCapabilities = ["company-research", "risk-analysis", "summarization"];
 const modeCopy = {
   pilot: "Real LLM planning → small indexed catalog → local A2A test agents. Execution uses supplied notes, not live research.",
   demo: "Offline demo uses a fixed three-step template and deterministic test agents. No LLM request is made.",
-  live: "Continue to the general builder for arbitrary advertised skills and up to eight steps. Review compatibility before execution.",
+  live: "Continue to agent creation: ANS discovery, Gemini for supported gaps, and a specialist-designed interface.",
 };
 
 export default function CreateAgentPage() {
@@ -46,7 +46,7 @@ export default function CreateAgentPage() {
     try {
       if (mode === "live") {
         sessionStorage.setItem("general-workflow-description", description);
-        router.push("/general");
+        router.push("/create");
         return;
       }
       const proposal = await api<Proposal>("proposals", { description, mode });
@@ -65,8 +65,7 @@ export default function CreateAgentPage() {
       <div className="eyebrow"><span className="line" /> FROM IDEA TO ORCHESTRATION</div>
       <h1>Orchestrate Autonomous Intelligence</h1>
       <p>Describe the outcome. Find the right capabilities. Compose an agent that gets the whole job done.</p>
-      <Link href="/general">Build a general workflow with arbitrary skills →</Link>
-      <p><Link href="/studio">Create a purpose-built agent with ANS and Gemini →</Link></p>
+      <Link href="/create">Create an agent with ANS and Gemini →</Link>
     </div>
 
     {error && <div role="alert" className="alert"><strong>Something needs attention</strong><p>{error}</p></div>}
@@ -101,10 +100,10 @@ export default function CreateAgentPage() {
           label="Composition mode"
           value={mode}
           onChange={setMode}
-          options={[{ value: "live", label: "General workflow" }, { value: "pilot", label: "Report pilot" }, { value: "demo", label: "Offline report demo" }]}
+          options={[{ value: "live", label: "Any agent" }, { value: "pilot", label: "Report pilot" }, { value: "demo", label: "Offline report demo" }]}
         />
         <Button variant="primary" disabled={busy || description.trim().length < 10} onClick={decompose}>
-          {busy ? "Opening…" : <>{mode === "live" ? "Continue to general builder" : "Build report demo"} <ArrowRight size={14} /></>}
+          {busy ? "Opening…" : <>{mode === "live" ? "Continue to agent creation" : "Build report demo"} <ArrowRight size={14} /></>}
         </Button>
       </div>
       <p className="hint" style={{ marginTop: 14 }}>

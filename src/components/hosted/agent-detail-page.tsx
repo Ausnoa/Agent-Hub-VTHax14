@@ -1,11 +1,13 @@
 "use client";
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAccount } from '../../lib/hosted/use-account';
 import { hostedApi } from '../../lib/hosted/browser';
 import { templateFor, type OwnedAgent } from '../../lib/owned-agent/templates';
-import type { HostedWorkflow, HostedRun } from '../../lib/hosted/workflow-contracts';
+import type { HostedWorkflow } from '../../lib/hosted/workflow-contracts';
+import { hostedAgent } from '../agent-runtime/capability-runner';
+import { CapabilityProfileBody } from '../agent-runtime/capability-profile';
 import PageShell from '../layout/page-shell';
 import PageHeader from '../layout/page-header';
 import Card, { CardHead } from '../ui/card';
@@ -64,23 +66,24 @@ function Detail({ id, myId }: { id: string; myId: string }) {
   const ownerId = agent.kind === 'template' ? agent.value.ownerId : agent.value.owner_id;
   const mine = ownerId === myId;
   const visibility = agent.value.visibility;
-  const name = agent.kind === 'template' ? agent.value.name : agent.value.definition.name;
+  const ui = agent.kind === 'workflow' ? agent.value.definition.capability?.ui : undefined;
+  const name = agent.kind === 'template' ? agent.value.name : ui?.title ?? agent.value.definition.name;
   const description = agent.kind === 'template'
     ? (agent.value.instructions || templateFor(agent.value.template).description)
-    : (agent.value.definition.description || `${agent.value.definition.steps.length} connected agents`);
+    : (ui?.description || agent.value.definition.description || `${agent.value.definition.steps.length} connected agents`);
 
   return <PageShell>
-    <PageHeader eyebrow={agent.kind === 'workflow' ? 'COMPOSITE WORKFLOW' : 'TEMPLATE AGENT'} title={name} description={description}
+    <PageHeader eyebrow={agent.kind === 'workflow' ? `GLORRIA AGENT · REVISION ${agent.value.definition.revision?.number ?? 1}` : 'TEMPLATE AGENT'} title={name} description={description}
       action={<div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <StatusPill tone={visibility === 'public' ? 'green' : 'neutral'}>{visibility === 'public' ? 'Public' : 'Private'}</StatusPill>
-        {mine && <Link href={agent.kind === 'template' ? `/agent-preview?agent=${id}` : `/studio?agent=${agent.value.definition.revision?.rootId??id}`}>Enhance →</Link>}
+        {mine && <Link href={agent.kind === 'template' ? `/agent-preview?agent=${id}` : '#enhance'}>Enhance →</Link>}
         {!mine && <Button size="sm" disabled={saved} onClick={() => void save()}>{saved ? 'Saved' : 'Save'}</Button>}
       </div>} />
     {owner && <Link href={`/profile/${owner.username}`} className="discover-card-owner">
       <Avatar url={owner.avatarUrl} name={owner.displayName || owner.username} />
       <span>Created by {owner.displayName || `@${owner.username}`}</span>
     </Link>}
-    {agent.kind === 'workflow' && <Card><CardHead>How this composite works</CardHead>
+    {agent.kind === 'workflow' && <Card><CardHead>What powers this agent</CardHead>
       <div style={{ display: 'grid', gap: 10 }}>
         {agent.value.definition.steps.map((step, index) => <div className="registry-item" key={index}>
           <span className="registry-item-icon">{index + 1}</span>
@@ -90,9 +93,9 @@ function Detail({ id, myId }: { id: string; myId: string }) {
       </div>
     </Card>}
     {mine
-      ? <p className="hint">This is one of your agents. Edit it from your own workspace using the link above.</p>
+      ? <p className="hint">This is one of your agents. Enhance it below; each change is saved as a new revision.</p>
       : <p className="hint">Launching this agent does not give you ownership or edit access — it stays {owner?.displayName || (owner ? `@${owner.username}` : 'its owner')}&rsquo;s agent.</p>}
-    {agent.kind === 'template' ? <TemplateLaunch id={id} template={agent.value.template} /> : agent.value.definition.capability ? <Card><h2>Your agent workspace</h2><Link href={`/studio?agent=${id}`}>Open the generated interface →</Link></Card> : <WorkflowLaunch workflow={agent.value} />}
+    {agent.kind === 'template' ? <TemplateLaunch id={id} template={agent.value.template} /> : <CapabilityProfileBody agent={hostedAgent(agent.value)} local={false} canEnhance={mine} showCapabilities={false} />}
   </PageShell>;
 }
 
@@ -114,35 +117,3 @@ function TemplateLaunch({ id, template }: { id: string; template: OwnedAgent['te
   </Card>;
 }
 
-function WorkflowLaunch({ workflow }: { workflow: HostedWorkflow }) {
-  const active = useRef(true);
-  const [source, setSource] = useState(''), [inputFormat, setInputFormat] = useState<'text' | 'json'>('text'), [confirmed, setConfirmed] = useState(false);
-  const [run, setRun] = useState<HostedRun>(), [busy, setBusy] = useState(false), [error, setError] = useState('');
-  const requestKey = useRef<{ key: string; id: string } | undefined>(undefined);
-  async function advance(current: HostedRun) {
-    while (active.current && current.status === 'ready') {
-      current = await hostedApi<HostedRun>(`workflows/runs/${current.id}/advance`, { expectedStep: current.outputs.length, confirmExternalExecution: true });
-      if (active.current) setRun(current);
-    }
-  }
-  async function start() {
-    if (!confirmed) return;
-    setBusy(true); setError('');
-    try {
-      const input = inputFormat === 'text' ? { type: 'text' as const, value: source } : { type: 'json' as const, value: JSON.parse(source) };
-      const key = JSON.stringify([workflow.id, input]); if (requestKey.current?.key !== key) requestKey.current = { key, id: crypto.randomUUID() };
-      const current = await hostedApi<HostedRun>(`workflows/${workflow.id}/invoke`, { requestId: requestKey.current.id, input, confirmExternalExecution: true });
-      setRun(current); await advance(current);
-    } catch (reason) { setError(reason instanceof Error ? reason.message : 'Could not run this workflow'); }
-    finally { setBusy(false); }
-  }
-  return <Card><CardHead>Run this workflow</CardHead>
-    <label>Input type<select disabled={busy} value={inputFormat} onChange={(event) => { setInputFormat(event.target.value as 'text' | 'json'); setConfirmed(false); }}><option value="text">Text</option><option value="json">JSON object</option></select></label>
-    <label>Workflow input<textarea disabled={busy} value={source} maxLength={12000} onChange={(event) => { setSource(event.target.value); setConfirmed(false); }} /></label>
-    <label className="hosted-confirm"><input type="checkbox" checked={confirmed} disabled={busy} onChange={(event) => setConfirmed(event.target.checked)} />I reviewed these steps and authorize sending this input and intermediate outputs to the selected agents, including any actions they perform.</label>
-    <Button variant="primary" disabled={busy || !source.trim() || !confirmed || Boolean(run)} onClick={() => void start()}>{busy ? 'Working…' : 'Run workflow'}</Button>
-    {error && <p role="alert">{error}</p>}
-    {run && <div className="hosted-run"><p role="status">{run.status} · {run.outputs.length} completed steps</p>{run.error && <p role="alert">{run.error}</p>}{run.outputs.map((output, index) => <details key={index} open={index === run.outputs.length - 1}><summary>Step {index + 1} output</summary><pre>{typeof output.value === 'string' ? output.value : JSON.stringify(output.value, null, 2)}</pre></details>)}</div>}
-    {run && ['completed', 'failed'].includes(run.status) && <Button disabled={busy} onClick={() => { requestKey.current = undefined; setRun(undefined); setConfirmed(false); }}>Run again</Button>}
-  </Card>;
-}

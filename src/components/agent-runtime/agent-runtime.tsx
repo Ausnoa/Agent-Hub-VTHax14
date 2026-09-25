@@ -6,7 +6,8 @@ import { useEffect, useState } from "react";
 import { variantFor } from "../../lib/agent-ui/variant";
 import { useAgentRuntime } from "./agent-provider";
 import { useRunFeed } from "./use-agent-runs";
-import AgentAvatar from "./agent-avatar";
+import AgentAvatar, { type RunStatus } from "./agent-avatar";
+import CapabilityCatWindow from "./capability-cat-window";
 import AgentMiniWindow from "./agent-mini-window";
 import AgentFullScreen from "./agent-fullscreen";
 import CatAgentBar from "./cat-agent-bar";
@@ -28,6 +29,10 @@ function LocalAgentRuntime() {
   const { runsFor, statusFor, invoke, busy } = useRunFeed();
   const [company, setCompany] = useState("Northstar (fictional)");
   const [notes, setNotes] = useState(sampleNotes);
+  // Workflow agents report status from their own interface; composites use the report run feed.
+  const [capabilityStatus, setCapabilityStatus] = useState<Record<string, RunStatus>>({});
+  const catStatus = (agentId: string) => pack.find((spec) => spec.agentId === agentId)?.kind === "capability" ? capabilityStatus[agentId] ?? "idle" : statusFor(agentId);
+  const reportStatus = (agentId: string) => (status: RunStatus) => setCapabilityStatus((old) => old[agentId] === status ? old : { ...old, [agentId]: status });
 
   if (!hydrated || !pack.length || view === "hidden") return null;
 
@@ -56,7 +61,11 @@ function LocalAgentRuntime() {
   }
 
   return <>
-    {view === "full" && active && <AgentFullScreen
+    {view === "full" && active?.kind === "capability" && <CapabilityCatWindow
+      spec={active} mode="full" variant={variantFor(active.variantSeed, active.accentIndex)} status={catStatus(active.agentId)}
+      onExpand={() => setView("full")} onMinimize={() => setView("mini")} onClose={() => setView("avatar")} onStatus={reportStatus(active.agentId)}
+    />}
+    {view === "full" && active && active.kind !== "capability" && <AgentFullScreen
       spec={active} runs={runsFor(active.agentId)} variant={variantFor(active.variantSeed, active.accentIndex)} status={statusFor(active.agentId)}
       onMinimize={() => setView("mini")} primitiveProps={propsFor(active.agentId)}
     />}
@@ -73,14 +82,18 @@ function LocalAgentRuntime() {
           agentId={spec.agentId}
           name={spec.name}
           variant={variantFor(spec.variantSeed, spec.accentIndex)}
-          status={statusFor(spec.agentId)}
+          status={catStatus(spec.agentId)}
           inline
           {...drag}
           dimmed={view === "mini" && !isActive}
           onOpen={() => (isActive && view === "mini" ? setView("avatar") : open(spec.agentId, "mini"))}
           onRemove={() => remove(spec.agentId)}
         >
-          {isActive && view === "mini" && <AgentMiniWindow
+          {isActive && view === "mini" && spec.kind === "capability" && <CapabilityCatWindow
+            spec={spec} mode="mini" variant={variantFor(spec.variantSeed, spec.accentIndex)} status={catStatus(spec.agentId)}
+            onExpand={() => setView("full")} onMinimize={() => setView("mini")} onClose={() => setView("avatar")} onStatus={reportStatus(spec.agentId)}
+          />}
+          {isActive && view === "mini" && spec.kind !== "capability" && <AgentMiniWindow
             spec={spec}
             runs={runsFor(spec.agentId)}
             onExpand={() => setView("full")}

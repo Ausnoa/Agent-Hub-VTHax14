@@ -168,3 +168,25 @@ test('Gemini provider validates structured output and does not leak error bodies
     await assert.rejects(executeTask('summarize',{type:'text',value:'Source'},'',gemini),error=>error instanceof Error&&error.message.includes('429')&&!error.message.includes('secret'));
   }finally{globalThis.fetch=oldFetch;if(oldKey===undefined)delete process.env.GEMINI_API_KEY;else process.env.GEMINI_API_KEY=oldKey;if(oldModel===undefined)delete process.env.GEMINI_MODEL;else process.env.GEMINI_MODEL=oldModel;}
 });
+test('a workflow agent cat keeps one identity across revisions and offers its real input controls',async()=>{
+  const { specForCapability } = await import('../src/lib/agent-ui/derive.ts');
+  const transcribe:GeneralStep={agentId:'gemini:transcribe',geminiTask:'transcribe',skill:'transcribe',name:'Transcript',endpoint:'gemini:transcribe',metadataUrl:'gemini:transcribe',format:'audio',inputFrom:'original',instruction:''};
+  const summarize:GeneralStep={...transcribe,agentId:'gemini:summarize',geminiTask:'summarize',skill:'summarize',name:'Summary',endpoint:'gemini:summarize',metadataUrl:'gemini:summarize',format:'text',inputFrom:'previous',inputStep:0};
+  const capability={version:1 as const,intent:'Study',ui:{...defaultUI('Study',[transcribe,summarize]),title:'Lecture lab',extras:['history' as const]},suggestions:[],unresolved:[],generation:'specialists' as const};
+  const first=specForCapability({id:'11111111-1111-4111-8111-111111111111',name:'Study',steps:[transcribe,summarize],capability});
+  const second=specForCapability({id:'22222222-2222-4222-8222-222222222222',name:'Study',steps:[transcribe,summarize],capability,revision:{rootId:'11111111-1111-4111-8111-111111111111',number:2}});
+  assert.equal(first.agentId,second.agentId,'an enhanced agent keeps its cat');assert.equal(second.workflowId,'22222222-2222-4222-8222-222222222222');
+  assert.equal(second.kind,'capability');assert.equal(second.name,'Lecture lab');assert.equal(second.primary,'audio_recording');
+  assert.deepEqual(second.primitives.map(p=>p.kind),['audio_recording','file_upload','results'],'export is offered only when the interface includes it');
+  assert.ok(second.primitives.every(p=>!p.unavailable));
+});
+test('a mislabelled display component is repaired to text, but invented bindings are still rejected',async()=>{
+  const { repairUI } = await import('../src/lib/agent-ui/capability.ts');
+  const ans:GeneralStep={agentId:'ans-agent',skill:'summarize-text',name:'Brief',endpoint:'https://agent.example/a2a',metadataUrl:'https://agent.example/card',format:'text',inputFrom:'original',instruction:''};
+  const ui={...defaultUI('Study',[ans]),title:'Lecture lab',panels:[{step:0,title:'Study cards',component:'flashcards' as const}],primaryPanel:5};
+  const repaired=repairUI(ui,[ans]);
+  assert.equal(repaired.title,'Lecture lab','the specialist design is kept');
+  assert.equal(repaired.panels[0].component,'text','a text output never renders as flashcards');
+  assert.equal(repaired.primaryPanel,undefined);
+  assert.throws(()=>repairUI({...ui,panels:[{step:3,title:'Invented',component:'text'}]},[ans]),/unsupported capability|exactly once/);
+});

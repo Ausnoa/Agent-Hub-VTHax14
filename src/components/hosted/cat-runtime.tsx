@@ -10,6 +10,7 @@ import { variantFor } from '../../lib/agent-ui/variant';
 import AgentAvatar from '../agent-runtime/agent-avatar';
 import CatAgentBar from '../agent-runtime/cat-agent-bar';
 import Mascot from '../agent-runtime/mascot';
+import CapabilityRunner, { hostedAgent } from '../agent-runtime/capability-runner';
 import './cat.css';
 import {chatPosition} from '../../lib/agent-ui/chat-position';
 type Target={id:string;name:string;kind:'agent'|'workflow';createdAt:string;workflow?:HostedWorkflow};
@@ -29,7 +30,7 @@ function CatPack({userId}:{userId?:string}){
   const [createdLocally,setCreatedLocally]=useState<Target[]>([]);
   useEffect(()=>{try{const value=JSON.parse(localStorage.getItem(`hosted-hidden-cats:${userId??'anon'}`)??'[]');if(Array.isArray(value))setHidden(value.filter(v=>typeof v==='string'));}catch{}setHiddenReady(true);},[userId]);
   useEffect(()=>{if(hiddenReady)try{localStorage.setItem(`hosted-hidden-cats:${userId??'anon'}`,JSON.stringify(hidden));}catch{}},[hidden,hiddenReady,userId]);
-  useEffect(()=>{const created=(e:Event)=>{const item=(e as CustomEvent).detail;if(item&&typeof item.id==='string'&&typeof item.name==='string'&&Array.isArray(item.skills)){setSpawn(old=>[...old,{id:item.id,name:item.name,skills:item.skills.filter((s:unknown)=>typeof s==='string')}]);setCreatedLocally(old=>old.some(t=>t.id===item.id)?old:[{id:item.id,name:item.name,kind:'agent',createdAt:new Date().toISOString()},...old]);}};window.addEventListener('hosted-agent-created',created);return()=>window.removeEventListener('hosted-agent-created',created);},[]);
+  useEffect(()=>{const created=(e:Event)=>{const item=(e as CustomEvent).detail;if(item&&typeof item.id==='string'&&typeof item.name==='string'&&Array.isArray(item.skills)){setSpawn(old=>[...old,{id:item.id,name:item.name,skills:item.skills.filter((s:unknown)=>typeof s==='string')}]);setCreatedLocally(old=>old.some(t=>t.id===item.id)?old:[{id:item.id,name:item.name,kind:item.kind==='workflow'?'workflow':'agent',createdAt:new Date().toISOString()},...old]);}};window.addEventListener('hosted-agent-created',created);return()=>window.removeEventListener('hosted-agent-created',created);},[]);
   useEffect(()=>{if(!spawn.length)return;const timer=setTimeout(()=>setSpawn(old=>old.slice(1)),2400);return()=>clearTimeout(timer);},[spawn]);
   const allTargets=targets.length||!createdLocally.length?[...targets,...createdLocally.filter(c=>!targets.some(t=>t.id===c.id))]:createdLocally;
   const visible=hiddenReady?allTargets.filter(t=>!hidden.includes(t.id)&&!spawn.some(s=>s.id===t.id)):[];const target=allTargets.find(t=>t.id===selected);
@@ -110,13 +111,15 @@ function CatChat({target,anchor,variantIndex,onClose,onStatus}:{target:Target;an
   }
   return <section className={`hosted-cat-chat${expanded?' expanded':''}`} style={!expanded&&placement?{left:placement.left,top:placement.top,maxHeight:placement.maxHeight,right:'auto',bottom:'auto'}:undefined} role="dialog" aria-label={`${target.name} cat chat`} tabIndex={-1} ref={dialog}>
     <header><Mascot width={34} variant={variantFor(target.id,variantIndex)}/><div><strong>{target.name}</strong><small>{target.kind==='workflow'?'Workflow companion':'Agent companion'}</small></div><button onClick={()=>setExpanded(!expanded)} aria-label={expanded?'Minimize cat chat':'Expand cat chat'}>{expanded?<Minimize2 size={16}/>:<Maximize2 size={16}/>}</button><button disabled={busy} onClick={onClose} aria-label="Close cat chat"><X size={16}/></button></header>
-    <div className="cat-chat-body"><p className="hint">Each message starts an independent {target.kind==='workflow'?'workflow run':'agent test'}. Previous messages are not sent as context.</p>
-      <Link href={target.kind==='workflow'?(target.workflow?.definition.capability?`/studio?agent=${target.workflow.definition.revision?.rootId??target.id}`:`/create?workflow=${target.id}`):`/agent-preview?agent=${target.id}`}>Open {target.kind==='workflow'?'workflow':'agent'} →</Link>
+    <div className="cat-chat-body">{!target.workflow&&<p className="hint">Each message starts an independent agent test. Previous messages are not sent as context.</p>}
+      <Link href={`/agents/${target.id}`}>Open profile →</Link>
       {target.workflow&&<details><summary>Review {target.workflow.definition.steps.length} steps</summary><ol>{target.workflow.definition.steps.map((s,i)=><li key={i}>{s.name} · {s.skill}<br/>{s.agentId.startsWith('template:')?'Your private template':s.endpoint}</li>)}</ol></details>}
-      <div className="cat-messages" aria-live="polite">{!messages.length&&<p>No saved messages yet. Send a task to get started.</p>}{messages.map(m=><article key={m.id}><p className="cat-user">{m.input}</p><pre>{m.output}</pre><small>{m.status}</small></article>)}</div>
+      {/* Workflow agents use their specialist-designed interface, the same one as their profile. */}
+      {target.workflow&&<CapabilityRunner compact local={false} agent={hostedAgent(target.workflow)} onStatus={onStatus}/>}
+      {!target.workflow&&<div className="cat-messages" aria-live="polite">{!messages.length&&<p>No saved messages yet. Send a task to get started.</p>}{messages.map(m=><article key={m.id}><p className="cat-user">{m.input}</p><pre>{m.output}</pre><small>{m.status}</small></article>)}</div>}
       {error&&<p role="alert" className="alert">{error}</p>}
       {pending&&<p role="status">{pending.status} · {pending.outputs.length} steps completed</p>}
-      {!target.workflow?.definition.capability&&<form onSubmit={e=>{e.preventDefault();void execute();}}>
+      {!target.workflow&&<form onSubmit={e=>{e.preventDefault();void execute();}}>
         {target.kind==='workflow'&&<label className="cat-confirm"><input type="checkbox" checked={json} disabled={busy} onChange={e=>{setJson(e.target.checked);setConfirmed(false);}}/>Send a JSON object</label>}
         <label>Message to {target.name}<textarea value={text} maxLength={12000} disabled={busy} onChange={e=>{setText(e.target.value);setConfirmed(false);}} placeholder="Give this agent a task…"/></label>
         <label className="cat-confirm"><input type="checkbox" disabled={busy} checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/>{target.kind==='workflow'?'I reviewed the steps and authorize sending this message and outputs to the selected agents and OpenAI, including their actions.':'Send this message to OpenAI to run my saved template.'}</label>

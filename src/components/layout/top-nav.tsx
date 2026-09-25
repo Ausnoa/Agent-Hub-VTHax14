@@ -13,8 +13,8 @@ import { useAccount } from "../../lib/hosted/use-account";
 const tabs = [
   { key: "discover", label: "Discover", href: "/discover", paths: ["/discover", "/available"] },
   { key: "agents", label: "My Agents", href: "/agents", paths: ["/agents"] },
-  { key: "agent-preview", label: "Create agent", href: "/studio", paths: ["/studio", "/agent-preview"] },
-  { key: "compose", label: "Compose", href: "/create", paths: ["/create", "/discovery", "/workflow", "/general"] },
+  { key: "agent-preview", label: "Create agent", href: "/create", paths: ["/create", "/studio", "/agent-preview"] },
+  { key: "compose", label: "Compose", href: "/general", paths: ["/general", "/create/report", "/discovery", "/workflow"] },
 ] as const;
 
 function owns(pathname: string, path: string) {
@@ -26,7 +26,9 @@ export default function TopNav() {
   const account = useAccount();
   const [hosted,setHosted] = useState(false);
   useEffect(()=>{setHosted(!["localhost","127.0.0.1"].includes(location.hostname));},[]);
-  const activeTab = tabs.find((tab) => tab.paths.some((path) => owns(pathname, path)))?.key;
+  // Most specific path wins, so /create/report belongs to Compose rather than Create agent.
+  const activeTab = tabs.flatMap((tab) => tab.paths.filter((path) => owns(pathname, path)).map((path) => ({ key: tab.key, length: path.length })))
+    .sort((a, b) => b.length - a.length)[0]?.key;
 
   return <header className="topnav">
     <Link href={hosted ? "/dashboard" : "/agents"} className="topnav-brand">

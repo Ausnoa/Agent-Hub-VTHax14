@@ -52,12 +52,12 @@ function DashboardBody() {
     <nav className="filter-bar" style={{ marginBottom: 24 }} aria-label="Dashboard shortcuts">
       <Link className="filter-chip" href="/discover">Discover agents</Link>
       <Link className="filter-chip" href="/agents">My agents</Link>
-      <Link className="filter-chip" href="/studio">Create agent</Link>
+      <Link className="filter-chip" href="/create">Create agent</Link>
       <Link className="filter-chip" href="/agents#saved">Saved agents</Link>
       <Link className="filter-chip" href="/profile/settings">Profile</Link>
     </nav>
     <Card><CardHead>Your recent agents</CardHead>
-      {!myAgents.length && <p className="empty">No agents yet. <Link href="/studio">Create your first one →</Link></p>}
+      {!myAgents.length && <p className="empty">No agents yet. <Link href="/create">Create your first one →</Link></p>}
       {!!myAgents.length && <div className="discover-grid">{myAgents.map((agent) => <PublicAgentCard key={`${agent.kind}:${agent.id}`} agent={agent} />)}</div>}
     </Card>
   </PageShell>;
