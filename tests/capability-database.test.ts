@@ -25,6 +25,7 @@ test('capability SQL preserves ownership, idempotent publishing, revisions, old 
     await assert.rejects(publish(await proposal(undefined,[{capability:'Storage',reason:'Unsupported'}])),/incomplete/);
     await assert.rejects(db.query('select public.start_hosted_workflow($1,$2,$3)',[randomUUID(),second.id,{type:'audio',value:'A'.repeat(1340001)}]),/check constraint/);
     await user(bob);assert.equal((await db.query('select * from public.capability_proposals')).rows.length,0);
+    await assert.rejects(db.query('insert into public.capability_proposals(id,body,published_id) values($1,$2,$3)',[randomUUID(),{},first.id]),/permission denied/);
     await assert.rejects(publish(firstProposal),/unavailable/);
     await assert.rejects(publish(await proposal(first.id)),/unavailable/);
     await assert.rejects(db.query('update public.capability_heads set workflow_id=$1',[first.id]),/permission denied/);

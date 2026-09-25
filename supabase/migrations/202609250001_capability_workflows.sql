@@ -9,7 +9,8 @@ create table public.capability_proposals (
 );
 alter table public.capability_proposals enable row level security;
 revoke all on public.capability_proposals from anon, authenticated;
-grant select, insert on public.capability_proposals to authenticated;
+grant select on public.capability_proposals to authenticated;
+grant insert (id, owner_id, body) on public.capability_proposals to authenticated;
 create policy capability_proposals_read on public.capability_proposals for select to authenticated using (owner_id = (select auth.uid()));
 create policy capability_proposals_create on public.capability_proposals for insert to authenticated with check (owner_id = (select auth.uid()));
 
@@ -36,16 +37,19 @@ begin
   select * into proposal from public.capability_proposals where id=proposal_id and owner_id=actor for update;
   if not found then raise exception 'Proposal unavailable'; end if;
   if proposal.published_id is not null then
-    select * into saved from public.hosted_workflows where id=proposal.published_id;
+    select * into saved from public.hosted_workflows where id=proposal.published_id and owner_id=actor;
+    if not found then raise exception 'Published workflow unavailable'; end if;
     return to_jsonb(saved);
   end if;
   definition := proposal.body->'definition';
   if proposal.created_at < now()-interval '1 hour' or definition->'capability' is null
+    or coalesce(jsonb_typeof(definition->'capability'->'unresolved'),'') <> 'array'
     or jsonb_array_length(definition->'capability'->'unresolved') <> 0 then raise exception 'Proposal incomplete or expired'; end if;
   if proposal.body->>'parentId' is not null then
     select * into parent from public.hosted_workflows where id=(proposal.body->>'parentId')::uuid and owner_id=actor and not archived;
     if not found then raise exception 'Parent unavailable'; end if;
     root := coalesce((parent.definition->'revision'->>'rootId')::uuid,parent.id);
+    if not exists(select 1 from public.hosted_workflows where id=root and owner_id=actor) then raise exception 'Revision root unavailable'; end if;
     perform pg_advisory_xact_lock(hashtextextended(root::text,0));
     select workflow_id into current_id from public.capability_heads where root_id=root;
     if current_id is not null and current_id <> parent.id then raise exception 'Revision conflict'; end if;

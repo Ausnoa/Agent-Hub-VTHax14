@@ -11,7 +11,10 @@ export const selectionSchema = z.object({
 export const draftSchema = z.object({ name: z.string().trim().min(1).max(100), steps: z.array(selectionSchema).min(1).max(8) })
   .superRefine((draft, ctx) => {
     if (draft.steps[0].inputFrom !== 'original') ctx.addIssue({ code: 'custom', message: 'First step must use original input' });
+    const original = draft.steps.filter(step=>step.inputFrom==='original');
+    if(original.some(step=>step.format==='audio')&&original.some(step=>step.format!=='audio'))ctx.addIssue({code:'custom',message:'An audio workflow must transcribe its source before using text capabilities'});
     for (const [index, step] of draft.steps.entries()) {
+      if(step.format==='audio'&&step.inputFrom!=='original')ctx.addIssue({code:'custom',message:'Audio capabilities require original audio input'});
       if (step.inputStep !== undefined && (step.inputFrom !== 'previous' || step.inputStep >= index)) ctx.addIssue({ code: 'custom', message: 'Dependencies must reference an earlier step' });
       if (step.geminiTask && (step.agentId !== `gemini:${step.geminiTask}` || step.skill !== step.geminiTask || step.format !== (step.geminiTask === 'transcribe' ? 'audio' : 'text'))) ctx.addIssue({ code: 'custom', message: 'Invalid Gemini capability binding' });
       if (step.agentId.startsWith('gemini:') && !step.geminiTask) ctx.addIssue({ code: 'custom', message: 'Gemini task contract required' });
