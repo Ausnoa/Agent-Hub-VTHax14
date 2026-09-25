@@ -81,7 +81,7 @@ export async function resolveAgent(id: string): Promise<DiscoveredAgent[]> {
   const authorization = discoveryAuthorization();
   if (authorization) headers.Authorization = authorization;
   const response = await fetch(new URL(`/v1/ans/registered-agents/${encodeURIComponent(id)}`, base), { headers, redirect: "error", signal: AbortSignal.timeout(15_000) });
-  if (!response.ok) throw new Error(`ANS resolution failed (HTTP ${response.status})`);
+  if (!response.ok) throw new AnsHttpError(`ANS resolution failed (HTTP ${response.status})`, response.status, headerNumber(response, "ratelimit-reset"));
   return normalizeAgents({ items: [await response.json()] });
 }
 

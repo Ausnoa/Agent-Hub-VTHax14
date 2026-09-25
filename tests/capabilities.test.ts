@@ -7,6 +7,7 @@ import { GeneralStore } from '../src/lib/general/store.ts';
 import { executeGeneral } from '../src/lib/general/service.ts';
 import { invokeGeneral } from '../src/lib/general/client.ts';
 import { gemini } from '../src/lib/models/gemini.ts';
+import { AnsHttpError } from '../src/lib/ans/client.ts';
 
 const speech = { agentId: 'speech-agent', name: 'Speech to text', description: 'Transcribes audio', skills: [{ id: 'transcribe', name: 'Transcribe' }] };
 const resolved = { ansId:speech.agentId,name:speech.name,description:speech.description,ansName:'ans://speech.example',endpoint:'https://speech.example/a2a',metadataUrl:'https://speech.example/card',transports:['JSON-RPC'],discoveredAt:new Date().toISOString(),identityStatus:'not-verified' as const };
@@ -19,7 +20,7 @@ function services(capabilities:unknown[], search:PipelineServices['search']=asyn
       if(instructions.startsWith('Rank'))return schema.parse({keys:[`${speech.agentId}/transcribe`]});
       if(instructions.includes('agent/product specialist'))return schema.parse({workflow:'Source to useful outputs',suggestions:['Generate flashcards','Generate practice quiz']});
       const payload=JSON.parse(input);
-      return schema.parse(payload.baseline??payload.proposedUI);
+      return schema.parse(payload.proposedUI??defaultUI('Study tool',payload.steps));
     },
   };
 }
@@ -31,6 +32,12 @@ test('study composition prefers ANS audio, fills only the summary gap, then exte
   assert.equal(study.steps.length,2,'suggestions are not automatically added');
   const enhanced=await resolveCapabilities('Add flashcards and quizzes',services([request('flashcards',1),request('quiz',1)]),study);
   assert.deepEqual(enhanced.steps.slice(0,2),study.steps);assert.equal(enhanced.steps[3].inputStep,1);
+  const custom={...study,capability:{...study.capability,ui:{...study.capability.ui,title:'Lecture lab',layout:'columns' as const,panels:study.capability.ui.panels.map(p=>({...p,title:`Custom ${p.step}`}))}}};
+  const failing=services([request('flashcards',1)]),plan=failing.generate;
+  failing.generate=async(input,rules,schema)=>rules.includes('specialist')?Promise.reject(new Error('provider overloaded')):plan(input,rules,schema);
+  const kept=await resolveCapabilities('Add flashcards',failing,custom);
+  assert.equal(kept.capability.generation,'fallback');assert.equal(kept.capability.ui.title,'Lecture lab');assert.equal(kept.capability.ui.layout,'columns');
+  assert.deepEqual(kept.capability.ui.panels.map(p=>[p.step,p.title,p.component]),[[0,'Custom 0','text'],[1,'Custom 1','text'],[2,'flashcards','flashcards']],'a failed enhancement keeps the existing interface and appends the new output');
   const store=new GeneralStore(':memory:');
   try{
     const proposal=store.putCapability(enhanced);const saved=store.publishCapability(proposal.id);
@@ -44,6 +51,30 @@ test('study composition prefers ANS audio, fills only the summary gap, then exte
     assert.deepEqual(received,['summarize:Lecture transcript','flashcards:Lecture summary','quiz:Lecture summary']);
   }finally{store.close();}
 });
+test('transcription input is audio even when the planner describes its text output',async()=>{
+  for (const format of ['text','json']) {
+    for (const useANS of [false,true]) {
+      const deps=services([request('transcribe',-1,format),request('summarize',0)],async query=>useANS&&query==='transcribe'?[speech]:[]);
+      const prepare=deps.prepare;
+      deps.prepare=async step=>{assert.equal(step.format,'audio');assert.equal(step.inputFrom,'original');return prepare(step);};
+      const draft=await resolveCapabilities('Transcribe audio and summarize the notes',deps);
+      assert.equal(draft.steps[0].format,'audio');
+      assert.equal(draft.steps[0].agentId,useANS?speech.agentId:'gemini:transcribe');
+      assert.equal(draft.steps[1].inputStep,0);
+      assert.equal(draft.steps[1].geminiTask,'summarize');
+      assert.deepEqual(draft.capability.unresolved,[]);
+      assert.deepEqual(mapInput(draft.steps[0],audio),audio);
+      assert.deepEqual(mapInput(draft.steps[1],audio,{type:'text',value:'Transcript'},[{type:'text',value:'Transcript'}]),{type:'text',value:'Transcript'});
+    }
+  }
+});
+
+test('transcription cannot reinterpret a previous text output as original audio',async()=>{
+  const draft=await resolveCapabilities('Invalid transcription dependency',services([request('summarize',-1),request('transcribe',0,'text')]));
+  assert.equal(draft.steps.length,1);
+  assert.match(draft.capability.unresolved[0].reason,/original audio/);
+});
+
 test('text extraction resolves while external research stays explicitly unresolved',async()=>{
   const draft=await resolveCapabilities('Extract concepts, then research current prices',services([request('extract',-1),{...request('unsupported',0),label:'Live research'}]));
   assert.equal(draft.steps.length,1);assert.equal(draft.steps[0].geminiTask,'extract');
@@ -52,6 +83,11 @@ test('text extraction resolves while external research stays explicitly unresolv
 });
 test('registry outage never becomes fallback; invalid UI falls back to executable panels',async()=>{
   await assert.rejects(resolveCapabilities('Summarize supplied text',services([request('summarize',-1)],async()=>{throw new Error('Registry outage');})),/Registry outage/);
+  for(const status of [429,503]){
+    const deps=services([request('transcribe',-1,'audio')],async()=>[speech]);
+    deps.prepare=async()=>{throw new AnsHttpError(`ANS resolution failed (HTTP ${status})`,status,null);};
+    await assert.rejects(resolveCapabilities('Transcribe lectures',deps),new RegExp(String(status)),'a rate-limited or failing registry never becomes a Gemini substitute');
+  }
   const deps=services([request('summarize',-1)]),generate=deps.generate;
   deps.generate=async(input,rules,schema)=>rules.includes('frontend specialist')?schema.parse({...defaultUI('Bad',[]),panels:[{step:7,title:'Invented',component:'quiz'}]}):generate(input,rules,schema);
   const draft=await resolveCapabilities('Summarize supplied text',deps);
@@ -96,6 +132,28 @@ test('Gemini provider validates structured output and does not leak error bodies
   try{
     globalThis.fetch=async(_url,init)=>{const body=JSON.parse(String(init?.body));assert.equal(body.generationConfig.responseMimeType,'application/json');return Response.json({candidates:[{finishReason:'STOP',content:{parts:[{text:'{"text":"A summary"}'}]}}]});};
     assert.deepEqual(await executeTask('summarize',{type:'text',value:'Source'},'',gemini),{type:'text',value:'A summary'});
+    let attempts=0;
+    globalThis.fetch=async()=>++attempts<3?new Response('temporary',{status:503}):Response.json({candidates:[{finishReason:'STOP',content:{parts:[{text:'{"text":"Recovered"}'}]}}]});
+    assert.deepEqual(await executeTask('summarize',{type:'text',value:'Source'},'',gemini),{type:'text',value:'Recovered'});
+    assert.equal(attempts,3);
+    attempts=0;
+    globalThis.fetch=async()=>{attempts++;return new Response('temporary',{status:503});};
+    await assert.rejects(executeTask('summarize',{type:'text',value:'Source'},'',gemini),/503/);
+    assert.equal(attempts,3,'temporary failures have a bounded retry count');
+    process.env.GEMINI_MODEL='exhausted-model, backup-model';
+    const used:string[]=[];
+    globalThis.fetch=async url=>{const model=String(url).match(/models\/([^:]+):/)![1];used.push(model);return model==='exhausted-model'?new Response('quota',{status:429}):Response.json({candidates:[{finishReason:'STOP',content:{parts:[{text:'{"text":"From backup"}'}]}}]});};
+    assert.deepEqual(await executeTask('summarize',{type:'text',value:'Source'},'',gemini),{type:'text',value:'From backup'});
+    assert.deepEqual(used,['exhausted-model','backup-model']);
+    used.length=0;
+    globalThis.fetch=async url=>{const model=String(url).match(/models\/([^:]+):/)![1];used.push(model);return model==='exhausted-model'?new Response('busy',{status:503}):Response.json({candidates:[{finishReason:'STOP',content:{parts:[{text:'{"text":"From backup"}'}]}}]});};
+    assert.deepEqual(await executeTask('summarize',{type:'text',value:'Source'},'',gemini),{type:'text',value:'From backup'});
+    assert.deepEqual(used,['exhausted-model','backup-model'],'an overloaded model hands over without spending retries');
+    used.length=0;
+    globalThis.fetch=async url=>{used.push(String(url));return new Response('bad request',{status:400});};
+    await assert.rejects(executeTask('summarize',{type:'text',value:'Source'},'',gemini),/400/);
+    assert.equal(used.length,1,'request errors do not fall through to other models');
+    process.env.GEMINI_MODEL='test-model';
     globalThis.fetch=async()=>new Response('secret provider body',{status:429});
     await assert.rejects(executeTask('summarize',{type:'text',value:'Source'},'',gemini),error=>error instanceof Error&&error.message.includes('429')&&!error.message.includes('secret'));
   }finally{globalThis.fetch=oldFetch;if(oldKey===undefined)delete process.env.GEMINI_API_KEY;else process.env.GEMINI_API_KEY=oldKey;if(oldModel===undefined)delete process.env.GEMINI_MODEL;else process.env.GEMINI_MODEL=oldModel;}
