@@ -8,6 +8,7 @@ import Card from '../ui/card';
 import Button from '../ui/button';
 import StatusPill from '../ui/status-pill';
 import { hostedAgent, localAgent, stepSource, useAgentRequest, type CapabilityAgent } from './capability-runner';
+import { GeneratedApp } from './generated-app';
 
 // Creation and enhancement share one path: requested capability → ANS discovery → Gemini
 // fallback where eligible → composition → specialist-designed interface → review → save.
@@ -56,7 +57,8 @@ export default function CapabilityComposer({ local, base, initialDescription = '
     {draft && <Card><h2>{base ? 'Review the enhancement' : 'Review your agent'}</h2>
       <p><strong>{draft.capability?.ui.title ?? draft.name}</strong> · {draft.capability?.ui.description}</p>
       <ol className="capability-steps">{draft.steps.map((step, i) => <li key={i}><strong>{step.name}</strong><span>{stepSource(step)} · {step.inputFrom === 'original' ? 'Original input' : `Output of step ${(step.inputStep ?? i - 1) + 1}`} · {step.format}{base && i >= base.steps.length ? ' · new' : ''}</span></li>)}</ol>
-      {draft.capability && <details><summary>Interface the specialists designed</summary><p>{draft.capability.ui.layout} layout · input “{draft.capability.ui.inputLabel}” · action “{draft.capability.ui.actionLabel}”</p><ul>{draft.capability.ui.panels.map(p => <li key={p.step}>{p.title} ({p.component}){p.description ? ` — ${p.description}` : ''}</li>)}</ul></details>}
+      {draft.capability?.view && proposal && <><h3>Your agent’s app</h3><p className="hint">Designed together by the product, backend, and frontend specialists. Try it with sample data; running and saving happen after you create the agent.</p><GeneratedApp key={proposal.id} preview mode="full" local={local} agent={{ id: proposal.id, name: draft.name, steps: draft.steps, capability: draft.capability }} /></>}
+      {draft.capability && !draft.capability.view && <details><summary>Interface the specialists designed</summary><p>{draft.capability.ui.layout} layout · input “{draft.capability.ui.inputLabel}” · action “{draft.capability.ui.actionLabel}”</p><ul>{draft.capability.ui.panels.map(p => <li key={p.step}>{p.title} ({p.component}){p.description ? ` — ${p.description}` : ''}</li>)}</ul></details>}
       {draft.capability?.unresolved.map((gap, i) => <p key={i} role="status" className="alert"><strong>{gap.capability}</strong>: {gap.reason}</p>)}
       {draft.capability?.generation === 'fallback' && <p className="hint">Using the standard functional layout; specialist interface design was unavailable. You can enhance the agent later to try again.</p>}
       <div className="capability-actions">

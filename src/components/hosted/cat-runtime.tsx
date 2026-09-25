@@ -10,7 +10,8 @@ import { variantFor } from '../../lib/agent-ui/variant';
 import AgentAvatar from '../agent-runtime/agent-avatar';
 import CatAgentBar from '../agent-runtime/cat-agent-bar';
 import Mascot from '../agent-runtime/mascot';
-import CapabilityRunner, { hostedAgent } from '../agent-runtime/capability-runner';
+import { hostedAgent } from '../agent-runtime/capability-runner';
+import AgentInterface from '../agent-runtime/generated-app';
 import './cat.css';
 import {chatPosition} from '../../lib/agent-ui/chat-position';
 type Target={id:string;name:string;kind:'agent'|'workflow';createdAt:string;workflow?:HostedWorkflow};
@@ -115,7 +116,7 @@ function CatChat({target,anchor,variantIndex,onClose,onStatus}:{target:Target;an
       <Link href={`/agents/${target.id}`}>Open profile →</Link>
       {target.workflow&&<details><summary>Review {target.workflow.definition.steps.length} steps</summary><ol>{target.workflow.definition.steps.map((s,i)=><li key={i}>{s.name} · {s.skill}<br/>{s.agentId.startsWith('template:')?'Your private template':s.endpoint}</li>)}</ol></details>}
       {/* Workflow agents use their specialist-designed interface, the same one as their profile. */}
-      {target.workflow&&<CapabilityRunner compact local={false} agent={hostedAgent(target.workflow)} onStatus={onStatus}/>}
+      {target.workflow&&<AgentInterface mode={expanded?'full':'compact'} local={false} agent={hostedAgent(target.workflow)} onStatus={onStatus}/>}
       {!target.workflow&&<div className="cat-messages" aria-live="polite">{!messages.length&&<p>No saved messages yet. Send a task to get started.</p>}{messages.map(m=><article key={m.id}><p className="cat-user">{m.input}</p><pre>{m.output}</pre><small>{m.status}</small></article>)}</div>}
       {error&&<p role="alert" className="alert">{error}</p>}
       {pending&&<p role="status">{pending.status} · {pending.outputs.length} steps completed</p>}

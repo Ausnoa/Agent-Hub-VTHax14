@@ -33,9 +33,9 @@ export function stepSource(step: GeneralStep) {
 export function useAgentRequest(local: boolean) {
   return useCallback(<T,>(path: string, body?: unknown) => local ? api<T>(path, body) : hostedApi<T>(path, body), [local]);
 }
-const fromLocal = (r: GeneralRun): AgentRun => ({ id: r.id, status: r.status, outputs: r.outputs, error: r.error, createdAt: r.createdAt });
-const fromHosted = (r: HostedRun): AgentRun => ({ id: r.id, status: r.status, outputs: r.outputs, error: r.error, createdAt: r.created_at });
-const statusOf = (run?: AgentRun): RunStatus => !run ? 'idle' : ['queued', 'running', 'ready'].includes(run.status) ? 'working' : run.status === 'completed' ? 'done' : 'error';
+export const fromLocal = (r: GeneralRun): AgentRun => ({ id: r.id, status: r.status, outputs: r.outputs, error: r.error, createdAt: r.createdAt });
+export const fromHosted = (r: HostedRun): AgentRun => ({ id: r.id, status: r.status, outputs: r.outputs, error: r.error, createdAt: r.created_at });
+export const statusOf = (run?: AgentRun): RunStatus => !run ? 'idle' : ['queued', 'running', 'ready'].includes(run.status) ? 'working' : run.status === 'completed' ? 'done' : 'error';
 
 export default function CapabilityRunner({ agent, local, compact = false, onStatus }: { agent: CapabilityAgent; local: boolean; compact?: boolean; onStatus?: (status: RunStatus) => void }) {
   const request = useAgentRequest(local);
@@ -147,7 +147,7 @@ function QuizQuestion({ question: q }: { question: { question: string; options: 
   return <fieldset className="study-card"><legend>{q.question}</legend>{q.options.map((option, i) => <Button key={i} aria-pressed={answer === i} onClick={() => setAnswer(i)}>{option}</Button>)}{answer !== undefined && <p role="status">{answer === q.answer ? 'Correct.' : `Correct answer: ${q.options[q.answer]}.`} {q.explanation}</p>}</fieldset>;
 }
 
-function AudioInput({ disabled, compact, onChange }: { disabled: boolean; compact?: boolean; onChange: (value: Value | undefined) => void }) {
+export function AudioInput({ disabled, compact, onChange }: { disabled: boolean; compact?: boolean; onChange: (value: Value | undefined) => void }) {
   const [recording, setRecording] = useState(false), [name, setName] = useState(''), [error, setError] = useState('');
   const recorder = useRef<MediaRecorder | undefined>(undefined), stream = useRef<MediaStream | undefined>(undefined), timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined), mounted = useRef(true);
   const notify = useRef(onChange); notify.current = onChange;

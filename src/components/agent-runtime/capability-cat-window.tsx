@@ -10,7 +10,8 @@ import { api } from "../../lib/api-client";
 import StatusPill from "../ui/status-pill";
 import Mascot from "./mascot";
 import type { RunStatus } from "./agent-avatar";
-import CapabilityRunner, { localAgent, type CapabilityAgent } from "./capability-runner";
+import { localAgent, type CapabilityAgent } from "./capability-runner";
+import AgentInterface from "./generated-app";
 
 // A local cat's window for a workflow agent: the same specialist-designed interface as its
 // profile, compact beside the cat or full screen. Runs go through the real queue and worker.
@@ -41,7 +42,7 @@ export default function CapabilityCatWindow({ spec, mode, variant, status, onExp
   const body = <>
     {error && <p role="alert">{error}</p>}
     {!agent && !error && <p className="hint">Loading agent…</p>}
-    {agent && <CapabilityRunner agent={agent} local compact={mode === "mini"} onStatus={onStatus} />}
+    {agent && <AgentInterface agent={agent} local mode={mode === "mini" ? "compact" : "full"} onStatus={onStatus} />}
     <Link href={`/agents/${spec.workflowId}`} onClick={onClose}>Open profile &amp; enhance →</Link>
   </>;
 

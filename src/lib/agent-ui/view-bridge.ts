@@ -107,6 +107,7 @@ window.addEventListener('unhandledrejection',function(e){report(e.reason);});
 document.addEventListener('DOMContentLoaded',function(){send({type:'glorria:hello'});});
 window.addEventListener('message',function(e){
   if(e.source!==host||!e.data||typeof e.data.type!=='string')return;var d=e.data,k=d.type.slice(8);
+  if(k==='theme'){for(var key in d.payload)if(/^--g-[a-z0-9-]+$/.test(key))document.documentElement.style.setProperty(key,String(d.payload[key]));return;}
   if(k==='runResult'||k==='audio'){var w=waiting[d.requestId];if(w){delete waiting[d.requestId];w(k==='audio'?d.value:d);}return;}
   if(!handlers[k])return;last[k]=d.payload;handlers[k].forEach(function(h){try{h(d.payload);}catch(err){report(err);}});
 });

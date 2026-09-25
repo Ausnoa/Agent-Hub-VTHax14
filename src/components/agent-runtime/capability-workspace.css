@@ -34,3 +34,10 @@
 .capability-cat-full .agent-full-main { max-width: none; }
 .capability-cat-full { display: flex; flex-direction: column; }
 .capability-cat-full > .agent-full-main { flex: 1; }
+.generated-app { position: relative; margin-block: 16px; }
+.generated-app iframe { display: block; width: 100%; border: 1px solid var(--border, #7775); border-radius: var(--radius-lg, 16px); background: var(--bg); transition: height .15s ease; }
+.generated-app.compact { margin-block: 4px; }
+.generated-app.compact iframe { border: 0; border-radius: 0; }
+.generated-app-note { margin: 6px 0; }
+.generated-app-overlay { position: absolute; inset: 0; z-index: 2; display: grid; place-items: center; padding: 16px; background: color-mix(in srgb, var(--bg, #000) 70%, transparent); backdrop-filter: blur(3px); border-radius: var(--radius-lg, 16px); }
+.generated-app-overlay .card { max-width: 440px; width: 100%; }

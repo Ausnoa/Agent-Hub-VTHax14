@@ -10,8 +10,9 @@ import Card, { CardHead } from '../ui/card';
 import Button from '../ui/button';
 import StatusPill from '../ui/status-pill';
 import Mascot from './mascot';
-import CapabilityRunner, { agentRootId, stepSource, useAgentRequest, localAgent, hostedAgent, type CapabilityAgent } from './capability-runner';
+import { agentRootId, stepSource, useAgentRequest, localAgent, hostedAgent, type CapabilityAgent } from './capability-runner';
 import CapabilityComposer from './capability-composer';
+import AgentInterface from './generated-app';
 import type { GeneralWorkflow } from '../../lib/general/contracts';
 import type { HostedWorkflow } from '../../lib/hosted/workflow-contracts';
 
@@ -66,7 +67,7 @@ export function CapabilityProfileBody({ agent, local, canEnhance, showCapabiliti
     finally { setBusy(false); }
   };
   return <>
-    <CapabilityRunner key={agent.id} agent={agent} local={local} />
+    <AgentInterface key={agent.id} agent={agent} local={local} mode="full" />
     {showCapabilities && extras.has('capabilities') && <Card><CardHead>What powers this agent</CardHead>
       <ol className="capability-steps">{agent.steps.map((step, i) => <li key={i}><strong>{step.name}</strong><span>{stepSource(step)} · {step.inputFrom === 'original' ? 'Original input' : `Uses the output of step ${(step.inputStep ?? i - 1) + 1}`} · {step.skill}</span></li>)}</ol>
       <p className="hint">ANS agents are discovered from the registry (identity unverified). Gemini steps run only language tasks: transcription, summarization, extraction, classification, transformation, grounded answers, flashcards, and quizzes.</p>
