@@ -52,6 +52,31 @@ Enhancement starts from a saved workflow or a stored proposal. The existing step
 
 The saved UI and suggestions are reused on load and on ordinary runs. Model specialists do not run while a user reveals a card, answers a quiz, switches panels, or downloads outputs. A creation request uses one decomposition call, at most one candidate-ranking call per requested capability, and up to three UI-role calls. Hosted planning/search/run budgets continue to apply. Gemini steps consume the workflow-run budget; they do not use the separate OpenAI template-test budget.
 
+## Generated apps
+
+Each agent's interface is an app written by the three specialists working as a team (`designView` in `src/lib/capabilities/view-design.ts`). It runs after `designInterface`, whose layout remains the fallback.
+
+1. **Brief, in parallel.** The product specialist defines the journey, modes, and states. The backend specialist, working from the exact input and output contract (`outputContract`), lists:
+   - the interactions possible with only these outputs plus in-browser logic
+   - interactions excluded because they need a capability the agent lacks
+   - data-handling notes
+   - one realistic sample output per step
+2. **Build.** The frontend specialist writes one self-contained app (HTML with inline CSS and JS, at most 34,000 characters). It works from both briefs, a concrete example run, and the bridge API. When enhancing, it extends the previous app.
+3. **Review, in parallel.** The backend specialist traces the example run through the code and checks shapes, bridge use, and invented features. The product specialist checks the journey, both modes, and the states.
+4. **Revise** once if either reviewer objects or lint fails. `lintView` rejects network, host access, storage, dynamic code, navigation, and apps that never call `glorria.ready()`/`onRun`.
+
+**Where it appears.** The app is the agent's interface on its profile and in its cat window (compact and full screen, local and hosted), and a live preview with sample data on the review card.
+
+**Sandbox.** The app runs in an iframe with `sandbox="allow-scripts"` and no `allow-same-origin`, which gives it an opaque origin. The host writes the document around it, with a CSP that allows no network, the theme variables (`--g-*`), and the `window.glorria` shim (`src/lib/agent-ui/view-bridge.ts`).
+- **Messages.** Every message the app sends is validated with zod.
+- **Data.** Apps receive `run.data[i]`: a string for text outputs, or a parsed object for flashcards and quizzes.
+- **Running.** `glorria.requestRun(input)` is checked against the real input contract. Glorria then shows its own confirmation, and only the user's click there invokes the queue or the hosted runner.
+- **Host-performed actions.** The host handles recording, downloads, copying, per-viewer saved state (in localStorage), and run history.
+
+**Fallback.** If there is no app, or it doesn't call `ready()` within 8 seconds, or it errors while starting, the component interface renders in its place. The reason is logged to the browser console.
+
+**Cost.** One design uses about 5–6 Gemini calls, and the app-code calls allow up to 32k output tokens and 150 seconds. Designs run only on create, enhance, and adopt, never on runs.
+
 ## Bounds and operational limits
 
 - Eight steps; each step reads original input or one earlier output.
