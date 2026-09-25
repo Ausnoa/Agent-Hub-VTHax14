@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { ModelProviderError, ModelServiceError } from '../planner/index.ts';
 
-export type ModelOptions = { audio?: { mimeType: string; data: string }; maxOutputTokens?: number };
+export type ModelOptions = { audio?: { mimeType: string; data: string }; maxOutputTokens?: number; /** Per-attempt limit for long generations such as app code. */ timeoutMs?: number };
 export type StructuredModel = <S extends z.ZodType>(input: string, instructions: string, schema: S, options?: ModelOptions) => Promise<z.output<S>>;
 
 /** Server-only provider boundary. Configuration never comes from a generated plan. */
@@ -12,7 +12,8 @@ export const gemini: StructuredModel = async (input, instructions, schema, optio
   if (!key || !models.length || models.some(model => !/^[a-zA-Z0-9._-]+$/.test(model))) throw new ModelServiceError('not-configured');
   let response: Response | undefined;
   // Audio transcription is the slowest call; it gets more time per attempt and overall.
-  const deadline = AbortSignal.timeout(options.audio ? 150_000 : 90_000), perAttempt = options.audio ? 75_000 : 40_000;
+  const perAttempt = options.timeoutMs ?? (options.audio ? 75_000 : 40_000);
+  const deadline = AbortSignal.timeout(options.timeoutMs ? options.timeoutMs + 60_000 : options.audio ? 150_000 : 90_000);
   const body = JSON.stringify({ systemInstruction: { parts: [{ text: instructions }] },
     contents: [{ role: 'user', parts: [{ text: input }, ...(options.audio ? [{ inlineData: options.audio }] : [])] }],
     generationConfig: { responseMimeType: 'application/json', responseJsonSchema: z.toJSONSchema(schema), maxOutputTokens: options.maxOutputTokens ?? 4096 },

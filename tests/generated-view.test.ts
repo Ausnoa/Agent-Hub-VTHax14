@@ -41,12 +41,14 @@ test('bridge messages from the app are validated', () => {
   assert.equal(appMessageSchema.safeParse({ type: 'glorria:openRun', runId: 'x'.repeat(65) }).success, false);
 });
 
-test('the app contract states the real input and exact output shapes', () => {
+test('the app contract states the real input and exact output shapes', async () => {
   assert.equal(inputKind([transcribe, cards]), 'audio');
   assert.equal(inputKind([{ ...cards, inputFrom: 'original', format: 'json' }]), 'json');
   const contract = outputContract([transcribe, cards]);
-  assert.equal(contract.outputs[0].shape, '{ type: "text", value: string }');
-  assert.match(contract.outputs[1].shape, /cards: \[\{ front: string, back: string \}\]/);
+  assert.equal(contract.outputs[0].shape, 'string');
+  assert.equal(contract.outputs[1].shape, '{ cards: [{ front: string, back: string }] }', 'the app receives parsed data, never a wrapper');
+  const { outputData } = await import('../src/lib/agent-ui/view-bridge.ts');
+  assert.deepEqual(outputData([{ type: 'text', value: 'T' }, { type: 'json', value: { cards: [] } }, { type: 'audio', value: 'AAAA' }]), ['T', { cards: [] }, null]);
 });
 
 test('capability configs with and without a generated app both parse', () => {
@@ -55,4 +57,53 @@ test('capability configs with and without a generated app both parse', () => {
   const view = { version: 1, html: minimal, generatedAt: new Date().toISOString(), sample: [{ type: 'text', value: 'Sample transcript' }] };
   assert.equal(capabilityConfigSchema.safeParse({ ...base, view }).success, true);
   assert.equal(viewSchema.safeParse({ ...view, sample: [{ type: 'text', value: 'x'.repeat(2900) }, { type: 'text', value: 'x'.repeat(2900) }, { type: 'text', value: 'x'.repeat(2900) }] }).success, false, 'samples stay small');
+});
+
+function team(options: { html?: string; revised?: string; approve?: boolean; sample?: unknown[]; fail?: string } = {}) {
+  const calls: string[] = []; let inFlight = 0, overlap = 0;
+  const generate = (async (input: string, rules: string, schema: { parse: (value: unknown) => unknown }) => {
+    const role = rules.includes('Revise your app') ? 'revise' : rules.includes('reviewing') ? (rules.startsWith('You are the backend') ? 'backend-review' : 'product-review')
+      : rules.startsWith('You are the frontend') ? 'frontend' : rules.startsWith('You are the backend') ? 'backend' : 'product';
+    calls.push(role); inFlight++; overlap = Math.max(overlap, inFlight);
+    await new Promise(resolve => setTimeout(resolve, 5)); inFlight--;
+    if (options.fail === role) throw new Error('provider overloaded');
+    if (role === 'product') return schema.parse({ journey: 'Record, then study', modes: [{ name: 'Flashcards', purpose: 'Recall' }], interactions: ['flip'], states: 'Clear', feel: 'Like a study app' });
+    if (role === 'backend') return schema.parse({ allowed: ['flip cards'], excluded: [{ interaction: 'Ask the tutor', reason: 'No answer step' }], notes: 'cards live in value.cards', sample: options.sample ?? ['Sample transcript', JSON.stringify({ cards: [{ front: 'Q', back: 'A' }] })] });
+    if (role === 'frontend') return schema.parse({ html: options.html ?? minimal, summary: 'Study app' });
+    if (role === 'revise') { assert.ok(JSON.parse(input).issues.length, 'revision receives the reviewers\' issues'); return schema.parse({ html: options.revised ?? minimal, summary: 'Revised' }); }
+    return schema.parse({ approved: options.approve ?? true, issues: options.approve === false ? ['Quiz answers are not scored'] : [] });
+  }) as never;
+  return { generate, calls, overlap: () => overlap };
+}
+const designInput = async (generate: never) => {
+  const { designView } = await import('../src/lib/capabilities/view-design.ts');
+  return designView({ intent: 'Study lectures', name: 'Study', steps: [transcribe, cards], ui: defaultUI('Study', [transcribe, cards]), generate });
+};
+
+test('specialists brief and review in parallel, and the frontend revises only when a reviewer objects', async () => {
+  const approved = team();
+  const view = await designInput(approved.generate);
+  assert.ok(view);
+  assert.deepEqual(approved.calls.slice(0, 2).sort(), ['backend', 'product']);
+  assert.equal(approved.calls[2], 'frontend');
+  assert.deepEqual(approved.calls.slice(3).sort(), ['backend-review', 'product-review']);
+  assert.equal(approved.overlap(), 2, 'round 1 and the review round each run two specialists at once');
+  assert.equal(view.sample.length, 2);
+  const objection = team({ approve: false, revised: minimal.replace('run.status', 'run.status+" (revised)"') });
+  const revised = await designInput(objection.generate);
+  assert.equal(objection.calls.at(-1), 'revise');
+  assert.match(revised!.html, /revised/);
+});
+
+test('an app that fails lint, or a failing specialist, leaves the component interface in place', async () => {
+  assert.equal(await designInput(team({ html: minimal + '<script>fetch("/api/general")</script>', revised: minimal + '<script>fetch("/x")</script>' }).generate), undefined);
+  const fixed = team({ html: minimal + '<script>fetch("/api/general")</script>' });
+  assert.ok(await designInput(fixed.generate), 'lint problems are sent back for one revision');
+  assert.equal(fixed.calls.at(-1), 'revise');
+  assert.equal(await designInput(team({ fail: 'frontend' }).generate), undefined);
+});
+
+test('preview samples must match each real output shape exactly', async () => {
+  const wrong = await designInput(team({ sample: ['Transcript', 'not cards'] }).generate);
+  assert.ok(wrong); assert.deepEqual(wrong.sample, [], 'mismatched samples are dropped, the app is kept');
 });

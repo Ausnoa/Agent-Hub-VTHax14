@@ -4,6 +4,7 @@ import { draftSchema, type GeneralStep } from '../general/contracts.ts';
 import { taskSchema, interfaceSchema, extraKinds, type CapabilityConfig, type CapabilityUI } from './contracts.ts';
 import { defaultUI, validateUI, repairUI, allowedComponents } from '../agent-ui/capability.ts';
 import { AnsHttpError } from '../ans/client.ts';
+import { designView } from './view-design.ts';
 export { defaultUI, validateUI } from '../agent-ui/capability.ts';
 
 export type Choice = { agentId: string; name: string; description: string | null; skills: { id: string; name: string }[] };
@@ -78,9 +79,11 @@ export async function resolveCapabilities(description: string, services: Pipelin
   draftSchema.parse({ name: base?.name ?? planned.name, steps });
   const name = base?.name ?? planned.name;
   const { ui, suggestions, generation } = await designInterface({ intent, name, steps, generate, base: base && { ui: base.capability.ui, steps: old.length } });
+  // The specialists then build the agent's whole app; without one, the component interface is used.
+  const view = await designView({ intent, name, steps, ui, generate, base: base?.capability.view });
   const remaining=[...new Map([...pending.values(),...unresolved].map(gap=>[gap.capability,gap])).values()];
   if(remaining.length>8)throw new Error('Too many unresolved capabilities. Start with a smaller request.');
-  return { name, description: ui.description, steps, capability: { version: 1, intent, ui, suggestions, unresolved: remaining, generation } };
+  return { name, description: ui.description, steps, capability: { version: 1, intent, ui, suggestions, unresolved: remaining, generation, ...(view ? { view } : {}) } };
 }
 
 /**

@@ -33,7 +33,7 @@ test('adopting a hand-built workflow keeps its steps, designs a validated interf
   let put:{definition:unknown;parentId?:string}|undefined,budget=0;
   const roles:string[]=[];
   const generate=(async(_input:string,rules:string,schema:{parse:(v:unknown)=>unknown})=>{
-    roles.push(rules.slice(0,40));
+    roles.push(rules);
     if(rules.includes('product specialist'))return schema.parse({workflow:'Paste notes, read the brief',suggestions:['Extract action items']});
     return schema.parse({...defaultUI('Meeting notes',manual.steps as GeneralStep[]),title:'Meeting brief',extras:['history','export'],primaryPanel:0});
   }) as CapabilityContext['generate'];
@@ -42,10 +42,11 @@ test('adopting a hand-built workflow keeps its steps, designs a validated interf
     publish:async()=>({published:true})} as unknown as CapabilityContext;
   const adopt=new Request('http://localhost/api/capabilities/adopt',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({workflowId:id})});
   const response=await handleCapabilities(adopt,['capabilities','adopt'],context);
-  assert.equal(response.status,201);assert.equal(budget,1);assert.equal(roles.length,3,'product, frontend, and backend specialists each run once');
+  assert.equal(response.status,201);assert.equal(budget,1);assert.equal(roles.filter(r=>!/on a three|reviewing|Revise/.test(r)).length,3,'product, frontend, and backend interface roles each run once');
   assert.equal(put?.parentId,id);
   const saved=put?.definition as typeof definition;
   assert.deepEqual(saved.steps,manual.steps,'adoption never changes the hand-picked steps');
   assert.equal(saved.capability.ui.title,'Meeting brief');assert.equal(saved.capability.generation,'specialists');
   assert.deepEqual(saved.capability.suggestions,['Extract action items']);assert.deepEqual(saved.capability.unresolved,[]);
+  assert.equal((saved.capability as {view?:unknown}).view,undefined,'when app design fails, the agent keeps its component interface');
 });

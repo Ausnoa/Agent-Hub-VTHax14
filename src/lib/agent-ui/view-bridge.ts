@@ -13,12 +13,14 @@ export function inputKind(steps: Pick<GeneralStep, 'inputFrom' | 'format'>[]): I
   return original.some(step => step.format === 'audio') ? 'audio' : original.some(step => step.format === 'json') ? 'json' : 'text';
 }
 
-/** Exact runtime shape of each output as the app receives it. */
+/** Exact runtime shape of run.data[i] as the app receives it: already parsed, never wrapped. */
 const shapes = {
-  text: '{ type: "text", value: string }',
-  flashcards: '{ type: "json", value: { cards: [{ front: string, back: string }] } }',
-  quiz: '{ type: "json", value: { questions: [{ question: string, options: string[], answer: number /* zero-based index into options */, explanation: string }] } }',
+  text: 'string',
+  flashcards: '{ cards: [{ front: string, back: string }] }',
+  quiz: '{ questions: [{ question: string, options: string[], answer: number /* zero-based index into options */, explanation: string }] }',
 } as const;
+/** The app sees plain output data; the typed Value wrapper stays on the host side. */
+export const outputData = (outputs: { type: string; value: unknown }[]) => outputs.map(output => output.type === 'audio' ? null : output.value);
 export type OutputContract = { input: InputKind; outputs: { index: number; name: string; source: string; shape: string }[] };
 export function outputContract(steps: GeneralStep[]): OutputContract {
   return {
@@ -34,18 +36,22 @@ export function outputContract(steps: GeneralStep[]): OutputContract {
 /** The API the frontend specialist writes against. Kept next to the shim that implements it. */
 export const BRIDGE_API = `The app runs in a sandboxed iframe with no network. Use only window.glorria:
 - glorria.onInit(fn): fn({ mode: "full"|"compact", preview: boolean, agent: { title, input: "audio"|"json"|"text", outputs: [{ index, name, shape }] }, savedState: any|null, history: [{ id, status, createdAt }] })
-- glorria.onRun(fn): fn({ id, status: "idle"|"queued"|"running"|"ready"|"completed"|"failed", outputs: Value[] /* outputs[i] belongs to agent.outputs[i]; may be partial while running */, error: string|null }). Called for new runs, progress, and when a past run is opened.
-- glorria.requestRun(input): Promise<{ result: "accepted"|"declined"|"error", message? }>. input must match agent.input: { type: "text", value: string } | { type: "json", value: object } | an audio Value from glorria.readAudioFile/recordAudio. Glorria shows its own confirmation before anything runs.
+- glorria.onRun(fn): fn({ id, status: "idle"|"queued"|"running"|"ready"|"completed"|"failed", data: any[], error: string|null }). data[i] is agent.outputs[i]'s content, already parsed, in exactly its shape (a string for text outputs, an object for structured ones; never a JSON string, never wrapped). data is shorter while running and may be empty. Called for new runs, progress, and when a past run is opened.
+- glorria.requestRun(input): Promise<{ result: "accepted"|"declined"|"error", message? }>. input must match agent.input: { type: "text", value: string } | { type: "json", value: object } | the audio object returned by glorria.readAudioFile/recordAudio (pass it through unchanged). Glorria shows its own confirmation before anything runs.
 - glorria.readAudioFile(file: File): Promise<Value> (WebM, Ogg, WAV, MP3, or MP4, at most 1 MB; rejects otherwise).
 - glorria.recordAudio(): Promise<Value|null> (Glorria's recorder, up to 60 seconds).
 - glorria.openRun(runId): load a past run; delivered through onRun.
 - glorria.saveState(json): persist small per-viewer state (progress, starred items, settings), returned as savedState next time.
-- glorria.ready(): call once after registering onInit/onRun. Nothing is delivered before it.
+- glorria.download(filename, content, mimeType): save a file the app builds from run data (mimeType "text/plain"|"text/markdown"|"text/csv"|"application/json"). The sandbox blocks direct downloads.
+- glorria.copy(text): copy text to the clipboard. The sandbox blocks direct clipboard access.
+- glorria.ready(): call once when your UI is set up (before or inside onInit). If it is never called, Glorria replaces the app with its standard interface.
 Theme variables: --g-bg, --g-surface, --g-surface-2, --g-text, --g-muted, --g-border, --g-accent, --g-accent-soft, --g-agent, --g-good, --g-warn, --g-bad, --g-radius, --g-font, --g-font-display, --g-font-mono.`;
 
 const idSchema = z.string().min(1).max(64);
 /** Every message the app may send. Anything else is ignored. */
 export const appMessageSchema = z.discriminatedUnion('type', [
+  // Sent by the host-written shim when the document loads; the host answers with init and run.
+  z.object({ type: z.literal('glorria:hello') }),
   z.object({ type: z.literal('glorria:ready') }),
   z.object({ type: z.literal('glorria:resize'), height: z.number().finite().min(0).max(20000) }),
   z.object({ type: z.literal('glorria:saveState'), state: z.unknown() }),
@@ -53,6 +59,8 @@ export const appMessageSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('glorria:openRun'), runId: idSchema }),
   z.object({ type: z.literal('glorria:recordAudio'), requestId: idSchema }),
   z.object({ type: z.literal('glorria:error'), message: z.string().max(500) }),
+  z.object({ type: z.literal('glorria:download'), filename: z.string().trim().min(1).max(100).regex(/^[^\\/:*?"<>|]+$/), content: z.string().max(500_000), mimeType: z.enum(['text/plain', 'text/markdown', 'text/csv', 'application/json']) }),
+  z.object({ type: z.literal('glorria:copy'), text: z.string().max(200_000) }),
 ]);
 export type AppMessage = z.infer<typeof appMessageSchema>;
 export const MAX_VIEW_STATE = 50_000;
@@ -96,6 +104,7 @@ function send(m){host.postMessage(m,'*');}
 function report(e){send({type:'glorria:error',message:String((e&&e.message)||e).slice(0,500)});}
 window.addEventListener('error',function(e){report(e.error||e.message);});
 window.addEventListener('unhandledrejection',function(e){report(e.reason);});
+document.addEventListener('DOMContentLoaded',function(){send({type:'glorria:hello'});});
 window.addEventListener('message',function(e){
   if(e.source!==host||!e.data||typeof e.data.type!=='string')return;var d=e.data,k=d.type.slice(8);
   if(k==='runResult'||k==='audio'){var w=waiting[d.requestId];if(w){delete waiting[d.requestId];w(k==='audio'?d.value:d);}return;}
@@ -111,6 +120,8 @@ window.glorria=Object.freeze({
   recordAudio:function(){return request('glorria:recordAudio',{});},
   openRun:function(id){send({type:'glorria:openRun',runId:String(id)});},
   saveState:function(s){send({type:'glorria:saveState',state:s});},
+  download:function(name,content,mime){send({type:'glorria:download',filename:String(name),content:String(content),mimeType:mime||'text/plain'});},
+  copy:function(text){send({type:'glorria:copy',text:String(text)});},
   readAudioFile:function(file){return new Promise(function(res,rej){
     var types=['audio/webm','audio/ogg','audio/wav','audio/mpeg','audio/mp4'],t=String(file&&file.type||'').split(';')[0];
     if(types.indexOf(t)<0)return rej(new Error('Use a WebM, Ogg, WAV, MP3, or MP4 audio file.'));

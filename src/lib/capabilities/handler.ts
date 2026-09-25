@@ -4,6 +4,8 @@ import { readBody, respond } from '../hosted/handler.ts';
 import { HostedError } from '../hosted/server.ts';
 import { resolveCapabilities, designInterface, defaultUI, validateUI, type CapabilityDraft, type PipelineServices } from './pipeline.ts';
 import type { CapabilityProposal } from './store.ts';
+import { designView } from './view-design.ts';
+import { lintView } from '../agent-ui/view-bridge.ts';
 import { draftSchema, type GeneralStep } from '../general/contracts.ts';
 
 export type CapabilityContext = PipelineServices & {
@@ -39,8 +41,11 @@ export async function handleCapabilities(request: Request, path: string[], conte
     const { workflowId } = z.object({ workflowId: z.uuid() }).parse(await readBody(request));
     await context.budget();
     const base = await context.getAgent(workflowId);
-    const design = await designInterface({ intent: base.capability.intent, name: base.name, steps: base.steps, generate: context.generate ?? gemini });
-    const draft: CapabilityDraft = { ...base, description: base.description || design.ui.description, capability: { ...base.capability, ui: design.ui, suggestions: design.suggestions, generation: design.generation, unresolved: [] } };
+    const generate = context.generate ?? gemini;
+    const design = await designInterface({ intent: base.capability.intent, name: base.name, steps: base.steps, generate });
+    const view = await designView({ intent: base.capability.intent, name: base.name, steps: base.steps, ui: design.ui, generate, base: base.capability.view });
+    const { view: _previous, ...config } = base.capability;
+    const draft: CapabilityDraft = { ...base, description: base.description || design.ui.description, capability: { ...config, ui: design.ui, suggestions: design.suggestions, generation: design.generation, unresolved: [], ...(view ? { view } : {}) } };
     draftSchema.parse(draft); validateUI(draft.capability.ui, draft.steps);
     return respond(await context.publish((await context.put(draft, workflowId)).id), 201);
   }
@@ -50,6 +55,8 @@ export async function handleCapabilities(request: Request, path: string[], conte
     draftSchema.parse(proposal.definition);
     if (!proposal.definition.capability || proposal.definition.capability.unresolved.length) throw new HostedError(422, 'Resolve the missing capabilities before saving');
     validateUI(proposal.definition.capability.ui, proposal.definition.steps);
+    // Stored proposals are rechecked: a generated app that fails lint is never published.
+    if (proposal.definition.capability.view && lintView(proposal.definition.capability.view.html).length) throw new HostedError(422, 'The generated interface failed its safety checks. Generate a fresh proposal.');
     for (const step of proposal.definition.steps) {
       const current = await context.prepare(step);
       if (current.endpoint !== step.endpoint || current.metadataUrl !== step.metadataUrl) throw new HostedError(409, 'A capability changed since discovery. Generate a fresh proposal.');
