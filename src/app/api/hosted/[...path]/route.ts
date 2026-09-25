@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
 async function handle(request: Request, context: { params: Promise<{ path: string[] }> }) {
   const {path}=await context.params;
-  if (['registry','workflows'].includes(path[0])) return handleWorkflowApi(request,path);
+  if (['registry','workflows','capabilities'].includes(path[0])) return handleWorkflowApi(request,path);
   if (['profile','profiles'].includes(path[0])) return handleProfileApi(request,path);
   if (path[0]==='discover') return handleDiscoverApi(request,path);
   if (path[0]==='saved') return handleSavedApi(request,path);

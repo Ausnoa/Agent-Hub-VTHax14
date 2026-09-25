@@ -5,11 +5,24 @@ import { readBody,respond,checkOrigin } from './handler.ts';
 import { workflowRepository } from './workflow-store.ts';
 import { prepareHosted,searchHosted,suggestHosted,advanceHosted,workflowServices } from './workflow-service.ts';
 import { valueSchema } from '../general/contracts.ts';
+import { handleCapabilities, asCapabilityDraft } from '../capabilities/handler.ts';
+import { capabilityRepository } from '../capabilities/store.ts';
+import { gemini } from '../models/gemini.ts';
 export const hostedWorkflowDependencies={authenticate,agents:repository,workflows:workflowRepository,services:workflowServices,enabled:()=>process.env.HOSTED_AGENT_TESTS_ENABLED==='true'};
 export async function handleWorkflowApi(request:Request,path:string[],deps=hostedWorkflowDependencies){
   try{
     checkOrigin(request);
     const identity=await deps.authenticate(request),agents=deps.agents(identity),store=deps.workflows(identity);
+    if(path[0]==='capabilities'){
+      const proposals=capabilityRepository(identity);
+      return await handleCapabilities(request,path,{
+        ...proposals, enabled:deps.enabled(),generate:gemini,
+        budget:()=>store.budget('plan'),
+        search:async query=>{await store.budget('search');return (await searchHosted(query,undefined,agents,deps.services)).candidates.filter(c=>c.source==='ans');},
+        prepare:async step=>{const checked=await prepareHosted({name:'Capability check',steps:[{...step,inputFrom:'original',inputStep:undefined}]},agents,deps.services);return {...checked.steps[0],inputFrom:step.inputFrom,...(step.inputStep===undefined?{}:{inputStep:step.inputStep})};},
+        getAgent:async id=>{const agent=await store.get(id);if(agent.owner_id!==identity.userId||agent.archived)throw new HostedError(403,'Only your active agents can be enhanced');return asCapabilityDraft(agent.definition);},
+      });
+    }
     if(path.join('/')==='registry/search'&&request.method==='POST'){
       const input=z.object({query:z.string().trim().max(256),pageToken:z.string().max(4000).optional()}).parse(await readBody(request));
       await store.budget('search');return respond(await searchHosted(input.query,input.pageToken,agents,deps.services));
@@ -43,7 +56,7 @@ export async function handleWorkflowApi(request:Request,path:string[],deps=hoste
     if(path[0]==='workflows'&&path.length===3&&path[2]==='invoke'&&request.method==='POST'){
       if(!deps.enabled())throw new HostedError(503,'Hosted execution is not enabled');
       const id=z.uuid().parse(path[1]);await store.get(id);
-      const input=z.object({requestId:z.uuid(),input:valueSchema,confirmExternalExecution:z.literal(true)}).parse(await readBody(request));
+      const input=z.object({requestId:z.uuid(),input:valueSchema,confirmExternalExecution:z.literal(true)}).parse(await readBody(request,1_340_000));
       const runId=await store.start(input.requestId,id,input.input);return respond(await store.run(runId),201);
     }
     if(path[0]==='workflows'&&path.length===3&&path[2]==='visibility'&&request.method==='POST'){

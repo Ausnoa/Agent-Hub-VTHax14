@@ -8,8 +8,9 @@ import { runDefinition } from '../owned-agent/run.ts';
 import { repository,HostedError } from './server.ts';
 import type { Candidate,HostedRun } from './workflow-contracts.ts';
 import type { WorkflowRepository } from './workflow-store.ts';
+import { executeTask } from '../capabilities/tasks.ts';
 type Agents=ReturnType<typeof repository>;
-export const workflowServices={resolve:resolveAgent,inspect:inspectGeneral,invoke:invokeGeneral,generate:structuredPlan,runTemplate:runDefinition,discover:discoverAgents};
+export const workflowServices={resolve:resolveAgent,inspect:inspectGeneral,invoke:invokeGeneral,generate:structuredPlan,runTemplate:runDefinition,discover:discoverAgents,runCapability:executeTask};
 type Services=typeof workflowServices;
 export async function searchHosted(query:string,pageToken:string|undefined,agents:Agents,services=workflowServices){
   const saved=await agents.list();
@@ -26,6 +27,7 @@ export async function prepareHosted(input:unknown,agents:Agents,services=workflo
   const {description}=descriptionSchema.parse(input);
   const steps=await Promise.all(draft.steps.map(async selection=>{
     if(selection.format==='json'&&selection.instruction)throw new HostedError(400,'JSON mappings must have empty instructions');
+    if(selection.geminiTask)return {...selection,name:selection.geminiTask,endpoint:selection.agentId,metadataUrl:selection.agentId};
     if(selection.agentId.startsWith('template:')){
       const id=z.uuid().parse(selection.agentId.slice(9));const agent=await agents.get(id);if(agent.archived)throw new HostedError(409,'Restore the archived agent before adding it to a workflow.');
       if(selection.skill!==templateFor(agent.template).skill||selection.format!=='text')throw new HostedError(400,'Saved templates require their advertised text skill');
@@ -65,8 +67,11 @@ export async function advanceHosted(run:HostedRun,expectedStep:number,store:Work
     const workflow=await store.get(run.workflow_id);
     const step:GeneralStep=workflow.definition.steps[run.outputs.length];
     if(!step)throw new Error('Workflow step missing');
-    const input=mapInput(step,run.input,run.outputs.at(-1));
-    if(step.agentId.startsWith('template:')){
+    draftSchema.parse(workflow.definition);
+    const input=mapInput(step.geminiTask?{...step,instruction:''}:step,run.input,run.outputs.at(-1),run.outputs);
+    if(step.geminiTask){
+      output=await services.runCapability(step.geminiTask,input,step.instruction);
+    }else if(step.agentId.startsWith('template:')){
       const agent=await agents.get(z.uuid().parse(step.agentId.slice(9)));
       if(step.skill!==templateFor(agent.template).skill||step.format!=='text')throw new Error('Template skill mismatch');
       const text=z.string().min(1).max(12000).parse(input.value);

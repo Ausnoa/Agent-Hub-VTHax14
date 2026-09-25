@@ -3,7 +3,7 @@ import { authenticate, repository, HostedError } from './server.ts';
 import { ModelProviderError,ModelServiceError } from '../planner/index.ts';
 import { runDefinition } from '../owned-agent/run.ts';
 
-export async function readBody(request: Request) {
+export async function readBody(request: Request, limit = 64000) {
   if (request.headers.get('content-type')?.split(';')[0].trim() !== 'application/json') throw new HostedError(415, 'Use application/json');
   const reader = request.body?.getReader();
   if (!reader) throw new HostedError(400, 'JSON body required');
@@ -12,7 +12,7 @@ export async function readBody(request: Request) {
     while (true) {
       const { done, value } = await reader.read(); if (done) break;
       size += value.byteLength;
-      if (size > 64000) throw new HostedError(413, 'Request exceeds 64 KB');
+      if (size > limit) throw new HostedError(413, 'Request exceeds its size limit');
       chunks.push(value);
     }
     try { return JSON.parse(Buffer.concat(chunks).toString('utf8')); }

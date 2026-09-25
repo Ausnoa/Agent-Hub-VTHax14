@@ -13,6 +13,8 @@ import { GeneralStore } from "../../../lib/general/store.ts";
 import { prepareGeneral } from "../../../lib/general/service.ts";
 import { valueSchema } from "../../../lib/general/contracts.ts";
 import { suggestGeneral } from "../../../lib/general/planner.ts";
+import { handleCapabilities, asCapabilityDraft } from '../../../lib/capabilities/handler.ts';
+import { gemini } from '../../../lib/models/gemini.ts';
 
 function withRegistry<T>(work: (registry: RegistryGateway) => T): T {
   const db = openDatabase();
@@ -22,7 +24,7 @@ function withRegistry<T>(work: (registry: RegistryGateway) => T): T {
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-async function body(request: Request): Promise<unknown> {
+async function body(request: Request, limit = 32_000): Promise<unknown> {
   const reader = request.body?.getReader();
   if (!reader) throw new Error("Request body is required");
   let total = 0;
@@ -32,7 +34,7 @@ async function body(request: Request): Promise<unknown> {
       const { value, done } = await reader.read();
       if (done) break;
       total += value.byteLength;
-      if (total > 32_000) throw new Error("Request exceeds the 32 KB limit");
+      if (total > limit) throw new Error("Request exceeds its size limit");
       chunks.push(value);
     }
     return JSON.parse(Buffer.concat(chunks).toString("utf8"));
@@ -49,6 +51,19 @@ async function handle(request: Request, context: { params: Promise<{ path: strin
   const { path } = await context.params;
   const store = new Store();
   try {
+    if(path[0]==='capabilities'){
+      const general=new GeneralStore();
+      try{return await handleCapabilities(request,path,{
+        enabled:true,generate:gemini,budget:async()=>{},
+        search:async query=>{
+          const page=await discoverAgents({query,baseUrl:process.env.ANS_BASE_URL,authorization:discoveryAuthorization()});
+          return page.agents.filter(a=>a.metadataUrl&&a.skills?.length).map(a=>({agentId:a.ansId,name:a.name,description:a.description,skills:a.skills!}));
+        },
+        prepare:async step=>{const checked=await prepareGeneral({name:'Capability check',steps:[{...step,inputFrom:'original',inputStep:undefined}]});return {...checked.steps[0],inputFrom:step.inputFrom,...(step.inputStep===undefined?{}:{inputStep:step.inputStep})};},
+        getAgent:async id=>{const agent=general.get(id,true);if(!agent)throw new Error('Agent not found');return asCapabilityDraft(agent);},
+        put:async(definition,parentId)=>general.putCapability(definition,parentId),get:async id=>general.capabilityProposal(id),publish:async id=>general.publishCapability(id),
+      });}finally{general.close();}
+    }
     if (path[0] === "owned") {
       const owned = new OwnedStore();
       try {
@@ -90,11 +105,12 @@ async function handle(request: Request, context: { params: Promise<{ path: strin
           const run = general.run(z.string().uuid().parse(path[2]));
           return run ? json(run) : json({ error: "Run not found" }, 404);
         }
+        if(path[1] && path[2]==='runs' && path.length===3 && request.method==='GET')return json(general.runs(z.uuid().parse(path[1])));
         if (path[1] && path.length === 3 && request.method === "POST") {
           const id = z.string().uuid().parse(path[1]);
           if (path[2] === "approve") return json(general.approve(id));
           if (path[2] === "invoke") {
-            const input = z.object({ input: valueSchema, confirmExternalExecution: z.literal(true) }).parse(await body(request));
+            const input = z.object({ input: valueSchema, confirmExternalExecution: z.literal(true) }).parse(await body(request,1_340_000));
             return json(general.enqueue(id, input.input), 202);
           }
         }

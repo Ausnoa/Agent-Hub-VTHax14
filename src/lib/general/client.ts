@@ -6,7 +6,7 @@ import { z } from "zod";
 import { makeAgentFetch } from "../a2a/network.ts";
 import { valueSchema, type GeneralStep, type Value } from "./contracts.ts";
 
-export async function inspectGeneral(step: GeneralStep, fetcher = makeAgentFetch()) {
+export async function inspectGeneral(step: GeneralStep, fetcher = makeAgentFetch(), audioMime?: string) {
   const response = await fetcher(step.metadataUrl);
   if (!response.ok) throw new Error("Agent card unavailable");
   const card = z.object({ url: z.string().url(), protocolVersion: z.literal("0.3.0"),
@@ -18,17 +18,19 @@ export async function inspectGeneral(step: GeneralStep, fetcher = makeAgentFetch
   if (card.url !== step.endpoint || card.security?.length || card.authentication || Object.keys(card.securitySchemes ?? {}).length) throw new Error("Endpoint mismatch or unsupported authentication");
   const skill = card.skills.find((entry) => entry.id === step.skill);
   if (!skill) throw new Error("Selected skill is no longer advertised");
-  const inputMode = step.format === "text" ? "text/plain" : "application/json";
-  if (!(skill.inputModes ?? card.defaultInputModes).includes(inputMode)) throw new Error("Selected input format is not advertised");
+  const inputModes = skill.inputModes ?? card.defaultInputModes;
+  const inputMode = step.format === 'audio' ? undefined : step.format === "text" ? "text/plain" : "application/json";
+  if (inputMode ? !inputModes.includes(inputMode) : !inputModes.some(mode => ['audio/webm', 'audio/ogg', 'audio/wav', 'audio/mpeg', 'audio/mp4'].includes(mode))) throw new Error("Selected input format is not advertised");
   if (!(skill.outputModes ?? card.defaultOutputModes).some((mode) => ["text/plain", "application/json"].includes(mode))) throw new Error("Agent does not advertise supported text/JSON output");
+  if (audioMime && !inputModes.includes(audioMime)) throw new Error('This agent does not accept the recorded audio format. Upload audio in an advertised format.');
 }
 
 export async function invokeGeneral(step: GeneralStep, input: Value, fetcher = makeAgentFetch()): Promise<Value> {
-  await inspectGeneral(step, fetcher);
+  await inspectGeneral(step, fetcher, input.type === 'audio' ? input.mimeType : undefined);
   const transport = new LegacyJsonRpcTransport({ endpoint: step.endpoint, fetchImpl: fetcher });
   const signal = AbortSignal.timeout(60000);
   let result = await transport.sendMessage(SendMessageRequest.fromJSON({ message: { messageId: randomUUID(), role: "ROLE_USER",
-    parts: [input.type === "text" ? { text: input.value } : { data: input.value, mediaType: "application/json" }],
+    parts: [input.type === 'audio' ? { raw: input.value, mediaType: input.mimeType, filename: 'source-audio' } : input.type === "text" ? { text: input.value } : { data: input.value, mediaType: "application/json" }],
   } }), { signal });
   while ("status" in result) {
     if (result.status?.state === TaskState.TASK_STATE_COMPLETED) break;
