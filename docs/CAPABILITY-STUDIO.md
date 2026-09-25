@@ -1,10 +1,21 @@
-# Capability studio
+# Agent creation (capability pipeline)
 
-`/studio` creates and enhances general workflows using ANS-first discovery and Gemini. The existing report composer, manual workflow builder, and saved OpenAI templates remain available.
+Every Glorria agent and workflow is created through this pipeline: ANS-first discovery, Gemini for supported gaps, and an interface designed by three specialist roles. Every saved agent keeps the original Glorria experience: a cat pops out, the agent joins the fleet, and it opens on a profile with a launchable interface.
+
+## Where agents are created and live
+
+| Surface | What happens |
+|---|---|
+| `/create` (nav "Create agent", fleet directive, dashboard) | Describe an agent → review the resolved steps and the designed interface → add suggestions or custom capabilities → **Create agent**. The cat pops out and the browser opens `/agents/{id}`. |
+| `/general` (local) and hosted Compose | Hand-pick agents. Saving runs `capabilities/adopt`: the steps are kept, the specialists design the interface, and it is published as a revision. The description box hands off to `/create`. |
+| `/agents` | One fleet grid: workflow agents (latest revision per family) next to report composites and template agents. **Launch Interface** opens the profile. |
+| `/agents/{id}` | Profile: header, the specialist-designed interface wired to real runs, what powers the agent, past runs, and **Enhance** for the owner. |
+| Cat (local pack or hosted bar) | The cat window renders the same interface in compact form, opening on the specialists' `primaryPanel`. The cat is keyed by the revision family, so enhancements update it. |
+| `/agent-preview`, `/create/report` | Advanced links. The single-skill template builder and the legacy report composer demo are unchanged. `/studio` redirects to `/create` or to a profile. |
 
 ## Setup
 
-Set `GEMINI_API_KEY` and `GEMINI_MODEL` on the server. Use a model supporting structured JSON outputs and audio input if transcription is needed. Keys must never use the `NEXT_PUBLIC_` prefix. The provider adapter uses Google's [generateContent API](https://ai.google.dev/api/generate-content) and [structured JSON outputs](https://ai.google.dev/gemini-api/docs/generate-content/structured-output).
+Set `GEMINI_API_KEY` and `GEMINI_MODEL` on the server. `GEMINI_MODEL` may be a comma-separated fallback list (quota, overload, and retired-model responses move to the next model). Use models supporting structured JSON outputs and audio input if transcription is needed. Keys must never use the `NEXT_PUBLIC_` prefix. The provider adapter uses Google's [generateContent API](https://ai.google.dev/api/generate-content) and [structured JSON outputs](https://ai.google.dev/gemini-api/docs/generate-content/structured-output).
 
 For local development, put the settings in `.env.local`, start `npm run dev`, and run `npm run worker` in another terminal. Both processes must use the same `COMPOSER_DB`. New SQLite proposal/head tables are created automatically.
 
@@ -25,7 +36,17 @@ Native recording/upload controls are derived from the original-input contract. E
 
 ## Interfaces and enhancements
 
-The renderer supports tabs, stacked panels, and columns using Glorria's existing cards/buttons and theme. It renders text, structured tables, revealable flashcards, scored quizzes, and real JSON downloads. New agents are linked from the fleet and hosted companion/detail pages.
+`designInterface` (pipeline.ts) runs the product, frontend, and backend roles for creation, enhancement, and adoption. The specialists receive each output's allowed components and the native input contract. The interface they return chooses:
+
+- a title, description, input label and hint, action label, and empty state
+- tabs, stack, or columns
+- one panel per output, with a description
+- a `primaryPanel` for the cat window
+- which supporting sections to show: `history`, `export`, `capabilities`
+
+`repairUI` downgrades a mislabelled display component to text. `validateUI` still rejects bindings to missing or duplicated steps. Any failure keeps a deterministic layout, and during enhancement the existing layout is preserved. Older saved interfaces without the optional fields show every supporting section.
+
+`CapabilityRunner` renders the interface everywhere: profile, local cat window, hosted cat chat. It uses Glorria's existing cards, buttons, and theme, and renders text, structured tables, revealable flashcards, scored quizzes, and real JSON downloads.
 
 Enhancement starts from a saved workflow or a stored proposal. The existing steps are preserved; additions go through discovery, compatibility checking, fallback, and UI generation again. Publishing a revision preserves a stable `rootId`, increments the revision number, and retains the immutable workflow IDs used by old runs. Concurrent edits based on a stale revision are rejected. New hosted revisions start private, consistent with existing save behavior. Existing template agents remain usable as workflow steps in the manual builder.
 
@@ -38,7 +59,7 @@ The saved UI and suggestions are reused on load and on ordinary runs. Model spec
 - Audio is kept as a private run input, not published in a workflow definition. ANS audio invocation requires the specific MIME type to be advertised by the agent card. Supported upload types are WebM, Ogg, WAV, MP3, and MP4.
 - Hosted users must keep the page open to advance steps, or explicitly resume a ready run. No new background execution infrastructure is introduced.
 - Saved templates keep their existing provider configuration. The new pipeline uses Gemini through `src/lib/models/gemini.ts`; model/endpoint selection is server controlled.
-- Publishing and viewing older versions remains possible through the existing workflow APIs; the studio shows the latest available revision per family.
+- Publishing and viewing older versions remains possible through the existing workflow APIs; the fleet and cats show the latest revision per family.
 
 ## Verification
 
