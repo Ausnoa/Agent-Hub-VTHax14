@@ -36,6 +36,7 @@ export function outputContract(steps: GeneralStep[]): OutputContract {
 /** The API the frontend specialist writes against. Kept next to the shim that implements it. */
 export const BRIDGE_API = `The app runs in a sandboxed iframe with no network. Use only window.glorria:
 - glorria.onInit(fn): fn({ mode: "full"|"compact", preview: boolean, agent: { title, input: "audio"|"json"|"text", outputs: [{ index, name, shape }] }, savedState: any|null, history: [{ id, status, createdAt }] })
+- glorria.onMode(fn): fn({ mode: "full"|"compact" }) on initialization and every maximize/minimize. Toggle layout classes in both directions here; never reset inputs or results. html[data-glorria-mode] also reflects the current mode for CSS.
 - glorria.onRun(fn): fn({ id, status: "idle"|"queued"|"running"|"ready"|"completed"|"failed", data: any[], error: string|null }). data[i] is agent.outputs[i]'s content, already parsed, in exactly its shape (a string for text outputs, an object for structured ones; never a JSON string, never wrapped). data is shorter while running and may be empty. Called for new runs, progress, and when a past run is opened.
 - glorria.requestRun(input): Promise<{ result: "accepted"|"declined"|"error", message? }>. input must match agent.input: { type: "text", value: string } | { type: "json", value: object } | the audio object returned by glorria.readAudioFile/recordAudio (pass it through unchanged). Glorria shows its own confirmation before anything runs.
 - glorria.readAudioFile(file: File): Promise<Value> (WebM, Ogg, WAV, MP3, or MP4, at most 1 MB; rejects otherwise).
@@ -99,7 +100,14 @@ export type ViewTheme = Record<`--g-${string}`, string>;
 const CSP = "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; media-src data: blob:; font-src data:";
 // Host-authored; the generated app cannot change it. Messages go only to the embedding page.
 const SHIM = `(function(){
-var last={},handlers={init:[],run:[]},waiting={},seq=0,ready=false,host=window.parent;
+var last={},handlers={init:[],run:[],mode:[]},waiting={},seq=0,ready=false,host=window.parent,compactRoots=[];
+function setMode(mode){
+  if(mode!=='full'&&mode!=='compact')return;
+  document.documentElement.dataset.glorriaMode=mode;
+  if(last.init)last.init.mode=mode;
+  compactRoots.forEach(function(node){node.classList.toggle('compact',mode==='compact');});
+  last.mode={mode:mode};handlers.mode.forEach(function(h){try{h(last.mode);}catch(err){report(err);}});
+}
 function send(m){host.postMessage(m,'*');}
 function report(e){send({type:'glorria:error',message:String((e&&e.message)||e).slice(0,500)});}
 window.addEventListener('error',function(e){report(e.error||e.message);});
@@ -109,12 +117,21 @@ window.addEventListener('message',function(e){
   if(e.source!==host||!e.data||typeof e.data.type!=='string')return;var d=e.data,k=d.type.slice(8);
   if(k==='theme'){for(var key in d.payload)if(/^--g-[a-z0-9-]+$/.test(key))document.documentElement.style.setProperty(key,String(d.payload[key]));return;}
   if(k==='runResult'||k==='audio'){var w=waiting[d.requestId];if(w){delete waiting[d.requestId];w(k==='audio'?d.value:d);}return;}
+  if(k==='mode'){setMode(d.payload&&d.payload.mode);return;}
+  var before=k==='init'?Array.from(document.querySelectorAll('.compact')):[];
   if(!handlers[k])return;last[k]=d.payload;handlers[k].forEach(function(h){try{h(d.payload);}catch(err){report(err);}});
+  if(k==='init'){
+    // Older saved apps set compact only during initialization. Remember precisely
+    // those elements so resizing can undo that layout without reinitializing state.
+    compactRoots=Array.from(document.querySelectorAll('.compact')).filter(function(node){return before.indexOf(node)<0;});
+    setMode(d.payload.mode);
+  }
 });
 function request(type,extra){var id='q'+(++seq);return new Promise(function(res){waiting[id]=res;var m={type:type,requestId:id};for(var key in extra)m[key]=extra[key];send(m);});}
 var size=0;function measure(){var h=Math.ceil(document.documentElement.scrollHeight);if(h!==size){size=h;send({type:'glorria:resize',height:h});}}
 window.glorria=Object.freeze({
   onInit:function(h){handlers.init.push(h);if(last.init)h(last.init);},
+  onMode:function(h){handlers.mode.push(h);if(last.mode)h(last.mode);},
   onRun:function(h){handlers.run.push(h);if(last.run)h(last.run);},
   ready:function(){if(ready)return;ready=true;send({type:'glorria:ready'});if(window.ResizeObserver)new ResizeObserver(measure).observe(document.documentElement);measure();},
   requestRun:function(input){return request('glorria:requestRun',{input:input});},

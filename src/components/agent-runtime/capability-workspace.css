@@ -31,7 +31,7 @@
 @media (max-width: 640px) { .capability-profile-head { flex-direction: column; align-items: flex-start; } }
 .agent-mini.capability-cat { width: min(400px, calc(100vw - 32px)); }
 .agent-mini.capability-cat .agent-mini-body { max-height: min(560px, calc(100vh - 160px)); }
-.capability-cat-full .agent-full-main { max-width: none; }
+.capability-cat-full .agent-full-main { width: 100%; min-width: 0; max-width: none; margin-inline: 0; }
 .capability-cat-full { display: flex; flex-direction: column; }
 .capability-cat-full > .agent-full-main { flex: 1; }
 .generated-app { position: relative; margin-block: 16px; }
@@ -46,4 +46,4 @@
 .capability-floating-shell { position: fixed; z-index: 55; right: 24px; bottom: 110px; width: min(480px, calc(100vw - 32px)); }
 .capability-floating-window { display: flex; flex-direction: column; max-height: calc(100dvh - 140px); background: var(--bg-raised); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); overflow: hidden; }
 .capability-floating-window:focus { outline: none; }
-.capability-floating-window .agent-full-main { min-height: 0; overflow: auto; }
+.capability-floating-window .agent-full-main { width: 100%; min-width: 0; min-height: 0; margin-inline: 0; overflow: auto; }

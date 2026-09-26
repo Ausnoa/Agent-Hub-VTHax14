@@ -1,11 +1,35 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { runInNewContext } from 'node:vm';
 import { lintView, buildViewDocument, normalizeViewHtml, appMessageSchema, inputKind, outputContract } from '../src/lib/agent-ui/view-bridge.ts';
 import { capabilityConfigSchema, viewSchema, VIEW_HTML_LIMIT } from '../src/lib/capabilities/contracts.ts';
 import { defaultUI } from '../src/lib/agent-ui/capability.ts';
 import type { GeneralStep } from '../src/lib/general/contracts.ts';
 
 const minimal = '<div id="app"></div><script>glorria.onRun(function(run){document.getElementById("app").textContent=run.status;});glorria.ready();</script>';
+
+test('resizing updates legacy compact layouts without replaying initialization or losing state', () => {
+  const classes = new Set<string>();
+  const root = { classList: { add: (name: string) => classes.add(name), toggle: (name: string, on: boolean) => on ? classes.add(name) : classes.delete(name) } };
+  const listeners: Record<string, (event: any) => void> = {};
+  const parent = { postMessage() {} };
+  const window: any = { parent, addEventListener: (name: string, callback: any) => { listeners[name] = callback; } };
+  const document = { documentElement: { dataset: {} as Record<string, string> }, addEventListener() {}, querySelectorAll: () => classes.has('compact') ? [root] : [] };
+  const shim = buildViewDocument('', {}).match(/<script>([\s\S]*?)<\/script>/)![1];
+  runInNewContext(shim, { window, document });
+  let initCalls = 0, draft = '';
+  window.glorria.onInit((data: any) => { initCalls++; draft = ''; if (data.mode === 'compact') root.classList.add('compact'); });
+  const send = (type: string, mode: string, source = parent) => listeners.message({ source, data: { type: `glorria:${type}`, payload: { mode } } });
+  send('init', 'compact'); draft = 'Unsaved lecture notes';
+  send('mode', 'full');
+  assert.equal(classes.has('compact'), false);
+  assert.equal(document.documentElement.dataset.glorriaMode, 'full');
+  send('mode', 'compact');
+  assert.equal(classes.has('compact'), true);
+  assert.equal(initCalls, 1); assert.equal(draft, 'Unsaved lecture notes');
+  send('mode', 'full', {} as typeof parent);
+  assert.equal(classes.has('compact'), true, 'unrelated frames cannot change the mode');
+});
 const transcribe: GeneralStep = { agentId: 'gemini:transcribe', geminiTask: 'transcribe', skill: 'transcribe', name: 'Transcript', endpoint: 'gemini:transcribe', metadataUrl: 'gemini:transcribe', format: 'audio', inputFrom: 'original', instruction: '' };
 const cards: GeneralStep = { ...transcribe, agentId: 'gemini:flashcards', geminiTask: 'flashcards', skill: 'flashcards', name: 'Cards', endpoint: 'gemini:flashcards', metadataUrl: 'gemini:flashcards', format: 'text', inputFrom: 'previous', inputStep: 0 };
 

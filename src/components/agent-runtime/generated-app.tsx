@@ -56,6 +56,10 @@ export function GeneratedApp({ agent, local, mode, preview = false, onStatus, on
   const notify = useRef(onStatus); notify.current = onStatus;
   const fail = useRef(onFail); fail.current = onFail;
   const post = useCallback((message: object) => frame.current?.contentWindow?.postMessage(message, '*'), []);
+  useEffect(() => {
+    if (connected.current) post({ type: 'glorria:mode', payload: { mode } });
+    setHeight(mode === 'full' ? 640 : 460);
+  }, [mode, post]);
   const runPayload = (current?: AgentRun) => current ? { id: current.id, status: current.status, data: outputData(current.outputs), error: current.error ?? null } : { id: '', status: 'idle', data: [], error: null };
 
   useEffect(() => { active.current = true; return () => { active.current = false; }; }, []);
