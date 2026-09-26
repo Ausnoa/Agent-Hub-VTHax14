@@ -10,11 +10,11 @@ import { variantFor } from '../../lib/agent-ui/variant';
 import AgentAvatar from '../agent-runtime/agent-avatar';
 import CatAgentBar from '../agent-runtime/cat-agent-bar';
 import Mascot from '../agent-runtime/mascot';
-import { hostedAgent } from '../agent-runtime/capability-runner';
+import { hostedAgent, type CapabilityAgent } from '../agent-runtime/capability-runner';
 import AgentInterface from '../agent-runtime/generated-app';
 import './cat.css';
 import {chatPosition} from '../../lib/agent-ui/chat-position';
-type Target={id:string;name:string;kind:'agent'|'workflow';createdAt:string;workflow?:HostedWorkflow};
+type Target={id:string;name:string;kind:'agent'|'workflow';createdAt:string;workflow?:HostedWorkflow;capabilityAgent?:CapabilityAgent};
 type Message={id:string;input:string;output:string;status:string};
 // Renders regardless of login: without a hosted account the saved agent/workflow list can't
 // load (needs an authenticated API call), but a cat you just created still shows via the
@@ -23,18 +23,31 @@ type Message={id:string;input:string;output:string;status:string};
 export default function HostedCatRuntime(){const account=useAccount();return <CatPack key={account.session?.user.id??'anon'} userId={account.session?.user.id}/>;}
 function CatPack({userId}:{userId?:string}){
   const [targets,setTargets]=useState<Target[]>([]),[hidden,setHidden]=useState<string[]>([]),[selected,setSelected]=useState<string>();
+  const [lastSelected,setLastSelected]=useState<string>();
+  useEffect(()=>{if(selected)setLastSelected(selected);},[selected]);
   const [status,setStatus]=useState<Record<string,'idle'|'working'|'done'|'error'>>({});
   useEffect(()=>{let active=true;const refresh=()=>{Promise.all([hostedApi<OwnedAgent[]>('agents'),hostedApi<HostedWorkflow[]>('workflows')]).then(([agents,workflows])=>{if(active)setTargets([...agents.map(a=>({id:a.id,name:a.name,kind:'agent' as const,createdAt:a.createdAt})),...[...new Map([...workflows].sort((a,b)=>(a.definition.revision?.number??1)-(b.definition.revision?.number??1)).map(w=>[w.definition.revision?.rootId??w.id,w])).values()].map(w=>({id:w.id,name:w.definition.name,kind:'workflow' as const,createdAt:w.created_at,workflow:w}))].sort((a,b)=>b.createdAt.localeCompare(a.createdAt)));}).catch(()=>{/* No account, or main workspace shows the storage error. */});};refresh();window.addEventListener('hosted-workspace-changed',refresh);return()=>{active=false;window.removeEventListener('hosted-workspace-changed',refresh);};},[]);
   const [hiddenReady,setHiddenReady]=useState(false),[spawn,setSpawn]=useState<{id:string;name:string;skills:string[]}[]>([]);
   // Cats created this session, kept independent of the authenticated list fetch above so a new
   // cat still joins the bar when that fetch can't run (no session) or hasn't refreshed yet.
   const [createdLocally,setCreatedLocally]=useState<Target[]>([]);
+  useEffect(() => {
+    const launch = (event: Event) => {
+      const agent = (event as CustomEvent<CapabilityAgent>).detail;
+      if (!agent?.id || !Array.isArray(agent.steps)) return;
+      setCreatedLocally(old => [{ id: agent.id, name: agent.name, kind: 'workflow', createdAt: new Date().toISOString(), capabilityAgent: agent }, ...old.filter(t => t.id !== agent.id)]);
+      setHidden(old => old.filter(id => id !== agent.id));
+      setSelected(agent.id);
+    };
+    window.addEventListener('hosted-agent-launch', launch);
+    return () => window.removeEventListener('hosted-agent-launch', launch);
+  }, []);
   useEffect(()=>{try{const value=JSON.parse(localStorage.getItem(`hosted-hidden-cats:${userId??'anon'}`)??'[]');if(Array.isArray(value))setHidden(value.filter(v=>typeof v==='string'));}catch{}setHiddenReady(true);},[userId]);
   useEffect(()=>{if(hiddenReady)try{localStorage.setItem(`hosted-hidden-cats:${userId??'anon'}`,JSON.stringify(hidden));}catch{}},[hidden,hiddenReady,userId]);
-  useEffect(()=>{const created=(e:Event)=>{const item=(e as CustomEvent).detail;if(item&&typeof item.id==='string'&&typeof item.name==='string'&&Array.isArray(item.skills)){setSpawn(old=>[...old,{id:item.id,name:item.name,skills:item.skills.filter((s:unknown)=>typeof s==='string')}]);setCreatedLocally(old=>old.some(t=>t.id===item.id)?old:[{id:item.id,name:item.name,kind:item.kind==='workflow'?'workflow':'agent',createdAt:new Date().toISOString()},...old]);}};window.addEventListener('hosted-agent-created',created);return()=>window.removeEventListener('hosted-agent-created',created);},[]);
+  useEffect(()=>{const created=(e:Event)=>{const item=(e as CustomEvent).detail;if(item&&typeof item.id==='string'&&typeof item.name==='string'&&Array.isArray(item.skills)){setSpawn(old=>[...old,{id:item.id,name:item.name,skills:item.skills.filter((s:unknown)=>typeof s==='string')}]);setCreatedLocally(old=>old.some(t=>t.id===item.id)?old:[{id:item.id,name:item.name,kind:item.kind==='workflow'?'workflow':'agent',createdAt:new Date().toISOString(),capabilityAgent:item.capabilityAgent},...old]);setHidden(old=>old.filter(id=>id!==item.id));}};window.addEventListener('hosted-agent-created',created);return()=>window.removeEventListener('hosted-agent-created',created);},[]);
   useEffect(()=>{if(!spawn.length)return;const timer=setTimeout(()=>setSpawn(old=>old.slice(1)),2400);return()=>clearTimeout(timer);},[spawn]);
   const allTargets=targets.length||!createdLocally.length?[...targets,...createdLocally.filter(c=>!targets.some(t=>t.id===c.id))]:createdLocally;
-  const visible=hiddenReady?allTargets.filter(t=>!hidden.includes(t.id)&&!spawn.some(s=>s.id===t.id)):[];const target=allTargets.find(t=>t.id===selected);
+  const visible=hiddenReady?allTargets.filter(t=>!hidden.includes(t.id)&&!spawn.some(s=>s.id===t.id)):[];const target=allTargets.find(t=>t.id===(selected??lastSelected));
   // Same index the bar cat uses for its color, so the chat header's mascot always matches the
   // cat you actually clicked instead of a second, unrelated hash-based color.
   const targetIndex=target?visible.findIndex(item=>item.id===target.id):-1;
@@ -57,6 +70,7 @@ function CatPack({userId}:{userId?:string}){
   return <>{spawn[0]&&<div key={spawn[0].id} className="agent-spawn" style={{zIndex:110}} aria-live="polite"><div className="agent-spawn-card"><span className="agent-spawn-halo"/><Mascot width={96} variant={variantFor(spawn[0].id,0)}/><span className="agent-spawn-kicker">Agent created</span><strong>{spawn[0].name}</strong><div className="agent-spawn-tags">{spawn[0].skills.slice(0,3).map((skill,i)=><span key={i}>{skill}</span>)}</div><small>Heading to the corner — click your cat to open its chat.</small></div></div>}
     <CatAgentBar
       storageKey={`hosted:${userId}`}
+      revealId={selected ? `hosted:${selected}` : createdLocally[0] ? `hosted:${createdLocally[0].id}` : undefined}
       candidates={visible.map(item=>({id:`hosted:${item.id}`,name:item.name}))}
       renderCat={(agentId,drag)=>{
         const item=visible.find(candidate=>`hosted:${candidate.id}`===agentId);
@@ -65,10 +79,11 @@ function CatPack({userId}:{userId?:string}){
         return <AgentAvatar key={item.id} agentId={agentId} name={item.name} variant={variantFor(item.id,index)} status={status[item.id]??'idle'} inline {...drag} dimmed={Boolean(selected&&selected!==item.id)} onOpen={()=>{if(!Object.values(status).includes('working'))setSelected(item.id);}} onRemove={()=>{if(status[item.id]==='working')return;setHidden(old=>[...old,item.id]);if(selected===item.id)setSelected(undefined);}} elementRef={el=>{if(el)catNodes.current.set(item.id,el);else catNodes.current.delete(item.id);}}/>;
       }}
     />
-    {target&&<CatChat key={target.id} target={target} anchor={anchor} variantIndex={targetIndex>=0?targetIndex:undefined} onClose={()=>setSelected(undefined)} onStatus={value=>setStatus(old=>({...old,[target.id]:value}))}/>}
+    {target&&<CatChat key={target.id} hidden={!selected} target={target} anchor={anchor} variantIndex={targetIndex>=0?targetIndex:undefined} onClose={()=>setSelected(undefined)} onStatus={value=>setStatus(old=>({...old,[target.id]:value}))}/>}
   </>;
 }
-function CatChat({target,anchor,variantIndex,onClose,onStatus}:{target:Target;anchor?:{x:number;y:number};variantIndex?:number;onClose:()=>void;onStatus:(status:'idle'|'working'|'done'|'error')=>void}){
+function CatChat({target,hidden,anchor,variantIndex,onClose,onStatus}:{target:Target;hidden:boolean;anchor?:{x:number;y:number};variantIndex?:number;onClose:()=>void;onStatus:(status:'idle'|'working'|'done'|'error')=>void}){
+  const workflowAgent = target.workflow ? hostedAgent(target.workflow) : target.capabilityAgent;
   const [expanded,setExpanded]=useState(false),[text,setText]=useState(''),[json,setJson]=useState(false),[confirmed,setConfirmed]=useState(false);
   const [messages,setMessages]=useState<Message[]>([]),[busy,setBusy]=useState(false),[error,setError]=useState('');
   const lock=useRef(false),active=useRef(true),request=useRef<{key:string;id:string}|null>(null),dialog=useRef<HTMLElement>(null);
@@ -90,7 +105,7 @@ function CatChat({target,anchor,variantIndex,onClose,onStatus}:{target:Target;an
     }
   },[target.id,target.kind]);
   useEffect(()=>{active.current=true;refresh().catch(()=>{if(active.current)setError('Could not load saved results.');});dialog.current?.focus();return()=>{active.current=false;};},[refresh]);
-  useEffect(()=>{const escape=(e:KeyboardEvent)=>{if(e.key==='Escape'&&!lock.current)onClose();};document.addEventListener('keydown',escape);return()=>document.removeEventListener('keydown',escape);},[onClose]);
+  useEffect(()=>{if(hidden)return;const escape=(e:KeyboardEvent)=>{if(e.key==='Escape'&&!lock.current){if(expanded)setExpanded(false);else onClose();}};document.addEventListener('keydown',escape);return()=>document.removeEventListener('keydown',escape);},[onClose,expanded,hidden]);
   async function execute(){
     if(lock.current||!confirmed||!text.trim())return;lock.current=true;setBusy(true);setError('');onStatus('working');
     try{
@@ -110,17 +125,17 @@ function CatChat({target,anchor,variantIndex,onClose,onStatus}:{target:Target;an
     }catch(e){if(active.current){onStatus('error');setError(`${e instanceof Error?e.message:'Request failed'}. Check history before starting another run.`);setConfirmed(false);}}
     finally{try{await refresh();}catch{/* Retain original execution error. */}window.dispatchEvent(new Event('hosted-workspace-changed'));lock.current=false;if(active.current)setBusy(false);}
   }
-  return <section className={`hosted-cat-chat${expanded?' expanded':''}`} style={!expanded&&placement?{left:placement.left,top:placement.top,maxHeight:placement.maxHeight,right:'auto',bottom:'auto'}:undefined} role="dialog" aria-label={`${target.name} cat chat`} tabIndex={-1} ref={dialog}>
+  return <section hidden={hidden} className={`hosted-cat-chat${expanded?' expanded':''}`} style={hidden?{display:'none'}:!expanded&&placement?{left:placement.left,top:placement.top,maxHeight:placement.maxHeight,right:'auto',bottom:'auto'}:undefined} role="dialog" aria-label={`${target.name} cat chat`} tabIndex={-1} ref={dialog}>
     <header><Mascot width={34} variant={variantFor(target.id,variantIndex)}/><div><strong>{target.name}</strong><small>{target.kind==='workflow'?'Workflow companion':'Agent companion'}</small></div><button onClick={()=>setExpanded(!expanded)} aria-label={expanded?'Minimize cat chat':'Expand cat chat'}>{expanded?<Minimize2 size={16}/>:<Maximize2 size={16}/>}</button><button disabled={busy} onClick={onClose} aria-label="Close cat chat"><X size={16}/></button></header>
-    <div className="cat-chat-body">{!target.workflow&&<p className="hint">Each message starts an independent agent test. Previous messages are not sent as context.</p>}
+    <div className="cat-chat-body">{!workflowAgent&&<p className="hint">Each message starts an independent agent test. Previous messages are not sent as context.</p>}
       <Link href={`/agents/${target.id}`}>Open profile →</Link>
       {target.workflow&&<details><summary>Review {target.workflow.definition.steps.length} steps</summary><ol>{target.workflow.definition.steps.map((s,i)=><li key={i}>{s.name} · {s.skill}<br/>{s.agentId.startsWith('template:')?'Your private template':s.endpoint}</li>)}</ol></details>}
       {/* Workflow agents use their specialist-designed interface, the same one as their profile. */}
-      {target.workflow&&<AgentInterface mode={expanded?'full':'compact'} local={false} agent={hostedAgent(target.workflow)} onStatus={onStatus}/>}
-      {!target.workflow&&<div className="cat-messages" aria-live="polite">{!messages.length&&<p>No saved messages yet. Send a task to get started.</p>}{messages.map(m=><article key={m.id}><p className="cat-user">{m.input}</p><pre>{m.output}</pre><small>{m.status}</small></article>)}</div>}
+      {workflowAgent&&<AgentInterface mode={expanded?'full':'compact'} local={false} agent={workflowAgent} onStatus={onStatus}/>}
+      {!workflowAgent&&<div className="cat-messages" aria-live="polite">{!messages.length&&<p>No saved messages yet. Send a task to get started.</p>}{messages.map(m=><article key={m.id}><p className="cat-user">{m.input}</p><pre>{m.output}</pre><small>{m.status}</small></article>)}</div>}
       {error&&<p role="alert" className="alert">{error}</p>}
       {pending&&<p role="status">{pending.status} · {pending.outputs.length} steps completed</p>}
-      {!target.workflow&&<form onSubmit={e=>{e.preventDefault();void execute();}}>
+      {!workflowAgent&&<form onSubmit={e=>{e.preventDefault();void execute();}}>
         {target.kind==='workflow'&&<label className="cat-confirm"><input type="checkbox" checked={json} disabled={busy} onChange={e=>{setJson(e.target.checked);setConfirmed(false);}}/>Send a JSON object</label>}
         <label>Message to {target.name}<textarea value={text} maxLength={12000} disabled={busy} onChange={e=>{setText(e.target.value);setConfirmed(false);}} placeholder="Give this agent a task…"/></label>
         <label className="cat-confirm"><input type="checkbox" disabled={busy} checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/>{target.kind==='workflow'?'I reviewed the steps and authorize sending this message and outputs to the selected agents and OpenAI, including their actions.':'Send this message to OpenAI to run my saved template.'}</label>

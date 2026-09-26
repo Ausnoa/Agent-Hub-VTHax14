@@ -43,7 +43,7 @@ export default function WorkflowAgentCard({ agent, badge, actions }: { agent: Ca
         <Link href={`/agents/${agent.id}#enhance`}><Button variant="ghost" size="sm"><Network size={14} /> Enhance</Button></Link>
         {actions}
       </div>
-      <Link href={`/agents/${agent.id}`} style={{ flex: 1 }}><Button variant="primary" block>Launch Interface</Button></Link>
+      <Link href={`/agents/${agent.id}#launch`} style={{ flex: 1 }}><Button variant="primary" block>Launch Interface</Button></Link>
     </div>
   </Card>;
 }

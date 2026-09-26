@@ -65,7 +65,7 @@ Each agent's interface is an app written by the three specialists working as a t
 3. **Review, in parallel.** The backend specialist traces the example run through the code and checks shapes, bridge use, and invented features. The product specialist checks the journey, both modes, and the states.
 4. **Revise** once if either reviewer objects or lint fails. `lintView` rejects network, host access, storage, dynamic code, navigation, and apps that never call `glorria.ready()`/`onRun`.
 
-**Where it appears.** The app is the agent's interface on its profile and in its cat window (compact and full screen, local and hosted), and a live preview with sample data on the review card.
+**Where it appears.** The profile and fleet launch the agent into its cat window (compact and full screen, local and hosted). The profile remains the place to inspect and enhance the agent. The review card shows a live preview with sample data. Window controls belong to Glorria, outside the generated app; resizing and closing/reopening the active window preserve its mounted interface and draft input. Creating an agent still plays the cat entrance before it joins the bar, including when the bar has a custom selection.
 
 **Sandbox.** The app runs in an iframe with `sandbox="allow-scripts"` and no `allow-same-origin`, which gives it an opaque origin. The host writes the document around it, with a CSP that allows no network, the theme variables (`--g-*`), and the `window.glorria` shim (`src/lib/agent-ui/view-bridge.ts`).
 - **Messages.** Every message the app sends is validated with zod.

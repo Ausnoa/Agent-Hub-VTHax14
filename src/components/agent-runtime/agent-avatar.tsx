@@ -140,6 +140,7 @@ export default function AgentAvatar({ agentId, name, variant, status, slot = 0, 
   return <div
     ref={elementRef}
     className={`agent-avatar-layer${inline ? " inline" : ""}${dimmed ? " dimmed" : ""}`}
+    data-agent-id={agentId}
     style={inline ? undefined : position ? { left: position.x, top: position.y } : { right: 24 + slot * (AVATAR_W + SLOT_GAP), bottom: 24 }}
   >
     {children}

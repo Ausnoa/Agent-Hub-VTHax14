@@ -61,8 +61,8 @@ function LocalAgentRuntime() {
   }
 
   return <>
-    {view === "full" && active?.kind === "capability" && <CapabilityCatWindow
-      spec={active} mode="full" variant={variantFor(active.variantSeed, active.accentIndex)} status={catStatus(active.agentId)}
+    {active?.kind === "capability" && <CapabilityCatWindow key={active.agentId}
+      spec={active} mode={view === "full" ? "full" : "mini"} hidden={view !== "full" && view !== "mini"} variant={variantFor(active.variantSeed, active.accentIndex)} status={catStatus(active.agentId)}
       onExpand={() => setView("full")} onMinimize={() => setView("mini")} onClose={() => setView("avatar")} onStatus={reportStatus(active.agentId)}
     />}
     {view === "full" && active && active.kind !== "capability" && <AgentFullScreen
@@ -72,6 +72,7 @@ function LocalAgentRuntime() {
 
     <CatAgentBar
       storageKey="local"
+      revealId={active?.agentId}
       candidates={pack.map((spec) => ({ id: spec.agentId, name: spec.name }))}
       renderCat={(agentId, drag) => {
         const spec = pack.find((item) => item.agentId === agentId);
@@ -89,10 +90,6 @@ function LocalAgentRuntime() {
           onOpen={() => (isActive && view === "mini" ? setView("avatar") : open(spec.agentId, "mini"))}
           onRemove={() => remove(spec.agentId)}
         >
-          {isActive && view === "mini" && spec.kind === "capability" && <CapabilityCatWindow
-            spec={spec} mode="mini" variant={variantFor(spec.variantSeed, spec.accentIndex)} status={catStatus(spec.agentId)}
-            onExpand={() => setView("full")} onMinimize={() => setView("mini")} onClose={() => setView("avatar")} onStatus={reportStatus(spec.agentId)}
-          />}
           {isActive && view === "mini" && spec.kind !== "capability" && <AgentMiniWindow
             spec={spec}
             runs={runsFor(spec.agentId)}

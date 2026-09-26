@@ -12,7 +12,6 @@ import StatusPill from '../ui/status-pill';
 import Mascot from './mascot';
 import { agentRootId, stepSource, useAgentRequest, localAgent, hostedAgent, type CapabilityAgent } from './capability-runner';
 import CapabilityComposer from './capability-composer';
-import AgentInterface from './generated-app';
 import type { GeneralWorkflow } from '../../lib/general/contracts';
 import type { HostedWorkflow } from '../../lib/hosted/workflow-contracts';
 
@@ -24,7 +23,7 @@ export function useAnnounceAgent(local: boolean) {
   const { spawn } = useAgentRuntime();
   return useCallback((agent: CapabilityAgent, animate = true) => {
     if (local) { spawn(specForCapability(agent), animate); return; }
-    if (animate) window.dispatchEvent(new CustomEvent('hosted-agent-created', { detail: { id: agent.id, name: agent.capability?.ui.title ?? agent.name, kind: 'workflow', skills: agent.steps.map(s => s.geminiTask ?? s.skill) } }));
+    if (animate) window.dispatchEvent(new CustomEvent('hosted-agent-created', { detail: { id: agent.id, name: agent.capability?.ui.title ?? agent.name, kind: 'workflow', skills: agent.steps.map(s => s.geminiTask ?? s.skill), capabilityAgent: agent } }));
     window.dispatchEvent(new Event('hosted-workspace-changed'));
   }, [local, spawn]);
 }
@@ -53,6 +52,22 @@ export function CapabilityHeader({ agent, action }: { agent: CapabilityAgent; ac
 export function CapabilityProfileBody({ agent, local, canEnhance, showCapabilities = true }: { agent: CapabilityAgent; local: boolean; canEnhance: boolean; /** Off where the page already lists the steps. */ showCapabilities?: boolean }) {
   const router = useRouter();
   const announce = useAnnounceAgent(local);
+  const { spawn, open } = useAgentRuntime();
+  const launch = useCallback(() => {
+    if (local) {
+      const spec = specForCapability(agent);
+      spawn(spec);
+      open(spec.agentId, 'mini');
+    } else {
+      window.dispatchEvent(new CustomEvent('hosted-agent-launch', { detail: agent }));
+    }
+  }, [agent, local, spawn, open]);
+  useEffect(() => {
+    const launchFromLink = () => { if (location.hash === '#launch') launch(); };
+    launchFromLink();
+    window.addEventListener('hashchange', launchFromLink);
+    return () => window.removeEventListener('hashchange', launchFromLink);
+  }, [launch]);
   const request = useAgentRequest(local);
   const extras = uiExtras(agent.capability?.ui);
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
@@ -67,7 +82,7 @@ export function CapabilityProfileBody({ agent, local, canEnhance, showCapabiliti
     finally { setBusy(false); }
   };
   return <>
-    <AgentInterface key={agent.id} agent={agent} local={local} mode="full" />
+    <Card><CardHead>Your agent is ready</CardHead><p>Open its floating workspace. Maximize for more room, or minimize to keep it beside your work.</p><Button variant="primary" onClick={launch}>Launch interface</Button></Card>
     {showCapabilities && extras.has('capabilities') && <Card><CardHead>What powers this agent</CardHead>
       <ol className="capability-steps">{agent.steps.map((step, i) => <li key={i}><strong>{step.name}</strong><span>{stepSource(step)} · {step.inputFrom === 'original' ? 'Original input' : `Uses the output of step ${(step.inputStep ?? i - 1) + 1}`} · {step.skill}</span></li>)}</ol>
       <p className="hint">ANS agents are discovered from the registry (identity unverified). Gemini steps run only language tasks: transcription, summarization, extraction, classification, transformation, grounded answers, flashcards, and quizzes.</p>

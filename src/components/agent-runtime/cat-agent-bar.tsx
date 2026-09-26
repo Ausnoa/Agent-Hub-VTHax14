@@ -36,7 +36,8 @@ function loadSelection(key: string): Selection {
 // floating independently. Cats themselves (AgentAvatar) are unchanged, just laid out here.
 // Bottom-right is only the starting position each time the app opens — dragging the bar,
 // or dragging any cat in it, moves the whole group and that position is remembered.
-export default function CatAgentBar({ storageKey, candidates, renderCat }: {
+export default function CatAgentBar({ storageKey, candidates, renderCat, revealId }: {
+  revealId?: string;
   storageKey: string;                                    // namespaces this bar's saved position + selection ("local" or "hosted:<userId>")
   candidates: Candidate[];                               // every selectable cat, ordered newest first
   renderCat: (id: string, drag: BarDrag) => React.ReactNode;  // renders that cat's existing <AgentAvatar inline .../>, wired to drag the bar
@@ -48,6 +49,12 @@ export default function CatAgentBar({ storageKey, candidates, renderCat }: {
   const [ready, setReady] = useState(false);
   useEffect(() => { setSelection(loadSelection(selectionKey)); setReady(true); }, [selectionKey]);
   useEffect(() => { if (ready) try { localStorage.setItem(selectionKey, JSON.stringify(selection)); } catch { /* best-effort only */ } }, [selection, selectionKey, ready]);
+  const revealed = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (!ready || !revealId || revealed.current === revealId || !candidates.some(item => item.id === revealId)) return;
+    revealed.current = revealId;
+    setSelection(current => current.mode === 'custom' ? { mode: 'custom', ids: [revealId, ...current.ids.filter(id => id !== revealId)].slice(0, BAR_LIMIT) } : current);
+  }, [ready, revealId, candidates]);
 
   const visibleIds = useMemo(() => {
     const known = new Set(candidates.map((candidate) => candidate.id));
